@@ -23,6 +23,7 @@
             <div class="text-center space-y-2">
                 <h1 class="text-2xl font-bold tracking-tight text-blue-950 dark:text-white" x-text="t('brand')"></h1>
                 <p class="text-xs text-slate-500" x-text="t('loginSubtitle')"></p>
+                <p role="status" class="rounded-lg bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-xs text-amber-800 dark:text-amber-200" x-text="t('demoNotice')"></p>
             </div>
 
             <!-- Giriş Sekmeleri -->
@@ -47,7 +48,7 @@
                         <input type="checkbox" x-model="rememberMe" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4">
                         <span x-text="t('rememberMe')"></span>
                     </label>
-                    <a href="#" @click.prevent="alert('Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.')" class="text-blue-600 dark:text-blue-400 hover:underline" x-text="t('forgotPass')"></a>
+                    <a href="#" @click.prevent="alert(t('demoResetNotice'))" class="text-blue-600 dark:text-blue-400 hover:underline" x-text="t('forgotPass')"></a>
                 </div>
 
                 <button @click="handleLogin()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition" x-text="loginType === 'firm' ? t('firmBtn') : t('clientBtn')"></button>
@@ -66,6 +67,7 @@
 
     <!-- 2. ANA UYGULAMA -->
     <div x-show="isLoggedIn" class="flex-grow flex flex-col" x-cloak>
+        <p role="status" class="bg-amber-100 dark:bg-amber-950 px-4 py-2 text-center text-xs text-amber-900 dark:text-amber-100" x-text="t('demoNotice')"></p>
         <!-- Header / Navbar -->
         <header class="bg-blue-950 dark:bg-slate-900 text-white shadow-lg border-b border-blue-900/50">
             <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
@@ -387,7 +389,7 @@
                                 <td class="px-6 py-4 font-semibold text-slate-900 dark:text-white">2.400 EUR</td>
                                 <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-full font-medium">e-Arşiv Onaylandı</span></td>
                                 <td class="px-6 py-4 text-right">
-                                    <button @click="alert('GİB XML belgesi indirildi.')" class="bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-3 py-1 rounded text-xs font-medium">GİB XML İndir</button>
+                                    <button @click="alert(t('demoXmlNotice'))" class="bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-3 py-1 rounded text-xs font-medium" x-text="t('downloadXmlDemo')"></button>
                                 </td>
                             </tr>
                         </tbody>
@@ -411,7 +413,7 @@
                                 <label class="text-xs text-slate-500" x-text="t('emailLabel')"></label>
                                 <input type="email" value="admin@lojistikasistani.com" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
                             </div>
-                            <button @click="alert('Profil bilgileri güncellendi.')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('saveBtn')"></button>
+                            <button @click="alert(t('demoSettingsNotice'))" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('saveBtn')"></button>
                         </div>
                     </div>
                     <!-- Firma Genel Ayarları -->
@@ -430,7 +432,7 @@
                                     <option>TRY (₺)</option>
                                 </select>
                             </div>
-                            <button @click="alert('Firma ayarları kaydedildi.')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('saveBtn')"></button>
+                            <button @click="alert(t('demoSettingsNotice'))" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('saveBtn')"></button>
                         </div>
                     </div>
                     <!-- Güvenlik & Şifre -->
@@ -445,7 +447,7 @@
                                 <label class="text-xs text-slate-500" x-text="t('newPass')"></label>
                                 <input type="password" placeholder="••••••••" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
                             </div>
-                            <button @click="alert('Şifre başarıyla değiştirildi.')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('updatePassBtn')"></button>
+                            <button @click="alert(t('demoPasswordNotice'))" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('updatePassBtn')"></button>
                         </div>
                     </div>
                     <!-- Bildirim Tercihleri -->
@@ -460,7 +462,7 @@
                                 <input type="checkbox" checked class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4">
                                 <span class="text-slate-700 dark:text-slate-300 text-xs" x-text="t('systemAlerts')"></span>
                             </label>
-                            <button @click="alert('Bildirim tercihleri güncellendi.')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('saveBtn')"></button>
+                            <button @click="alert(t('demoSettingsNotice'))" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('saveBtn')"></button>
                         </div>
                     </div>
                 </div>
@@ -487,7 +489,7 @@
                 <option value="DDP">DDP</option>
             </select>
             <input x-model="newOffer.cargo" type="text" placeholder="Yük Detayı" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-            <input x-model="newOffer.amount" type="number" placeholder="Tutar" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+            <input x-model="newOffer.amount" type="number" min="0.01" step="0.01" placeholder="Tutar" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
             <div class="flex justify-end space-x-2 pt-2">
                 <button @click="showOfferModal = false" class="px-4 py-2 text-slate-600 text-sm" x-text="t('cancelBtn')"></button>
                 <button @click="addOffer()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium" x-text="t('saveBtn')"></button>
@@ -586,6 +588,16 @@
                     tr: {
                         brand: "Lojistik Asistanı",
                         loginSubtitle: "Çok Modlu Uluslararası Lojistik Platformu",
+                        demoNotice: "Demo sürümü: giriş ve veriler gerçek hizmetlere bağlanmaz; yaptığın değişiklikler kalıcı olarak saklanmaz.",
+                        demoResetNotice: "Demo sürümünde şifre sıfırlama e-postası gönderilmiyor.",
+                        demoSettingsNotice: "Demo sürümünde ayarlar kaydedilmiyor.",
+                        demoPasswordNotice: "Demo sürümünde parola değiştirilmiyor.",
+                        demoXmlNotice: "Demo sürümünde GİB XML dosyası oluşturulmuyor.",
+                        downloadXmlDemo: "GİB XML (Demo)",
+                        offerFieldsRequired: "Müşteri, güzergah, yük ve sıfırdan büyük tutar girin.",
+                        ocrDemoNotice: "OCR yalnızca demoda gösteriliyor; dosya yüklenmiyor veya işlenmiyor.",
+                        pdfUnavailable: "PDF aracı yüklenemedi. Sayfayı yenileyip tekrar deneyin.",
+                        pdfFailed: "PDF oluşturulamadı. Lütfen tekrar deneyin.",
                         firmLogin: "Firma Girişi",
                         clientLogin: "Müşteri Portalı (B2B)",
                         emailLabel: "E-Posta Adresi",
@@ -644,13 +656,13 @@
                         viewAll: "Tümünü Gör",
                         ocrTitle: "Akıllı Evrak OCR Asistanı",
                         ocrSub: "Otomatik Veri Doğrulama",
-                        ocrDesc: "Yüklenen tüm CMR, B/L ve AWB evrakları yapay zeka ile taranmaktadır.",
+                        ocrDesc: "OCR demodur; henüz dosya yükleme veya belge işleme yapılmıyor.",
                         btnConvertToShipment: "Sefer Yap",
                         approveOffer: "Onayla",
                         rejectOffer: "Reddet",
                         ocrApproved: "✓ OCR Onaylı Evrak",
                         ocrPending: "⚠️ Evrak Bekleniyor",
-                        btnOCR: "Evrak Yükle & OCR Tara",
+                        btnOCR: "OCR Simülasyonu",
                         milestoneTitle: "Sevkiyat Aşamaları",
                         m1: "1. Yükleme Bekliyor",
                         m2Road: "2. Yola Çıktı",
@@ -664,6 +676,16 @@
                     en: {
                         brand: "Logistics Assistant",
                         loginSubtitle: "Multi-Modal International Logistics Platform",
+                        demoNotice: "Demo version: sign-in and data are not connected to real services; changes are not saved permanently.",
+                        demoResetNotice: "Password reset email is not sent in the demo.",
+                        demoSettingsNotice: "Settings are not saved in the demo.",
+                        demoPasswordNotice: "Password is not changed in the demo.",
+                        demoXmlNotice: "A GIB XML file is not generated in the demo.",
+                        downloadXmlDemo: "GIB XML (Demo)",
+                        offerFieldsRequired: "Enter a client, route, cargo, and an amount greater than zero.",
+                        ocrDemoNotice: "OCR is only shown as a demo; no file is uploaded or processed.",
+                        pdfUnavailable: "The PDF tool did not load. Refresh the page and try again.",
+                        pdfFailed: "The PDF could not be created. Please try again.",
                         firmLogin: "Firm Login",
                         clientLogin: "Client Portal (B2B)",
                         emailLabel: "Email Address",
@@ -722,13 +744,13 @@
                         viewAll: "View All",
                         ocrTitle: "Smart OCR Assistant",
                         ocrSub: "Automatic Data Verification",
-                        ocrDesc: "All uploaded CMR, B/L and AWB documents are verified via AI.",
+                        ocrDesc: "OCR is a demo placeholder; document upload and processing are not available yet.",
                         btnConvertToShipment: "Make Shipment",
                         approveOffer: "Approve",
                         rejectOffer: "Reject",
                         ocrApproved: "✓ OCR Approved Doc",
                         ocrPending: "⚠️ Document Pending",
-                        btnOCR: "Upload & OCR Scan",
+                        btnOCR: "Simulate OCR",
                         milestoneTitle: "Shipment Milestones",
                         m1: "1. Awaiting Loading",
                         m2Road: "2. On The Road",
@@ -796,8 +818,12 @@
                     if (offer.status === 'Beklemede') offer.status = 'Reddedildi';
                 },
                 addOffer() {
-                    if(!this.newOffer.client) return;
-                    this.offers.push({ id: Date.now(), ...this.newOffer, status: 'Beklemede', converted: false });
+                    const amount = Number(this.newOffer.amount);
+                    if (!this.newOffer.client || !this.newOffer.route || !this.newOffer.cargo || !Number.isFinite(amount) || amount <= 0) {
+                        alert(this.t('offerFieldsRequired'));
+                        return;
+                    }
+                    this.offers.push({ id: Date.now(), ...this.newOffer, amount, status: 'Beklemede', converted: false });
                     this.newOffer = { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', cargo: '', amount: '', currency: 'EUR' };
                     this.showOfferModal = false;
                 },
@@ -839,14 +865,17 @@
                     });
                     this.tab = 'shipments';
                 },
-                simulateOCR(shipment) {
-                    shipment.docUploaded = true;
-                    alert(shipment.code + ' nolu sevkiyat evrakı OCR ile doğrulandı!');
+                simulateOCR() {
+                    alert(this.t('ocrDemoNotice'));
                 },
                 calculateTotalProfit() {
                     return this.shipments.reduce((total, s) => total + (s.income - (s.expense1 + s.expense2)), 0);
                 },
-                downloadPDF(offer) {
+                async downloadPDF(offer) {
+                    if (typeof html2pdf !== 'function') {
+                        alert(this.t('pdfUnavailable'));
+                        return;
+                    }
                     document.getElementById('pdf-client').innerText = offer.client;
                     document.getElementById('pdf-mode').innerText = offer.mode;
                     document.getElementById('pdf-route').innerText = offer.route;
@@ -854,13 +883,16 @@
                     document.getElementById('pdf-cargo').innerText = offer.cargo;
                     document.getElementById('pdf-amount').innerText = offer.amount + ' ' + offer.currency;
                     document.getElementById('pdf-date').innerText = new Date().toLocaleDateString('tr-TR');
-                    
+
                     const element = document.getElementById('pdf-template');
                     element.classList.remove('hidden');
-                    
-                    html2pdf().from(element).save('Teklif_' + offer.client + '.pdf').then(() => {
+                    try {
+                        await html2pdf().from(element).save('Teklif_' + offer.client + '.pdf');
+                    } catch (error) {
+                        alert(this.t('pdfFailed'));
+                    } finally {
                         element.classList.add('hidden');
-                    });
+                    }
                 },
                 newOffer: { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', cargo: '', amount: '', currency: 'EUR' },
                 newShipment: { mode: 'Karayolu', client: '', route: '', plate: '', driver: '', phone: '', vessel: '', containerNo: '', containerType: '', blNumber: '', flightNo: '', awbNumber: '', volWeight: '', income: 2500 }
