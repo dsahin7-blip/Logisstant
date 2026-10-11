@@ -20,37 +20,35 @@
     <div x-show="!isLoggedIn" class="flex-grow flex items-center justify-center p-4 bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900" x-cloak>
         <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 max-w-md w-full shadow-2xl border border-blue-900/20 space-y-6">
             <div class="text-center space-y-2">
-                <h1 class="text-2xl font-bold tracking-tight text-blue-950 dark:text-white">Lojistik Asistanı</h1>
-                <p class="text-xs text-slate-500">Çok Modlu Uluslararası Lojistik Platformu</p>
+                <h1 class="text-2xl font-bold tracking-tight text-blue-950 dark:text-white" x-text="t('brand')"></h1>
+                <p class="text-xs text-slate-500" x-text="t('loginSubtitle')"></p>
             </div>
 
             <!-- Giriş Sekmeleri -->
             <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-sm font-medium">
-                <button @click="loginType = 'firm'" :class="loginType === 'firm' ? 'bg-blue-600 text-white shadow' : 'text-slate-600 dark:text-slate-400'" class="flex-1 py-2 rounded-lg transition">Firma Girişi</button>
-                <button @click="loginType = 'client'" :class="loginType === 'client' ? 'bg-blue-600 text-white shadow' : 'text-slate-600 dark:text-slate-400'" class="flex-1 py-2 rounded-lg transition">Müşteri Portalı (B2B)</button>
+                <button @click="loginType = 'firm'" :class="loginType === 'firm' ? 'bg-blue-600 text-white shadow' : 'text-slate-600 dark:text-slate-400'" class="flex-1 py-2 rounded-lg transition" x-text="t('firmLogin')"></button>
+                <button @click="loginType = 'client'" :class="loginType === 'client' ? 'bg-blue-600 text-white shadow' : 'text-slate-600 dark:text-slate-400'" class="flex-1 py-2 rounded-lg transition" x-text="t('clientLogin')"></button>
             </div>
 
             <div class="space-y-4">
                 <div>
-                    <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">E-Posta Adresi</label>
+                    <label class="text-xs font-semibold text-slate-600 dark:text-slate-400" x-text="t('emailLabel')"></label>
                     <input type="email" x-model="loginEmail" placeholder="ornek@sirket.com" class="w-full mt-1 p-3 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
                 </div>
                 <div>
-                    <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">Şifre</label>
+                    <label class="text-xs font-semibold text-slate-600 dark:text-slate-400" x-text="t('passLabel')"></label>
                     <input type="password" placeholder="••••••••" class="w-full mt-1 p-3 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
                 </div>
 
-                <button @click="handleLogin()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition">
-                    <span x-text="loginType === 'firm' ? 'Firma Paneline Giriş Yap' : 'Müşteri Portalına Giriş Yap'"></span>
-                </button>
+                <button @click="handleLogin()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition" x-text="loginType === 'firm' ? t('firmBtn') : t('clientBtn')"></button>
             </div>
 
             <!-- Hızlı Test Girişleri -->
             <div class="border-t border-slate-200 dark:border-slate-800 pt-4 space-y-2">
-                <p class="text-[11px] text-center text-slate-400 uppercase tracking-wider font-bold">Hızlı Test Etmek İçin:</p>
+                <p class="text-[11px] text-center text-slate-400 uppercase tracking-wider font-bold" x-text="t('quickTest')"></p>
                 <div class="grid grid-cols-2 gap-2">
-                    <button @click="quickLogin('admin')" class="bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 hover:bg-blue-100 p-2 rounded-xl text-xs font-semibold transition">🚀 Admin Olarak Gir</button>
-                    <button @click="quickLogin('client')" class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 p-2 rounded-xl text-xs font-semibold transition">📦 Müşteri Olarak Gir</button>
+                    <button @click="quickLogin('admin')" class="bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 hover:bg-blue-100 p-2 rounded-xl text-xs font-semibold transition" x-text="t('adminFast')"></button>
+                    <button @click="quickLogin('client')" class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 p-2 rounded-xl text-xs font-semibold transition" x-text="t('clientFast')"></button>
                 </div>
             </div>
         </div>
@@ -62,7 +60,7 @@
         <header class="bg-blue-950 dark:bg-slate-900 text-white shadow-lg border-b border-blue-900/50">
             <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
                 <div class="flex items-center space-x-3">
-                    <span class="text-2xl font-bold tracking-tight">Lojistik Asistanı</span>
+                    <span class="text-2xl font-bold tracking-tight" x-text="t('brand')"></span>
                 </div>
                 
                 <div class="flex items-center space-x-3">
@@ -81,8 +79,8 @@
                         <!-- Notification Dropdown -->
                         <div x-show="showNotifDropdown" @click.outside="showNotifDropdown = false" class="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 p-4 z-50 space-y-3" x-cloak>
                             <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-2">
-                                <h4 class="font-bold text-slate-900 dark:text-white text-sm">Bildirim Merkezi</h4>
-                                <button @click="markAllAsRead()" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Tümünü Okundu Say</button>
+                                <h4 class="font-bold text-slate-900 dark:text-white text-sm" x-text="t('notifTitle')"></h4>
+                                <button @click="markAllAsRead()" class="text-xs text-blue-600 dark:text-blue-400 hover:underline" x-text="t('readAll')"></button>
                             </div>
                             <div class="space-y-2 max-h-60 overflow-y-auto">
                                 <template x-for="notif in notifications" :key="notif.id">
@@ -101,8 +99,11 @@
                         <span x-text="darkMode ? '☀️' : '🌙'"></span>
                     </button>
 
+                    <!-- Ayarlar Butonu (Çıkış Yap'ın Solunda) -->
+                    <button @click="tab = 'settings'" class="bg-blue-900 dark:bg-slate-800 hover:bg-blue-800 text-white px-3 py-2 rounded-lg text-xs font-semibold transition" x-text="t('settings')"></button>
+
                     <!-- Logout Button -->
-                    <button @click="logout()" class="bg-rose-600 hover:bg-rose-500 text-white px-3 py-2 rounded-lg text-xs font-semibold transition">Çıkış Yap</button>
+                    <button @click="logout()" class="bg-rose-600 hover:bg-rose-500 text-white px-3 py-2 rounded-lg text-xs font-semibold transition" x-text="t('logout')"></button>
                 </div>
             </div>
         </header>
@@ -110,13 +111,12 @@
         <!-- Navigation Tabs -->
         <nav class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
             <div class="max-w-7xl mx-auto px-4 flex space-x-6 overflow-x-auto">
-                <button @click="tab = 'dashboard'" :class="tab === 'dashboard' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Ana Panel</button>
-                <button @click="tab = 'offers'" :class="tab === 'offers' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Teklif Yönetimi</button>
-                <button @click="tab = 'shipments'" :class="tab === 'shipments' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Sevkiyatlar (Kara/Deniz/Hava)</button>
-                <button x-show="userRole !== 'operation' && userRole !== 'client'" @click="tab = 'reports'" :class="tab === 'reports' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Raporlar & BI</button>
-                <button x-show="userRole !== 'operation' && userRole !== 'client'" @click="tab = 'finances'" :class="tab === 'finances' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Masraf & Kârlılık</button>
-                <button x-show="userRole === 'admin' || userRole === 'finance'" @click="tab = 'invoices'" :class="tab === 'invoices' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Ön Muhasebe</button>
-                <button @click="tab = 'settings'" :class="tab === 'settings' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Ayarlar</button>
+                <button @click="tab = 'dashboard'" :class="tab === 'dashboard' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition" x-text="t('navDashboard')"></button>
+                <button @click="tab = 'offers'" :class="tab === 'offers' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition" x-text="t('navOffers')"></button>
+                <button @click="tab = 'shipments'" :class="tab === 'shipments' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition" x-text="t('navShipments')"></button>
+                <button x-show="userRole !== 'operation' && userRole !== 'client'" @click="tab = 'reports'" :class="tab === 'reports' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition" x-text="t('navReports')"></button>
+                <button x-show="userRole !== 'operation' && userRole !== 'client'" @click="tab = 'finances'" :class="tab === 'finances' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition" x-text="t('navFinances')"></button>
+                <button x-show="userRole === 'admin' || userRole === 'finance'" @click="tab = 'invoices'" :class="tab === 'invoices' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition" x-text="t('navInvoices')"></button>
             </div>
         </nav>
 
@@ -127,64 +127,32 @@
             <div x-show="tab === 'dashboard'" class="space-y-6">
                 <div class="bg-gradient-to-r from-blue-900 to-blue-950 rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
                     <div>
-                        <h2 class="text-2xl font-bold" x-text="userRole === 'client' ? 'Müşteri Portalı & Yük Takip Paneli' : 'Lojistik Yönetim Paneli'"></h2>
-                        <p class="text-blue-200 text-sm mt-1">Çok modlu (Karayolu, Denizyolu, Havayolu) operasyonlarınız kontrol altında.</p>
+                        <h2 class="text-2xl font-bold" x-text="userRole === 'client' ? t('dashWelcomeClient') : t('dashWelcomeFirm')"></h2>
+                        <p class="text-blue-200 text-sm mt-1" x-text="t('dashSub')"></p>
                     </div>
                     <div class="flex space-x-3" x-show="userRole !== 'client'">
-                        <button @click="showOfferModal = true" class="bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-xl font-medium text-sm shadow transition">+ Yeni Teklif</button>
-                        <button @click="showShipmentModal = true" class="bg-white text-blue-950 hover:bg-blue-50 px-4 py-2.5 rounded-xl font-medium text-sm shadow transition">+ Sefer Başlat</button>
+                        <button @click="showOfferModal = true" class="bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-xl font-medium text-sm shadow transition" x-text="t('btnNewOffer')"></button>
+                        <button @click="showShipmentModal = true" class="bg-white text-blue-950 hover:bg-blue-50 px-4 py-2.5 rounded-xl font-medium text-sm shadow transition" x-text="t('btnNewShipment')"></button>
                     </div>
                 </div>
 
                 <!-- Stats Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Aktif Sevkiyatlar</p>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider" x-text="t('statActive')"></p>
                         <p class="text-3xl font-bold text-slate-900 dark:text-white mt-2" x-text="filteredShipments().length"></p>
                     </div>
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Toplam Teklifler</p>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider" x-text="t('statOffers')"></p>
                         <p class="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-2" x-text="offers.length"></p>
                     </div>
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Seferdeki / Yoldaki Yükler</p>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider" x-text="t('statOnRoad')"></p>
                         <p class="text-3xl font-bold text-amber-600 dark:text-amber-400 mt-2" x-text="filteredShipments().filter(s => s.status !== 'Teslim Edildi' && s.status !== 'Yükleme Bekliyor').length"></p>
                     </div>
                     <div x-show="userRole !== 'operation' && userRole !== 'client'" class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Toplam Net Kâr</p>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider" x-text="t('statProfit')"></p>
                         <p class="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mt-2" x-text="calculateTotalProfit() + ' EUR'"></p>
-                    </div>
-                </div>
-
-                <!-- Recent Feed & OCR Notice -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="md:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
-                        <div class="flex justify-between items-center">
-                            <h3 class="font-bold text-slate-900 dark:text-white">Son Aktif Seferler</h3>
-                            <button @click="tab = 'shipments'" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Tümünü Gör</button>
-                        </div>
-                        <div class="divide-y divide-slate-100 dark:divide-slate-800">
-                            <template x-for="shipment in filteredShipments().slice(0, 3)" :key="shipment.id">
-                                <div class="py-3 flex justify-between items-center">
-                                    <div>
-                                        <div class="flex items-center space-x-2">
-                                            <span class="text-xs px-2 py-0.5 rounded font-semibold" :class="{'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300': shipment.mode === 'Denizyolu', 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300': shipment.mode === 'Havayolu', 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300': shipment.mode === 'Karayolu'}" x-text="shipment.mode"></span>
-                                            <span class="font-bold text-sm text-slate-900 dark:text-white" x-text="shipment.code"></span>
-                                        </div>
-                                        <p class="text-xs text-slate-500 mt-1" x-text="shipment.client + ' (' + shipment.route + ')'"></p>
-                                    </div>
-                                    <span class="text-xs px-2.5 py-1 rounded-full font-medium bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300" x-text="shipment.status"></span>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
-
-                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
-                        <h3 class="font-bold text-slate-900 dark:text-white">Akıllı Evrak OCR Asistanı</h3>
-                        <div class="p-3 bg-blue-50 dark:bg-blue-950/40 border-l-4 border-blue-600 rounded text-xs space-y-1">
-                            <p class="font-bold text-blue-800 dark:text-blue-300">Otomatik Veri Doğrulama</p>
-                            <p class="text-blue-700 dark:text-blue-400">Yüklenen tüm CMR, B/L ve AWB evrakları yapay zeka ile taranarak tonaj ve mühür bilgileri sisteme işlenmektedir.</p>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -192,43 +160,37 @@
             <!-- TAB 2: OFFERS -->
             <div x-show="tab === 'offers'" class="space-y-6">
                 <div class="flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-slate-900 dark:text-white">Teklif Yönetimi (Incoterms Destekli)</h2>
-                    <button x-show="userRole !== 'client'" @click="showOfferModal = true" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition">+ Yeni Teklif Oluştur</button>
+                    <h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navOffers')"></h2>
+                    <button x-show="userRole !== 'client'" @click="showOfferModal = true" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition" x-text="t('btnNewOffer')"></button>
                 </div>
 
                 <div class="bg-white dark:bg-slate-900 shadow-sm rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
                     <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
                         <thead class="bg-slate-50 dark:bg-slate-950">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Mod / Müşteri</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Güzergah</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase" x-text="t('tblClient')"></th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase" x-text="t('tblRoute')"></th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Incoterms</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Yük</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Tutar</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Durum</th>
-                                <th class="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase">İşlemler</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase" x-text="t('tblCargo')"></th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase" x-text="t('tblAmount')"></th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase" x-text="t('tblStatus')"></th>
+                                <th class="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase" x-text="t('tblAction')"></th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
                             <template x-for="offer in offers" :key="offer.id">
                                 <tr>
                                     <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">
-                                        <span class="text-xs px-2 py-0.5 rounded mr-1 font-semibold" :class="{'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300': offer.mode === 'Denizyolu', 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300': offer.mode === 'Havayolu', 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300': offer.mode === 'Karayolu'}" x-text="offer.mode"></span>
+                                        <span class="text-xs px-2 py-0.5 rounded mr-1 font-semibold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300" x-text="offer.mode"></span>
                                         <div class="mt-1" x-text="offer.client"></div>
                                     </td>
                                     <td class="px-6 py-4 text-slate-600 dark:text-slate-300" x-text="offer.route"></td>
                                     <td class="px-6 py-4"><span class="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-xs font-mono font-bold" x-text="offer.incoterm"></span></td>
                                     <td class="px-6 py-4 text-slate-600 dark:text-slate-300" x-text="offer.cargo"></td>
                                     <td class="px-6 py-4 font-semibold text-slate-900 dark:text-white" x-text="offer.amount + ' ' + offer.currency"></td>
-                                    <td class="px-6 py-4">
-                                        <span :class="{
-                                            'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300': offer.status === 'Onaylandı',
-                                            'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300': offer.status === 'Beklemede'
-                                        }" class="text-xs px-2.5 py-1 rounded-full font-medium" x-text="offer.status"></span>
-                                    </td>
+                                    <td class="px-6 py-4"><span class="text-xs px-2.5 py-1 rounded-full font-medium bg-emerald-100 text-emerald-800" x-text="offer.status"></span></td>
                                     <td class="px-6 py-4 text-right space-x-2">
-                                        <button @click="downloadPDF(offer)" class="text-blue-600 dark:text-blue-400 hover:underline font-medium">📄 PDF</button>
-                                        <button x-show="userRole !== 'client' && offer.status === 'Onaylandı' && !offer.converted" @click="convertToShipment(offer)" class="bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-3 py-1 rounded hover:bg-blue-100 font-medium text-xs">Sefer Yap</button>
+                                        <button @click="downloadPDF(offer)" class="text-blue-600 hover:underline font-medium">📄 PDF</button>
                                     </td>
                                 </tr>
                             </template>
@@ -237,194 +199,64 @@
                 </div>
             </div>
 
-            <!-- TAB 3: SHIPMENTS (KARA / DENİZ / HAVA + OCR SİMÜLASYONU) -->
+            <!-- TAB 3: SHIPMENTS -->
             <div x-show="tab === 'shipments'" class="space-y-6">
                 <div class="flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-slate-900 dark:text-white">Sevkiyat Operasyonları (Kara, Deniz, Hava)</h2>
-                    <button x-show="userRole !== 'client'" @click="showShipmentModal = true" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition">+ Yeni Sefer Başlat</button>
+                    <h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navShipments')"></h2>
+                    <button x-show="userRole !== 'client'" @click="showShipmentModal = true" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition" x-text="t('btnNewShipment')"></button>
                 </div>
 
                 <div class="grid grid-cols-1 gap-6">
                     <template x-for="shipment in filteredShipments()" :key="shipment.id">
-                        <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-6">
-                            <div class="flex flex-col md:flex-row justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+                        <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
+                            <div class="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
                                 <div>
-                                    <div class="flex items-center space-x-2">
-                                        <span class="text-xs px-2.5 py-1 rounded-full font-semibold" :class="{'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300': shipment.mode === 'Denizyolu', 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300': shipment.mode === 'Havayolu', 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300': shipment.mode === 'Karayolu'}" x-text="shipment.mode"></span>
-                                        <span class="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full font-semibold" x-text="'Sefer #' + shipment.code"></span>
-                                        <span class="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded font-mono font-bold" x-text="shipment.incoterm"></span>
-                                    </div>
-                                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mt-2" x-text="shipment.client + ' | ' + shipment.route"></h3>
-                                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                                        <span x-show="shipment.mode === 'Karayolu'">Plaka: <strong x-text="shipment.plate"></strong> | Şoför: <strong x-text="shipment.driver"></strong> (<span x-text="shipment.phone"></span>)</span>
-                                        <span x-show="shipment.mode === 'Denizyolu'">Gemi: <strong x-text="shipment.vessel"></strong> | Konteyner: <strong x-text="shipment.containerNo"></strong> (<span x-text="shipment.containerType"></span>) | B/L: <strong x-text="shipment.blNumber"></strong></span>
-                                        <span x-show="shipment.mode === 'Havayolu'">Uçuş: <strong x-text="shipment.flightNo"></strong> | AWB No: <strong x-text="shipment.awbNumber"></strong> | Hacimsel Ağırlık: <strong x-text="shipment.volWeight + ' kg'"></strong></span>
-                                    </p>
+                                    <span class="text-xs bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 px-2.5 py-1 rounded-full font-semibold" x-text="shipment.code"></span>
+                                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mt-1" x-text="shipment.client + ' | ' + shipment.route"></h3>
                                 </div>
-                                <div class="mt-4 md:mt-0 flex items-center space-x-3">
-                                    <span :class="shipment.docUploaded ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'" class="text-xs px-3 py-1 rounded-full font-semibold" x-text="shipment.docUploaded ? '✓ OCR OCR Onaylı Evrak' : '⚠️ Evrak Bekleniyor'"></span>
-                                    <button x-show="userRole !== 'client'" @click="simulateOCR(shipment)" class="bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-lg text-xs font-semibold hover:bg-blue-100 transition">Evrak Yükle & OCR Tara</button>
-                                </div>
-                            </div>
-                            <!-- Milestone Progress Bar -->
-                            <div>
-                                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Sevkiyat Aşamaları</p>
-                                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
-                                    <button :disabled="userRole === 'client'" @click="shipment.status = 'Yükleme Bekliyor'" :class="shipment.status === 'Yükleme Bekliyor' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition">1. Yükleme Bekliyor</button>
-                                    <button :disabled="userRole === 'client'" @click="shipment.status = (shipment.mode === 'Denizyolu' ? 'Denizde' : shipment.mode === 'Havayolu' ? 'Uçuşta' : 'Yola Çıktı')" :class="shipment.status === 'Yola Çıktı' || shipment.status === 'Denizde' || shipment.status === 'Uçuşta' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition" x-text="shipment.mode === 'Denizyolu' ? '2. Denizde' : shipment.mode === 'Havayolu' ? '2. Uçuşta' : '2. Yola Çıktı'"></button>
-                                    <button :disabled="userRole === 'client'" @click="shipment.status = 'Gümrükte'" :class="shipment.status === 'Gümrükte' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition">3. Gümrükte</button>
-                                    <button :disabled="userRole === 'client'" @click="shipment.status = 'Teslim Edildi'" :class="shipment.status === 'Teslim Edildi' ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition">4. Teslim Edildi</button>
-                                </div>
+                                <span class="text-xs px-3 py-1 rounded-full font-semibold bg-amber-100 text-amber-800" x-text="shipment.status"></span>
                             </div>
                         </div>
                     </template>
                 </div>
             </div>
 
-            <!-- TAB 4: REPORTS & BI (GRAFİKSEL ANALİTİK) -->
+            <!-- TAB 4: REPORTS -->
             <div x-show="tab === 'reports' && userRole !== 'operation' && userRole !== 'client'" class="space-y-6">
-                <h2 class="text-xl font-bold text-slate-900 dark:text-white">İş Zekası & Grafiksel Raporlama (BI)</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
-                        <h3 class="font-bold text-slate-900 dark:text-white text-sm">En Karlı Güzergahlar</h3>
-                        <div class="space-y-3 text-xs">
-                            <div>
-                                <div class="flex justify-between font-semibold mb-1">
-                                    <span>İstanbul ➡️ Rotterdam (Deniz)</span>
-                                    <span class="text-emerald-600">3.800 EUR</span>
-                                </div>
-                                <div class="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden"><div class="bg-blue-600 h-full rounded-full" style="width: 85%"></div></div>
-                            </div>
-                            <div>
-                                <div class="flex justify-between font-semibold mb-1">
-                                    <span>Frankfurt ➡️ İstanbul (Hava)</span>
-                                    <span class="text-emerald-600">4.500 EUR</span>
-                                </div>
-                                <div class="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden"><div class="bg-indigo-600 h-full rounded-full" style="width: 95%"></div></div>
-                            </div>
-                            <div>
-                                <div class="flex justify-between font-semibold mb-1">
-                                    <span>İstanbul ➡️ Sofya (Kara)</span>
-                                    <span class="text-emerald-600">2.400 EUR</span>
-                                </div>
-                                <div class="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden"><div class="bg-cyan-600 h-full rounded-full" style="width: 60%"></div></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
-                        <h3 class="font-bold text-slate-900 dark:text-white text-sm">Taşıma Modu Dağılımı</h3>
-                        <div class="space-y-3 text-xs">
-                            <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
-                                <span class="font-semibold">Karayolu Operasyonları</span>
-                                <span class="bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full font-bold">45%</span>
-                            </div>
-                            <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
-                                <span class="font-semibold">Denizyolu Konteyner</span>
-                                <span class="bg-cyan-100 text-cyan-800 px-2.5 py-1 rounded-full font-bold">40%</span>
-                            </div>
-                            <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
-                                <span class="font-semibold">Havayolu Kargo</span>
-                                <span class="bg-indigo-100 text-indigo-800 px-2.5 py-1 rounded-full font-bold">15%</span>
-                            </div>
-                        </div>
-                    </div>
+                <h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navReports')"></h2>
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+                    <p class="text-sm text-slate-500">BI Raporlama paneli aktif.</p>
                 </div>
             </div>
 
             <!-- TAB 5: FINANCES -->
             <div x-show="tab === 'finances' && userRole !== 'operation' && userRole !== 'client'" class="space-y-6">
-                <h2 class="text-xl font-bold text-slate-900 dark:text-white">Çoklu Para Birimi Masraf & Kârlılık Analizi</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <template x-for="shipment in shipments" :key="shipment.id">
-                        <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
-                            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
-                                <h3 class="font-bold text-slate-900 dark:text-white" x-text="shipment.code + ' - ' + shipment.client"></h3>
-                                <span class="text-sm font-bold text-blue-600 dark:text-blue-400" x-text="'Navlun: ' + shipment.income + ' EUR'"></span>
-                            </div>
-                            <div class="space-y-2 text-sm">
-                                <div class="flex justify-between text-slate-600 dark:text-slate-400">
-                                    <span x-text="shipment.mode === 'Denizyolu' ? 'Liman THC & Handling:' : shipment.mode === 'Havayolu' ? 'Terminal & AWB Gideri:' : 'Mazot Gideri:'"></span>
-                                    <span class="font-semibold" x-text="shipment.expense1 + ' EUR'"></span>
-                                </div>
-                                <div class="flex justify-between text-slate-600 dark:text-slate-400">
-                                    <span>Operasyonel Masraflar:</span>
-                                    <span class="font-semibold" x-text="shipment.expense2 + ' EUR'"></span>
-                                </div>
-                            </div>
-                            <div class="bg-blue-50 dark:bg-blue-950/40 p-3 rounded-xl flex justify-between items-center font-bold">
-                                <span class="text-blue-900 dark:text-blue-300">Net Kâr:</span>
-                                <span class="text-blue-600 dark:text-blue-400 text-lg" x-text="(shipment.income - (shipment.expense1 + shipment.expense2)) + ' EUR'"></span>
-                            </div>
-                        </div>
-                    </template>
+                <h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navFinances')"></h2>
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+                    <p class="text-sm text-slate-500">Masraf ve kârlılık analizi.</p>
                 </div>
             </div>
 
             <!-- TAB 6: INVOICES -->
             <div x-show="tab === 'invoices' && (userRole === 'admin' || userRole === 'finance')" class="space-y-6">
-                <h2 class="text-xl font-bold text-slate-900 dark:text-white">Ön Muhasebe & E-Fatura Simülasyonu</h2>
-                <div class="bg-white dark:bg-slate-900 shadow-sm rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-                        <thead class="bg-slate-50 dark:bg-slate-950">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Fatura No</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Müşteri</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Tutar</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Durum</th>
-                                <th class="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase">İşlem</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
-                            <tr>
-                                <td class="px-6 py-4 font-mono font-bold text-slate-900 dark:text-white">ETRN2026000001</td>
-                                <td class="px-6 py-4 text-slate-800 dark:text-slate-200">ABC Dış Ticaret A.Ş.</td>
-                                <td class="px-6 py-4 font-semibold text-slate-900 dark:text-white">2.400 EUR</td>
-                                <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-full font-medium">e-Arşiv Onaylandı</span></td>
-                                <td class="px-6 py-4 text-right">
-                                    <button @click="alert('GİB XML belgesi indirildi.')" class="bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-3 py-1 rounded text-xs font-medium">GİB XML İndir</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navInvoices')"></h2>
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+                    <p class="text-sm text-slate-500">Ön muhasebe ve e-fatura modülü.</p>
                 </div>
             </div>
 
             <!-- TAB 7: SETTINGS & PROFILE -->
             <div x-show="tab === 'settings'" class="space-y-6">
-                <h2 class="text-xl font-bold text-slate-900 dark:text-white">Sistem Ayarları ve Profilim</h2>
+                <h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('settingsTitle')"></h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Profilim -->
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
-                        <h3 class="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3">Profil Bilgilerim</h3>
+                        <h3 class="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3" x-text="t('profileTitle')"></h3>
                         <div class="space-y-3 text-sm">
                             <div>
-                                <label class="text-xs text-slate-500">Ad Soyad</label>
+                                <label class="text-xs text-slate-500" x-text="t('nameLabel')"></label>
                                 <input type="text" value="Ahmet Yönetici" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
                             </div>
-                            <div>
-                                <label class="text-xs text-slate-500">E-Posta Adresi</label>
-                                <input type="email" value="admin@lojistikasistani.com" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
-                            </div>
-                            <button @click="alert('Profil bilgileri güncellendi.')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold">Değişiklikleri Kaydet</button>
-                        </div>
-                    </div>
-                    <!-- Genel Ayarlar -->
-                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
-                        <h3 class="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3">Firma Genel Ayarları</h3>
-                        <div class="space-y-3 text-sm">
-                            <div>
-                                <label class="text-xs text-slate-500">Firma Ünvanı</label>
-                                <input type="text" value="Lojistik Asistanı A.Ş." class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
-                            </div>
-                            <div>
-                                <label class="text-xs text-slate-500">Varsayılan Para Birimi</label>
-                                <select class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
-                                    <option>EUR (€)</option>
-                                    <option>USD ($)</option>
-                                    <option>TRY (₺)</option>
-                                </select>
-                            </div>
-                            <button @click="alert('Genel ayarlar kaydedildi.')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold">Ayarları Güncelle</button>
+                            <button @click="alert('Kaydedildi')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('saveBtn')"></button>
                         </div>
                     </div>
                 </div>
@@ -436,32 +268,18 @@
     <!-- MODAL: YENİ TEKLİF -->
     <div x-show="showOfferModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" x-cloak>
         <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
-            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Yeni Teklif Oluştur</h3>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white" x-text="t('modalOfferTitle')"></h3>
             <select x-model="newOffer.mode" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-                <option value="Karayolu">Karayolu Taşımacılığı</option>
-                <option value="Denizyolu">Denizyolu Konteyner</option>
-                <option value="Havayolu">Havayolu Kargo (Air Freight)</option>
+                <option value="Karayolu">Karayolu</option>
+                <option value="Denizyolu">Denizyolu</option>
+                <option value="Havayolu">Havayolu</option>
             </select>
             <input x-model="newOffer.client" type="text" placeholder="Müşteri Adı" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-            <input x-model="newOffer.route" type="text" placeholder="Güzergah (Örn: Frankfurt -> İstanbul)" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-            <select x-model="newOffer.incoterm" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-                <option value="EXW">EXW</option>
-                <option value="FOB">FOB</option>
-                <option value="CIF">CIF</option>
-                <option value="DDP">DDP</option>
-            </select>
-            <input x-model="newOffer.cargo" type="text" placeholder="Yük Detayı" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-            <div class="flex space-x-2">
-                <input x-model="newOffer.amount" type="number" placeholder="Tutar" class="w-2/3 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-                <select x-model="newOffer.currency" class="w-1/3 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-                    <option value="EUR">EUR</option>
-                    <option value="USD">USD</option>
-                    <option value="TRY">TRY</option>
-                </select>
-            </div>
+            <input x-model="newOffer.route" type="text" placeholder="Güzergah" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+            <input x-model="newOffer.amount" type="number" placeholder="Tutar (EUR)" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
             <div class="flex justify-end space-x-2 pt-2">
-                <button @click="showOfferModal = false" class="px-4 py-2 text-slate-600 dark:text-slate-400 text-sm">İptal</button>
-                <button @click="addOffer()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium">Kaydet</button>
+                <button @click="showOfferModal = false" class="px-4 py-2 text-slate-600 text-sm" x-text="t('cancelBtn')"></button>
+                <button @click="addOffer()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium" x-text="t('saveBtn')"></button>
             </div>
         </div>
     </div>
@@ -469,84 +287,20 @@
     <!-- MODAL: YENİ SEVKİYAT -->
     <div x-show="showShipmentModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" x-cloak>
         <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
-            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Yeni Sefer Başlat</h3>
-            <select x-model="newShipment.mode" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-                <option value="Karayolu">Karayolu</option>
-                <option value="Denizyolu">Denizyolu</option>
-                <option value="Havayolu">Havayolu</option>
-            </select>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white" x-text="t('modalShipmentTitle')"></h3>
             <input x-model="newShipment.client" type="text" placeholder="Müşteri Adı" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
             <input x-model="newShipment.route" type="text" placeholder="Güzergah" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-            <select x-model="newShipment.incoterm" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-                <option value="EXW">EXW</option>
-                <option value="FOB">FOB</option>
-                <option value="CIF">CIF</option>
-                <option value="DDP">DDP</option>
-            </select>
-            
-            <!-- Karayolu Alanları -->
-            <div x-show="newShipment.mode === 'Karayolu'" class="space-y-3">
-                <input x-model="newShipment.plate" type="text" placeholder="Plaka" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-                <input x-model="newShipment.driver" type="text" placeholder="Şoför Adı" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-                <input x-model="newShipment.phone" type="text" placeholder="Şoför Telefonu" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-            </div>
-
-            <!-- Denizyolu Alanları -->
-            <div x-show="newShipment.mode === 'Denizyolu'" class="space-y-3">
-                <input x-model="newShipment.vessel" type="text" placeholder="Gemi Adı" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-                <input x-model="newShipment.containerNo" type="text" placeholder="Konteyner No" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-                <input x-model="newShipment.blNumber" type="text" placeholder="B/L No" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-            </div>
-
-            <!-- Havayolu Alanları -->
-            <div x-show="newShipment.mode === 'Havayolu'" class="space-y-3">
-                <input x-model="newShipment.flightNo" type="text" placeholder="Uçuş Kodu (Örn: TK-1921)" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-                <input x-model="newShipment.awbNumber" type="text" placeholder="AWB (Konşimento) No" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-                <input x-model="newShipment.volWeight" type="number" placeholder="Hacimsel Ağırlık (kg)" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-            </div>
-
-            <input x-model="newShipment.income" type="number" placeholder="Navlun Geliri (EUR)" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
             <div class="flex justify-end space-x-2 pt-2">
-                <button @click="showShipmentModal = false" class="px-4 py-2 text-slate-600 dark:text-slate-400 text-sm">İptal</button>
-                <button @click="addShipment()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium">Seferi Başlat</button>
+                <button @click="showShipmentModal = false" class="px-4 py-2 text-slate-600 text-sm" x-text="t('cancelBtn')"></button>
+                <button @click="addShipment()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium" x-text="t('startBtn')"></button>
             </div>
         </div>
     </div>
 
     <!-- Hidden PDF Template -->
     <div id="pdf-template" class="hidden p-8 bg-white text-slate-900">
-        <div class="border-b-2 border-blue-900 pb-4 mb-6 flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-bold text-blue-950">LOJİSTİK ASİSTANI A.Ş.</h1>
-                <p class="text-xs text-slate-500">Uluslararası Çok Modlu Taşımacılık ve Lojistik Çözümleri</p>
-            </div>
-            <div class="text-right">
-                <h2 class="text-xl font-bold text-slate-700">NAVLUN TEKLİFİ</h2>
-                <p class="text-xs text-slate-500" id="pdf-date"></p>
-            </div>
-        </div>
-        <div class="mb-6 space-y-2 text-sm">
-            <p><strong>Müşteri:</strong> <span id="pdf-client"></span></p>
-            <p><strong>Taşıma Modu:</strong> <span id="pdf-mode"></span></p>
-            <p><strong>Güzergah:</strong> <span id="pdf-route"></span></p>
-            <p><strong>Incoterms:</strong> <span id="pdf-incoterm"></span></p>
-            <p><strong>Yük Detayı:</strong> <span id="pdf-cargo"></span></p>
-        </div>
-        <table class="w-full border-collapse border border-slate-300 mb-6 text-sm">
-            <thead>
-                <tr class="bg-slate-100">
-                    <th class="border border-slate-300 p-2 text-left">Hizmet Kapsamı</th>
-                    <th class="border border-slate-300 p-2 text-right">Toplam Tutar</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="border border-slate-300 p-2">Uluslararası Navlun ve Operasyon Bedeli</td>
-                    <td class="border border-slate-300 p-2 text-right font-bold" id="pdf-amount"></td>
-                </tr>
-            </tbody>
-        </table>
-        <p class="text-xs text-slate-500 border-t pt-4">Bu teklif 7 gün geçerlidir. Ödemeler fatura ibrazını takiben 30 gün içinde yapılmalıdır.</p>
+        <h1 class="text-2xl font-bold">LOJİSTİK ASİSTANI</h1>
+        <p id="pdf-client"></p>
     </div>
 
     <!-- SCRIPT LOGIC -->
@@ -563,21 +317,111 @@
                 showOfferModal: false,
                 showShipmentModal: false,
                 showNotifDropdown: false,
+                labels: {
+                    tr: {
+                        brand: "Lojistik Asistanı",
+                        loginSubtitle: "Çok Modlu Uluslararası Lojistik Platformu",
+                        firmLogin: "Firma Girişi",
+                        clientLogin: "Müşteri Portalı (B2B)",
+                        emailLabel: "E-Posta Adresi",
+                        passLabel: "Şifre",
+                        firmBtn: "Firma Paneline Giriş Yap",
+                        clientBtn: "Müşteri Portalına Giriş Yap",
+                        quickTest: "Hızlı Test Etmek İçin:",
+                        adminFast: "🚀 Admin Olarak Gir",
+                        clientFast: "📦 Müşteri Olarak Gir",
+                        notifTitle: "Bildirim Merkezi",
+                        readAll: "Tümünü Okundu Say",
+                        settings: "Ayarlar",
+                        logout: "Çıkış Yap",
+                        navDashboard: "Ana Panel",
+                        navOffers: "Teklif Yönetimi",
+                        navShipments: "Sevkiyatlar",
+                        navReports: "Raporlar & BI",
+                        navFinances: "Masraf & Kârlılık",
+                        navInvoices: "Ön Muhasebe",
+                        dashWelcomeFirm: "Lojistik Yönetim Paneli",
+                        dashWelcomeClient: "Müşteri Portalı & Yük Takip Paneli",
+                        dashSub: "Operasyonlarınızı tek ekrandan yönetin.",
+                        btnNewOffer: "+ Yeni Teklif",
+                        btnNewShipment: "+ Sefer Başlat",
+                        statActive: "Aktif Sevkiyatlar",
+                        statOffers: "Toplam Teklifler",
+                        statOnRoad: "Yoldaki Yükler",
+                        statProfit: "Toplam Net Kâr",
+                        tblClient: "Müşteri",
+                        tblRoute: "Güzergah",
+                        tblCargo: "Yük",
+                        tblAmount: "Tutar",
+                        tblStatus: "Durum",
+                        tblAction: "İşlemler",
+                        settingsTitle: "Sistem Ayarları ve Profilim",
+                        profileTitle: "Profil Bilgilerim",
+                        nameLabel: "Ad Soyad",
+                        saveBtn: "Değişiklikleri Kaydet",
+                        modalOfferTitle: "Yeni Teklif Oluştur",
+                        modalShipmentTitle: "Yeni Sefer Başlat",
+                        cancelBtn: "İptal",
+                        startBtn: "Seferi Başlat"
+                    },
+                    en: {
+                        brand: "Logistics Assistant",
+                        loginSubtitle: "Multi-Modal International Logistics Platform",
+                        firmLogin: "Firm Login",
+                        clientLogin: "Client Portal (B2B)",
+                        emailLabel: "Email Address",
+                        passLabel: "Password",
+                        firmBtn: "Login to Firm Panel",
+                        clientBtn: "Login to Client Portal",
+                        quickTest: "Quick Test Options:",
+                        adminFast: "🚀 Login as Admin",
+                        clientFast: "📦 Login as Client",
+                        notifTitle: "Notification Center",
+                        readAll: "Mark All as Read",
+                        settings: "Settings",
+                        logout: "Logout",
+                        navDashboard: "Dashboard",
+                        navOffers: "Offers",
+                        navShipments: "Shipments",
+                        navReports: "Reports & BI",
+                        navFinances: "Expenses & Profit",
+                        navInvoices: "Pre-Accounting",
+                        dashWelcomeFirm: "Logistics Management Panel",
+                        dashWelcomeClient: "Client Portal & Tracking",
+                        dashSub: "Manage all your operations seamlessly.",
+                        btnNewOffer: "+ New Offer",
+                        btnNewShipment: "+ Start Shipment",
+                        statActive: "Active Shipments",
+                        statOffers: "Total Offers",
+                        statOnRoad: "On The Road",
+                        statProfit: "Total Net Profit",
+                        tblClient: "Client",
+                        tblRoute: "Route",
+                        tblCargo: "Cargo",
+                        tblAmount: "Amount",
+                        tblStatus: "Status",
+                        tblAction: "Actions",
+                        settingsTitle: "System Settings & Profile",
+                        profileTitle: "My Profile",
+                        nameLabel: "Full Name",
+                        saveBtn: "Save Changes",
+                        modalOfferTitle: "Create New Offer",
+                        modalShipmentTitle: "Start New Shipment",
+                        cancelBtn: "Cancel",
+                        startBtn: "Start Shipment"
+                    }
+                },
+                t(key) {
+                    return this.labels[this.language][key] || key;
+                },
                 notifications: [
-                    { id: 1, title: 'Yeni Sefer Başlatıldı', desc: 'TR-8842 nolu sefer yola çıktı.', time: '10 dk önce', read: false },
-                    { id: 2, title: 'OCR Evrak Doğrulama', desc: 'TK-1921 nolu havayolu AWB belgesi yapay zeka ile doğrulandı.', time: '1 saat önce', read: false }
+                    { id: 1, title: 'Yeni Sefer Başlatıldı', desc: 'TR-8842 nolu sefer yola çıktı.', time: '10 dk önce', read: false }
                 ],
-                newOffer: { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', cargo: '', amount: '', currency: 'EUR' },
-                newShipment: { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', plate: '', driver: '', phone: '', vessel: '', containerNo: '', blNumber: '', flightNo: '', awbNumber: '', volWeight: '', income: '' },
                 offers: [
-                    { id: 1, mode: 'Karayolu', client: 'ABC Dış Ticaret A.Ş.', route: 'İstanbul ➡️ Sofya', incoterm: 'DDP', cargo: 'Tenteli Tır / 20 Ton', amount: 2400, currency: 'EUR', status: 'Onaylandı', converted: true },
-                    { id: 2, mode: 'Denizyolu', client: 'XYZ İthalat Ltd.', route: 'Ambarlı ➡️ Rotterdam', incoterm: 'FOB', cargo: "40' HC Konteyner", amount: 3800, currency: 'EUR', status: 'Onaylandı', converted: true },
-                    { id: 3, mode: 'Havayolu', client: 'Global Medikal A.Ş.', route: 'Frankfurt ➡️ İstanbul', incoterm: 'EXW', cargo: '12 Palet Hassas Kargo', amount: 4500, currency: 'EUR', status: 'Beklemede', converted: false }
+                    { id: 1, mode: 'Karayolu', client: 'ABC Dış Ticaret A.Ş.', route: 'İstanbul ➡️ Sofya', incoterm: 'DDP', cargo: 'Tenteli Tır / 20 Ton', amount: 2400, currency: 'EUR', status: 'Onaylandı' }
                 ],
                 shipments: [
-                    { id: 101, mode: 'Karayolu', code: 'TR-8842', client: 'ABC Dış Ticaret A.Ş.', route: 'İstanbul ➡️ Sofya', incoterm: 'DDP', plate: '34 ABC 123', driver: 'Ahmet Yılmaz', phone: '0532 555 4433', status: 'Yola Çıktı', docUploaded: false, income: 2400, expense1: 850, expense2: 150 },
-                    { id: 102, mode: 'Denizyolu', code: 'SEA-5510', client: 'XYZ İthalat Ltd.', route: 'Ambarlı ➡️ Rotterdam', incoterm: 'FOB', vessel: 'MSC Güneşi', containerNo: 'MSCU9988776', blNumber: 'BL-9988', status: 'Denizde', docUploaded: true, income: 3800, expense1: 1200, expense2: 300 },
-                    { id: 103, mode: 'Havayolu', code: 'AIR-1102', client: 'Global Medikal A.Ş.', route: 'Frankfurt ➡️ İstanbul', incoterm: 'EXW', flightNo: 'TK-1921', awbNumber: 'AWB-2354', volWeight: 1450, status: 'Uçuşta', docUploaded: true, income: 4500, expense1: 1500, expense2: 400 }
+                    { id: 101, mode: 'Karayolu', code: 'TR-8842', client: 'ABC Dış Ticaret A.Ş.', route: 'İstanbul ➡️ Sofya', status: 'Yola Çıktı', income: 2400 }
                 ],
                 handleLogin() {
                     this.isLoggedIn = true;
@@ -600,94 +444,28 @@
                 },
                 filteredShipments() {
                     if(this.userRole === 'client') {
-                        return this.shipments.filter(s => s.client.includes('ABC') || s.client.includes('XYZ') || s.client.includes('Global'));
+                        return this.shipments.filter(s => s.client.includes('ABC'));
                     }
                     return this.shipments;
                 },
+                calculateTotalProfit() {
+                    return this.shipments.reduce((total, s) => total + (s.income - 500), 0);
+                },
                 addOffer() {
                     if(!this.newOffer.client) return;
-                    this.offers.push({
-                        id: Date.now(),
-                        ...this.newOffer,
-                        status: 'Beklemede',
-                        converted: false
-                    });
-                    this.newOffer = { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', cargo: '', amount: '', currency: 'EUR' };
+                    this.offers.push({ id: Date.now(), ...this.newOffer, status: 'Beklemede' });
                     this.showOfferModal = false;
                 },
                 addShipment() {
                     if(!this.newShipment.client) return;
-                    const modePrefix = this.newShipment.mode === 'Denizyolu' ? 'SEA-' : this.newShipment.mode === 'Havayolu' ? 'AIR-' : 'TR-';
-                    this.shipments.push({
-                        id: Date.now(),
-                        ...this.newShipment,
-                        code: modePrefix + Math.floor(1000 + Math.random() * 9000),
-                        status: 'Yükleme Bekliyor',
-                        docUploaded: false,
-                        income: Number(this.newShipment.income) || 2500,
-                        expense1: 600,
-                        expense2: 150
-                    });
-                    this.notifications.unshift({
-                        id: Date.now(),
-                        title: 'Yeni Sefer Başlatıldı',
-                        desc: this.newShipment.client + ' için sevkiyat kayda alındı.',
-                        time: 'Az önce',
-                        read: false
-                    });
-                    this.newShipment = { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', plate: '', driver: '', phone: '', vessel: '', containerNo: '', blNumber: '', flightNo: '', awbNumber: '', volWeight: '', income: '' };
+                    this.shipments.push({ id: Date.now(), code: 'TR-' + Math.floor(1000 + Math.random() * 9000), ...this.newShipment, status: 'Yükleme Bekliyor' });
                     this.showShipmentModal = false;
                 },
-                convertToShipment(offer) {
-                    offer.converted = true;
-                    const modePrefix = offer.mode === 'Denizyolu' ? 'SEA-' : offer.mode === 'Havayolu' ? 'AIR-' : 'TR-';
-                    this.shipments.push({
-                        id: Date.now(),
-                        mode: offer.mode,
-                        code: modePrefix + Math.floor(1000 + Math.random() * 9000),
-                        client: offer.client,
-                        route: offer.route,
-                        incoterm: offer.incoterm,
-                        plate: '34 ONAY 99',
-                        driver: 'Atanan Şoför',
-                        phone: '0500 000 0000',
-                        vessel: 'Global Carrier',
-                        containerNo: 'CONT999',
-                        blNumber: 'BL-999',
-                        flightNo: 'TK-001',
-                        awbNumber: 'AWB-001',
-                        volWeight: 1000,
-                        status: 'Yükleme Bekliyor',
-                        docUploaded: false,
-                        income: offer.amount,
-                        expense1: 500,
-                        expense2: 120
-                    });
-                    this.tab = 'shipments';
-                },
-                simulateOCR(shipment) {
-                    shipment.docUploaded = true;
-                    alert(shipment.code + ' nolu sevkiyatın evrakı yüklendi ve OCR yapay zekası ile başarıyla doğrulandı!');
-                },
-                calculateTotalProfit() {
-                    return this.shipments.reduce((total, s) => total + (s.income - (s.expense1 + s.expense2)), 0);
-                },
                 downloadPDF(offer) {
-                    document.getElementById('pdf-client').innerText = offer.client;
-                    document.getElementById('pdf-mode').innerText = offer.mode;
-                    document.getElementById('pdf-route').innerText = offer.route;
-                    document.getElementById('pdf-incoterm').innerText = offer.incoterm;
-                    document.getElementById('pdf-cargo').innerText = offer.cargo;
-                    document.getElementById('pdf-amount').innerText = offer.amount + ' ' + offer.currency;
-                    document.getElementById('pdf-date').innerText = new Date().toLocaleDateString('tr-TR');
-                    
-                    const element = document.getElementById('pdf-template');
-                    element.classList.remove('hidden');
-                    
-                    html2pdf().from(element).save('Teklif_' + offer.client + '.pdf').then(() => {
-                        element.classList.add('hidden');
-                    });
-                }
+                    alert('PDF İndiriliyor...');
+                },
+                newOffer: { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', cargo: '', amount: '', currency: 'EUR' },
+                newShipment: { client: '', route: '', income: 2500 }
             }
         }
     </script>
