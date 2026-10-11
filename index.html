@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lojistik Asistanı</title>
+    <title>Lojistik Asistanı - Kurumsal SaaS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -14,32 +14,74 @@
     <!-- HTML to PDF Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans antialiased min-h-screen flex flex-col transition-colors duration-200">
-    <div class="flex-grow flex flex-col">
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans antialiased min-h-screen flex flex-col transition-colors duration-200">
+
+    <!-- 1. GİRİŞ (LOGIN) EKRANI -->
+    <div x-show="!isLoggedIn" class="flex-grow flex items-center justify-center p-4 bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900" x-cloak>
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 max-w-md w-full shadow-2xl border border-blue-900/20 space-y-6">
+            <div class="text-center space-y-2">
+                <h1 class="text-2xl font-bold tracking-tight text-blue-950 dark:text-white">Lojistik Asistanı</h1>
+                <p class="text-xs text-slate-500">Çok Modlu Uluslararası Lojistik Platformu</p>
+            </div>
+
+            <!-- Giriş Sekmeleri -->
+            <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-sm font-medium">
+                <button @click="loginType = 'firm'" :class="loginType === 'firm' ? 'bg-blue-600 text-white shadow' : 'text-slate-600 dark:text-slate-400'" class="flex-1 py-2 rounded-lg transition">Firma Girişi</button>
+                <button @click="loginType = 'client'" :class="loginType === 'client' ? 'bg-blue-600 text-white shadow' : 'text-slate-600 dark:text-slate-400'" class="flex-1 py-2 rounded-lg transition">Müşteri Girişi (B2B)</button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">E-Posta Adresi</label>
+                    <input type="email" x-model="loginEmail" placeholder="ornek@sirket.com" class="w-full mt-1 p-3 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">Şifre</label>
+                    <input type="password" placeholder="••••••••" class="w-full mt-1 p-3 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                </div>
+
+                <button @click="handleLogin()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition">
+                    <span x-text="loginType === 'firm' ? 'Firma Paneline Giriş Yap' : 'Müşteri Portalına Giriş Yap'"></span>
+                </button>
+            </div>
+
+            <!-- Hızlı Test Girişleri -->
+            <div class="border-t border-slate-200 dark:border-slate-800 pt-4 space-y-2">
+                <p class="text-[11px] text-center text-slate-400 uppercase tracking-wider font-bold">Hızlı Test Etmek İçin:</p>
+                <div class="grid grid-cols-2 gap-2">
+                    <button @click="quickLogin('admin')" class="bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 hover:bg-blue-100 p-2 rounded-xl text-xs font-semibold transition">🚀 Admin Olarak Gir</button>
+                    <button @click="quickLogin('client')" class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 p-2 rounded-xl text-xs font-semibold transition">📦 Müşteri Olarak Gir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. ANA UYGULAMA (GİRİŞ YAPILDIKTAN SONRA) -->
+    <div x-show="isLoggedIn" class="flex-grow flex flex-col" x-cloak>
         <!-- Header / Navbar -->
-        <header class="bg-indigo-900 dark:bg-slate-950 text-white shadow-md">
+        <header class="bg-blue-950 dark:bg-slate-900 text-white shadow-lg border-b border-blue-900/50">
             <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
                 <div class="flex items-center space-x-3">
-                    <span class="text-2xl font-bold">Lojistik Asistanı</span>
-                    <span class="bg-indigo-700 dark:bg-indigo-900 text-xs px-2.5 py-1 rounded-full uppercase tracking-wider font-semibold">Multi-Modal Pro</span>
+                    <span class="text-2xl font-bold tracking-tight">Lojistik Asistanı</span>
+                    <span class="bg-blue-600 text-white text-xs px-2.5 py-1 rounded-full uppercase tracking-wider font-semibold" x-text="userRole === 'client' ? 'Müşteri Portalı' : 'Enterprise SaaS'"></span>
                 </div>
                 
                 <div class="flex items-center space-x-3">
                     <!-- Notification Bell -->
                     <div class="relative">
-                        <button @click="showNotifDropdown = !showNotifDropdown" class="bg-indigo-800 dark:bg-slate-800 hover:bg-indigo-700 dark:hover:bg-slate-700 p-2 rounded-lg relative transition">
+                        <button @click="showNotifDropdown = !showNotifDropdown" class="bg-blue-900 dark:bg-slate-800 hover:bg-blue-800 p-2 rounded-lg relative transition">
                             🔔
                             <span x-show="unreadCount() > 0" class="absolute -top-1 -right-1 bg-rose-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold" x-text="unreadCount()"></span>
                         </button>
                         <!-- Notification Dropdown -->
-                        <div x-show="showNotifDropdown" @click.outside="showNotifDropdown = false" class="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 p-4 z-50 space-y-3" x-cloak>
-                            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-2">
+                        <div x-show="showNotifDropdown" @click.outside="showNotifDropdown = false" class="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 p-4 z-50 space-y-3" x-cloak>
+                            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-2">
                                 <h4 class="font-bold text-slate-900 dark:text-white text-sm">Bildirim Merkezi</h4>
-                                <button @click="markAllAsRead()" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Tümünü Okundu Say</button>
+                                <button @click="markAllAsRead()" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Tümünü Okundu Say</button>
                             </div>
                             <div class="space-y-2 max-h-60 overflow-y-auto">
                                 <template x-for="notif in notifications" :key="notif.id">
-                                    <div :class="notif.read ? 'bg-slate-50 dark:bg-slate-900/40 opacity-75' : 'bg-indigo-50/50 dark:bg-indigo-950/40 border-l-2 border-indigo-600'" class="p-2.5 rounded text-xs space-y-1">
+                                    <div :class="notif.read ? 'bg-slate-50 dark:bg-slate-800/40 opacity-75' : 'bg-blue-50 dark:bg-blue-950/40 border-l-2 border-blue-600'" class="p-2.5 rounded text-xs space-y-1">
                                         <p class="font-semibold text-slate-900 dark:text-white" x-text="notif.title"></p>
                                         <p class="text-slate-600 dark:text-slate-400" x-text="notif.desc"></p>
                                         <span class="text-[10px] text-slate-400" x-text="notif.time"></span>
@@ -50,32 +92,24 @@
                     </div>
 
                     <!-- Dark/Light Mode Switcher -->
-                    <button @click="darkMode = !darkMode" class="bg-indigo-800 dark:bg-slate-800 hover:bg-indigo-700 dark:hover:bg-slate-700 px-3 py-2 rounded-lg text-sm flex items-center space-x-2 transition">
+                    <button @click="darkMode = !darkMode" class="bg-blue-900 dark:bg-slate-800 hover:bg-blue-800 px-3 py-2 rounded-lg text-sm flex items-center space-x-2 transition">
                         <span x-text="darkMode ? '☀️' : '🌙'"></span>
                     </button>
 
-                    <!-- Role Switcher -->
-                    <div class="flex items-center space-x-2 bg-indigo-800 dark:bg-slate-800 px-3 py-1.5 rounded-lg text-sm">
-                        <span class="text-slate-300 text-xs hidden md:inline">Rol:</span>
-                        <select x-model="userRole" class="bg-transparent text-white font-semibold focus:outline-none cursor-pointer">
-                            <option value="admin" class="text-slate-900">Admin (Firma Sahibi)</option>
-                            <option value="operation" class="text-slate-900">Operasyon Sorumlusu</option>
-                            <option value="finance" class="text-slate-900">Muhasebe / Finans</option>
-                            <option value="client" class="text-slate-900">Müşteri Portalı (B2B)</option>
-                        </select>
-                    </div>
+                    <!-- Logout Button -->
+                    <button @click="logout()" class="bg-rose-600 hover:bg-rose-500 text-white px-3 py-2 rounded-lg text-xs font-semibold transition">Çıkış Yap</button>
                 </div>
             </div>
         </header>
 
         <!-- Navigation Tabs -->
-        <nav class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm">
+        <nav class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
             <div class="max-w-7xl mx-auto px-4 flex space-x-6 overflow-x-auto">
-                <button @click="tab = 'dashboard'" :class="tab === 'dashboard' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Ana Panel</button>
-                <button @click="tab = 'offers'" :class="tab === 'offers' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Teklif Yönetimi</button>
-                <button @click="tab = 'shipments'" :class="tab === 'shipments' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Sevkiyatlar (Karayolu & Denizyolu)</button>
-                <button x-show="userRole !== 'operation' && userRole !== 'client'" @click="tab = 'finances'" :class="tab === 'finances' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Masraf & Kârlılık</button>
-                <button x-show="userRole === 'admin' || userRole === 'finance'" @click="tab = 'invoices'" :class="tab === 'invoices' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Ön Muhasebe & E-Fatura</button>
+                <button @click="tab = 'dashboard'" :class="tab === 'dashboard' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Ana Panel</button>
+                <button @click="tab = 'offers'" :class="tab === 'offers' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Teklif Yönetimi</button>
+                <button @click="tab = 'shipments'" :class="tab === 'shipments' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Sevkiyatlar (Karayolu & Denizyolu)</button>
+                <button x-show="userRole !== 'operation' && userRole !== 'client'" @click="tab = 'finances'" :class="tab === 'finances' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Masraf & Kârlılık</button>
+                <button x-show="userRole === 'admin' || userRole === 'finance'" @click="tab = 'invoices'" :class="tab === 'invoices' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Ön Muhasebe & E-Fatura</button>
             </div>
         </nav>
 
@@ -84,34 +118,68 @@
             
             <!-- TAB 1: DASHBOARD -->
             <div x-show="tab === 'dashboard'" class="space-y-6">
+                <!-- Top Quick Actions Bar -->
+                <div class="bg-gradient-to-r from-blue-900 to-blue-950 rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                    <div>
+                        <h2 class="text-2xl font-bold" x-text="userRole === 'client' ? 'Müşteri Portali & Yük Takip Paneli' : 'Lojistik Yönetim Paneli'"></h2>
+                        <p class="text-blue-200 text-sm mt-1">Karayolu ve denizyolu operasyonlarınızı tek ekrandan yönetin.</p>
+                    </div>
+                    <div class="flex space-x-3" x-show="userRole !== 'client'">
+                        <button @click="showOfferModal = true" class="bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-xl font-medium text-sm shadow transition">+ Yeni Teklif</button>
+                        <button @click="showShipmentModal = true" class="bg-white text-blue-950 hover:bg-blue-50 px-4 py-2.5 rounded-xl font-medium text-sm shadow transition">+ Sefer Başlat</button>
+                    </div>
+                </div>
+
+                <!-- Stats Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-                        <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Aktif Sevkiyatlar</p>
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Aktif Sevkiyatlar</p>
                         <p class="text-3xl font-bold text-slate-900 dark:text-white mt-2" x-text="filteredShipments().length"></p>
                     </div>
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-                        <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Toplam Teklifler</p>
-                        <p class="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mt-2" x-text="offers.length"></p>
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Toplam Teklifler</p>
+                        <p class="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-2" x-text="offers.length"></p>
                     </div>
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-                        <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Seferde / Yolda</p>
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Seferdeki Araç / Gemi</p>
                         <p class="text-3xl font-bold text-amber-600 dark:text-amber-400 mt-2" x-text="filteredShipments().filter(s => s.status === 'Yola Çıktı' || s.status === 'Denizde').length"></p>
                     </div>
-                    <div x-show="userRole !== 'operation' && userRole !== 'client'" class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-                        <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Toplam Net Kâr</p>
+                    <div x-show="userRole !== 'operation' && userRole !== 'client'" class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Toplam Net Kâr</p>
                         <p class="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mt-2" x-text="calculateTotalProfit() + ' EUR'"></p>
                     </div>
                 </div>
 
-                <!-- Alert Box -->
-                <div class="bg-amber-50 dark:bg-amber-950/40 border-l-4 border-amber-500 p-4 rounded-r-xl shadow-sm">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-2xl">⚠️</span>
-                        <div>
-                            <h3 class="text-sm font-bold text-amber-800 dark:text-amber-300">Asistan Uyarı Merkezi</h3>
-                            <p class="text-sm text-amber-700 dark:text-amber-400 mt-1">
-                                <span x-text="missingDocCount() > 0 ? missingDocCount() + ' adet sevkiyatın CMR / B/L konşimento belgesi eksik.' : 'Tüm sevkiyat belgeleri tam ve onaylı.'"></span>
-                            </p>
+                <!-- Recent Feed & Assistant Alerts -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold text-slate-900 dark:text-white">Son Aktif Seferler</h3>
+                            <button @click="tab = 'shipments'" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Tümünü Gör</button>
+                        </div>
+                        <div class="divide-y divide-slate-100 dark:divide-slate-800">
+                            <template x-for="shipment in filteredShipments().slice(0, 3)" :key="shipment.id">
+                                <div class="py-3 flex justify-between items-center">
+                                    <div>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-xs px-2 py-0.5 rounded font-semibold" :class="shipment.mode === 'Denizyolu' ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'" x-text="shipment.mode"></span>
+                                            <span class="font-bold text-sm text-slate-900 dark:text-white" x-text="shipment.code"></span>
+                                        </div>
+                                        <p class="text-xs text-slate-500 mt-1" x-text="shipment.client + ' (' + shipment.route + ')'"></p>
+                                    </div>
+                                    <span class="text-xs px-2.5 py-1 rounded-full font-medium bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300" x-text="shipment.status"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
+                        <h3 class="font-bold text-slate-900 dark:text-white">Asistan Durum Raporu</h3>
+                        <div class="space-y-3">
+                            <div class="p-3 bg-amber-50 dark:bg-amber-950/40 border-l-4 border-amber-500 rounded text-xs space-y-1">
+                                <p class="font-bold text-amber-800 dark:text-amber-300">Belge Kontrolü</p>
+                                <p class="text-amber-700 dark:text-amber-400" x-text="missingDocCount() > 0 ? missingDocCount() + ' adet sevkiyatın evrakı eksik.' : 'Tüm evraklar tam.'"></p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -120,32 +188,32 @@
             <!-- TAB 2: OFFERS -->
             <div x-show="tab === 'offers'" class="space-y-6">
                 <div class="flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-slate-900 dark:text-white">Teklif ve Müşteri Yönetimi (Incoterms Destekli)</h2>
-                    <button x-show="userRole !== 'client'" @click="showOfferModal = true" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition">+ Yeni Teklif Oluştur</button>
+                    <h2 class="text-xl font-bold text-slate-900 dark:text-white">Teklif Yönetimi (Incoterms Destekli)</h2>
+                    <button x-show="userRole !== 'client'" @click="showOfferModal = true" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition">+ Yeni Teklif Oluştur</button>
                 </div>
 
-                <div class="bg-white dark:bg-slate-800 shadow-sm rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-                        <thead class="bg-slate-50 dark:bg-slate-900">
+                <div class="bg-white dark:bg-slate-900 shadow-sm rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                        <thead class="bg-slate-50 dark:bg-slate-950">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Mod / Müşteri</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Güzergah</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Teslim (Incoterms)</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Yük Bilgisi</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Tutar</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Durum</th>
-                                <th class="px-6 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">İşlemler</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Mod / Müşteri</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Güzergah</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Incoterms</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Yük</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Tutar</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Durum</th>
+                                <th class="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase">İşlemler</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-200 dark:divide-slate-700 text-sm">
+                        <tbody class="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
                             <template x-for="offer in offers" :key="offer.id">
                                 <tr>
                                     <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">
-                                        <span class="text-xs px-2 py-0.5 rounded mr-1 font-semibold" :class="offer.mode === 'Denizyolu' ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300' : 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300'" x-text="offer.mode"></span>
+                                        <span class="text-xs px-2 py-0.5 rounded mr-1 font-semibold" :class="offer.mode === 'Denizyolu' ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'" x-text="offer.mode"></span>
                                         <div class="mt-1" x-text="offer.client"></div>
                                     </td>
                                     <td class="px-6 py-4 text-slate-600 dark:text-slate-300" x-text="offer.route"></td>
-                                    <td class="px-6 py-4"><span class="bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-xs font-mono font-bold" x-text="offer.incoterm"></span></td>
+                                    <td class="px-6 py-4"><span class="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-xs font-mono font-bold" x-text="offer.incoterm"></span></td>
                                     <td class="px-6 py-4 text-slate-600 dark:text-slate-300" x-text="offer.cargo"></td>
                                     <td class="px-6 py-4 font-semibold text-slate-900 dark:text-white" x-text="offer.amount + ' ' + offer.currency"></td>
                                     <td class="px-6 py-4">
@@ -155,8 +223,8 @@
                                         }" class="text-xs px-2.5 py-1 rounded-full font-medium" x-text="offer.status"></span>
                                     </td>
                                     <td class="px-6 py-4 text-right space-x-2">
-                                        <button @click="downloadPDF(offer)" class="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">📄 PDF</button>
-                                        <button x-show="userRole !== 'client' && offer.status === 'Onaylandı' && !offer.converted" @click="convertToShipment(offer)" class="bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 px-3 py-1 rounded hover:bg-indigo-100 font-medium">Sefer Yap</button>
+                                        <button @click="downloadPDF(offer)" class="text-blue-600 dark:text-blue-400 hover:underline font-medium">📄 PDF</button>
+                                        <button x-show="userRole !== 'client' && offer.status === 'Onaylandı' && !offer.converted" @click="convertToShipment(offer)" class="bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-3 py-1 rounded hover:bg-blue-100 font-medium text-xs">Sefer Yap</button>
                                     </td>
                                 </tr>
                             </template>
@@ -165,22 +233,22 @@
                 </div>
             </div>
 
-            <!-- TAB 3: SHIPMENTS (ROAD & SEA) -->
+            <!-- TAB 3: SHIPMENTS -->
             <div x-show="tab === 'shipments'" class="space-y-6">
                 <div class="flex justify-between items-center">
                     <h2 class="text-xl font-bold text-slate-900 dark:text-white">Sevkiyat Operasyonları (Karayolu & Denizyolu)</h2>
-                    <button x-show="userRole !== 'client'" @click="showShipmentModal = true" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition">+ Yeni Sevkiyat Başlat</button>
+                    <button x-show="userRole !== 'client'" @click="showShipmentModal = true" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition">+ Yeni Sefer Başlat</button>
                 </div>
 
                 <div class="grid grid-cols-1 gap-6">
                     <template x-for="shipment in filteredShipments()" :key="shipment.id">
-                        <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
-                            <div class="flex flex-col md:flex-row justify-between border-b border-slate-200 dark:border-slate-700 pb-4">
+                        <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-6">
+                            <div class="flex flex-col md:flex-row justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
                                 <div>
                                     <div class="flex items-center space-x-2">
-                                        <span class="text-xs px-2.5 py-1 rounded-full font-semibold" :class="shipment.mode === 'Denizyolu' ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300' : 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300'" x-text="shipment.mode"></span>
-                                        <span class="text-xs bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full font-semibold" x-text="'Sefer #' + shipment.code"></span>
-                                        <span class="text-xs bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded font-mono font-bold" x-text="shipment.incoterm"></span>
+                                        <span class="text-xs px-2.5 py-1 rounded-full font-semibold" :class="shipment.mode === 'Denizyolu' ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'" x-text="shipment.mode"></span>
+                                        <span class="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full font-semibold" x-text="'Sefer #' + shipment.code"></span>
+                                        <span class="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded font-mono font-bold" x-text="shipment.incoterm"></span>
                                     </div>
                                     <h3 class="text-lg font-bold text-slate-900 dark:text-white mt-2" x-text="shipment.client + ' | ' + shipment.route"></h3>
                                     <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -190,17 +258,17 @@
                                 </div>
                                 <div class="mt-4 md:mt-0 flex items-center space-x-2">
                                     <span :class="shipment.docUploaded ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'" class="text-xs px-3 py-1 rounded-full font-semibold" x-text="shipment.docUploaded ? '✓ Belge Tam (CMR/BL)' : '⚠️ Belge Eksik'"></span>
-                                    <button x-show="userRole !== 'client'" @click="toggleDoc(shipment)" class="text-xs text-indigo-600 dark:text-indigo-400 underline" x-text="shipment.docUploaded ? 'Kaldır' : 'Belge Yükle'"></button>
+                                    <button x-show="userRole !== 'client'" @click="toggleDoc(shipment)" class="text-xs text-blue-600 dark:text-blue-400 underline" x-text="shipment.docUploaded ? 'Kaldır' : 'Yükle'"></button>
                                 </div>
                             </div>
                             <!-- Milestone Progress Bar -->
                             <div>
-                                <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Sevkiyat Aşamaları (Tıklayarak Güncelleyin)</p>
+                                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Sevkiyat Aşamaları</p>
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
-                                    <button :disabled="userRole === 'client'" @click="shipment.status = 'Yükleme Bekliyor'" :class="shipment.status === 'Yükleme Bekliyor' ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" class="py-2 rounded-lg text-xs font-semibold transition">1. Yükleme Bekliyor</button>
-                                    <button :disabled="userRole === 'client'" @click="shipment.status = (shipment.mode === 'Denizyolu' ? 'Denizde' : 'Yola Çıktı')" :class="shipment.status === 'Yola Çıktı' || shipment.status === 'Denizde' ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" class="py-2 rounded-lg text-xs font-semibold transition" x-text="shipment.mode === 'Denizyolu' ? '2. Denizde / Seferde' : '2. Yola Çıktı'"></button>
-                                    <button :disabled="userRole === 'client'" @click="shipment.status = 'Gümrükte'" :class="shipment.status === 'Gümrükte' ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" class="py-2 rounded-lg text-xs font-semibold transition">3. Gümrükte</button>
-                                    <button :disabled="userRole === 'client'" @click="shipment.status = 'Teslim Edildi'" :class="shipment.status === 'Teslim Edildi' ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" class="py-2 rounded-lg text-xs font-semibold transition">4. Teslim Edildi</button>
+                                    <button :disabled="userRole === 'client'" @click="shipment.status = 'Yükleme Bekliyor'" :class="shipment.status === 'Yükleme Bekliyor' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition">1. Yükleme Bekliyor</button>
+                                    <button :disabled="userRole === 'client'" @click="shipment.status = (shipment.mode === 'Denizyolu' ? 'Denizde' : 'Yola Çıktı')" :class="shipment.status === 'Yola Çıktı' || shipment.status === 'Denizde' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition" x-text="shipment.mode === 'Denizyolu' ? '2. Denizde' : '2. Yola Çıktı'"></button>
+                                    <button :disabled="userRole === 'client'" @click="shipment.status = 'Gümrükte'" :class="shipment.status === 'Gümrükte' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition">3. Gümrükte</button>
+                                    <button :disabled="userRole === 'client'" @click="shipment.status = 'Teslim Edildi'" :class="shipment.status === 'Teslim Edildi' ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition">4. Teslim Edildi</button>
                                 </div>
                             </div>
                         </div>
@@ -213,58 +281,58 @@
                 <h2 class="text-xl font-bold text-slate-900 dark:text-white">Çoklu Para Birimi Masraf & Kârlılık Analizi</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <template x-for="shipment in shipments" :key="shipment.id">
-                        <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
-                            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-3">
+                        <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
+                            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
                                 <h3 class="font-bold text-slate-900 dark:text-white" x-text="shipment.code + ' - ' + shipment.client"></h3>
-                                <span class="text-sm font-bold text-indigo-600 dark:text-indigo-400" x-text="'Navlun: ' + shipment.income + ' EUR'"></span>
+                                <span class="text-sm font-bold text-blue-600 dark:text-blue-400" x-text="'Navlun: ' + shipment.income + ' EUR'"></span>
                             </div>
                             <div class="space-y-2 text-sm">
-                                <div class="flex justify-between text-slate-600 dark:text-slate-300">
+                                <div class="flex justify-between text-slate-600 dark:text-slate-400">
                                     <span x-text="shipment.mode === 'Denizyolu' ? 'Liman THC & Handling:' : 'Mazot Gideri:'"></span>
                                     <span class="font-semibold" x-text="shipment.expense1 + ' EUR'"></span>
                                 </div>
-                                <div class="flex justify-between text-slate-600 dark:text-slate-300">
+                                <div class="flex justify-between text-slate-600 dark:text-slate-400">
                                     <span x-text="shipment.mode === 'Denizyolu' ? 'Demuraj / Ardiye:' : 'Gümrük & Sınır:'"></span>
                                     <span class="font-semibold" x-text="shipment.expense2 + ' EUR'"></span>
                                 </div>
-                                <div class="flex justify-between text-slate-600 dark:text-slate-300">
+                                <div class="flex justify-between text-slate-600 dark:text-slate-400">
                                     <span>Diğer Masraflar:</span>
                                     <span class="font-semibold" x-text="shipment.expense3 + ' EUR'"></span>
                                 </div>
                             </div>
-                            <div class="bg-indigo-50 dark:bg-indigo-950/50 p-3 rounded-lg flex justify-between items-center font-bold">
-                                <span class="text-indigo-900 dark:text-indigo-300">Net Kâr:</span>
-                                <span class="text-indigo-600 dark:text-indigo-400 text-lg" x-text="(shipment.income - (shipment.expense1 + shipment.expense2 + shipment.expense3)) + ' EUR'"></span>
+                            <div class="bg-blue-50 dark:bg-blue-950/40 p-3 rounded-xl flex justify-between items-center font-bold">
+                                <span class="text-blue-900 dark:text-blue-300">Net Kâr:</span>
+                                <span class="text-blue-600 dark:text-blue-400 text-lg" x-text="(shipment.income - (shipment.expense1 + shipment.expense2 + shipment.expense3)) + ' EUR'"></span>
                             </div>
                         </div>
                     </template>
                 </div>
             </div>
 
-            <!-- TAB 5: INVOICES & PRE-ACCOUNTING -->
+            <!-- TAB 5: INVOICES -->
             <div x-show="tab === 'invoices' && (userRole === 'admin' || userRole === 'finance')" class="space-y-6">
                 <h2 class="text-xl font-bold text-slate-900 dark:text-white">Ön Muhasebe & E-Fatura Simülasyonu</h2>
-                <div class="bg-white dark:bg-slate-800 shadow-sm rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-                        <thead class="bg-slate-50 dark:bg-slate-900">
+                <div class="bg-white dark:bg-slate-900 shadow-sm rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                        <thead class="bg-slate-50 dark:bg-slate-950">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Fatura No</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Müşteri</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Hizmet Türü</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Tutar (KDV Hariç)</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Tutar</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Durum</th>
                                 <th class="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase">İşlem</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-200 dark:divide-slate-700 text-sm">
+                        <tbody class="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
                             <tr>
                                 <td class="px-6 py-4 font-mono font-bold text-slate-900 dark:text-white">ETRN2026000001</td>
                                 <td class="px-6 py-4 text-slate-800 dark:text-slate-200">ABC Dış Ticaret A.Ş.</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400">Karayolu Navlun Hizmeti</td>
+                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400">Uluslararası Navlun Hizmeti</td>
                                 <td class="px-6 py-4 font-semibold text-slate-900 dark:text-white">2.400 EUR</td>
                                 <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-xs px-2.5 py-1 rounded-full font-medium">e-Arşiv Onaylandı</span></td>
                                 <td class="px-6 py-4 text-right">
-                                    <button @click="alert('e-Fatura GİB portalına başarıyla iletildi ve XML taslağı oluşturuldu.')" class="bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 px-3 py-1 rounded hover:bg-indigo-100 font-medium text-xs">GİB XML İndir</button>
+                                    <button @click="alert('e-Fatura GİB sistemine başarıyla gönderildi.')" class="bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-3 py-1 rounded hover:bg-blue-100 font-medium text-xs">GİB XML İndir</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -276,86 +344,84 @@
     </div>
 
     <!-- MODAL: YENİ TEKLİF -->
-    <div x-show="showOfferModal" class="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-50" x-cloak>
-        <div class="bg-white dark:bg-slate-800 rounded-xl p-6 max-w-md w-full space-y-4 shadow-xl">
+    <div x-show="showOfferModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" x-cloak>
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
             <h3 class="text-lg font-bold text-slate-900 dark:text-white">Yeni Teklif Oluştur</h3>
-            <select x-model="newOffer.mode" class="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+            <select x-model="newOffer.mode" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
                 <option value="Karayolu">Karayolu Taşımacılığı</option>
                 <option value="Denizyolu">Denizyolu Konteyner (FCL/LCL)</option>
             </select>
-            <input x-model="newOffer.client" type="text" placeholder="Müşteri Adı" class="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white">
-            <input x-model="newOffer.route" type="text" placeholder="Güzergah (Örn: Ambarlı -> Rotterdam)" class="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white">
-            <select x-model="newOffer.incoterm" class="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+            <input x-model="newOffer.client" type="text" placeholder="Müşteri Adı" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+            <input x-model="newOffer.route" type="text" placeholder="Güzergah (Örn: Ambarlı -> Rotterdam)" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+            <select x-model="newOffer.incoterm" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
                 <option value="EXW">EXW (İşyerinde Teslim)</option>
                 <option value="FOB">FOB (Gemide Teslim)</option>
-                <option value="CIF">CIF (Masraflar ve Sigorta Dahil)</option>
+                <option value="CIF">CIF (Masraf & Sigorta Dahil)</option>
                 <option value="DDP">DDP (Gümrük Vergileri Ödenmiş)</option>
             </select>
-            <input x-model="newOffer.cargo" type="text" placeholder="Yük Detayı (Örn: 40'HC Konteyner / 22 Ton)" class="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+            <input x-model="newOffer.cargo" type="text" placeholder="Yük Detayı" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
             <div class="flex space-x-2">
-                <input x-model="newOffer.amount" type="number" placeholder="Tutar" class="w-2/3 p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white">
-                <select x-model="newOffer.currency" class="w-1/3 p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+                <input x-model="newOffer.amount" type="number" placeholder="Tutar" class="w-2/3 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+                <select x-model="newOffer.currency" class="w-1/3 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
                     <option value="EUR">EUR</option>
                     <option value="USD">USD</option>
                     <option value="TRY">TRY</option>
                 </select>
             </div>
             <div class="flex justify-end space-x-2 pt-2">
-                <button @click="showOfferModal = false" class="px-4 py-2 text-slate-600 dark:text-slate-400">İptal</button>
-                <button @click="addOffer()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Kaydet</button>
+                <button @click="showOfferModal = false" class="px-4 py-2 text-slate-600 dark:text-slate-400 text-sm">İptal</button>
+                <button @click="addOffer()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium">Kaydet</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL: YENİ SEVKİYAT -->
-    <div x-show="showShipmentModal" class="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-50" x-cloak>
-        <div class="bg-white dark:bg-slate-800 rounded-xl p-6 max-w-md w-full space-y-4 shadow-xl">
-            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Yeni Sevkiyat Başlat</h3>
-            <select x-model="newShipment.mode" class="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+    <div x-show="showShipmentModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" x-cloak>
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Yeni Sefer Başlat</h3>
+            <select x-model="newShipment.mode" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
                 <option value="Karayolu">Karayolu</option>
                 <option value="Denizyolu">Denizyolu</option>
             </select>
-            <input x-model="newShipment.client" type="text" placeholder="Müşteri Adı" class="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white">
-            <input x-model="newShipment.route" type="text" placeholder="Güzergah" class="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white">
-            <select x-model="newShipment.incoterm" class="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+            <input x-model="newShipment.client" type="text" placeholder="Müşteri Adı" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+            <input x-model="newShipment.route" type="text" placeholder="Güzergah" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+            <select x-model="newShipment.incoterm" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
                 <option value="EXW">EXW</option>
                 <option value="FOB">FOB</option>
                 <option value="CIF">CIF</option>
                 <option value="DDP">DDP</option>
             </select>
             
-            <!-- Karayolu Alanları -->
             <div x-show="newShipment.mode === 'Karayolu'" class="space-y-3">
-                <input x-model="newShipment.plate" type="text" placeholder="Plaka (Örn: 34 ABC 123)" class="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white">
-                <input x-model="newShipment.driver" type="text" placeholder="Şoför Adı" class="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white">
-                <input x-model="newShipment.phone" type="text" placeholder="Şoför Telefonu" class="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+                <input x-model="newShipment.plate" type="text" placeholder="Plaka" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+                <input x-model="newShipment.driver" type="text" placeholder="Şoför Adı" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+                <input x-model="newShipment.phone" type="text" placeholder="Şoför Telefonu" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
             </div>
 
-            <!-- Denizyolu Alanları -->
             <div x-show="newShipment.mode === 'Denizyolu'" class="space-y-3">
-                <input x-model="newShipment.vessel" type="text" placeholder="Gemi / Sefer Adı" class="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white">
-                <input x-model="newShipment.containerNo" type="text" placeholder="Konteyner No (Örn: MSCU1234567)" class="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white">
-                <select x-model="newShipment.containerType" class="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+                <input x-model="newShipment.vessel" type="text" placeholder="Gemi / Sefer Adı" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+                <input x-model="newShipment.containerNo" type="text" placeholder="Konteyner No" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+                <select x-model="newShipment.containerType" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
                     <option value="20' DC">20' DC Konteyner</option>
                     <option value="40' HC">40' HC Konteyner</option>
                     <option value="LCL">LCL (Parsiyel)</option>
                 </select>
-                <input x-model="newShipment.blNumber" type="text" placeholder="B/L (Konşimento) Numarası" class="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+                <input x-model="newShipment.blNumber" type="text" placeholder="B/L (Konşimento) No" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
             </div>
 
-            <input x-model="newShipment.income" type="number" placeholder="Navlun Geliri (EUR)" class="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+            <input x-model="newShipment.income" type="number" placeholder="Navlun Geliri (EUR)" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
             <div class="flex justify-end space-x-2 pt-2">
-                <button @click="showShipmentModal = false" class="px-4 py-2 text-slate-600 dark:text-slate-400">İptal</button>
-                <button @click="addShipment()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Seferi Başlat</button>
+                <button @click="showShipmentModal = false" class="px-4 py-2 text-slate-600 dark:text-slate-400 text-sm">İptal</button>
+                <button @click="addShipment()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium">Seferi Başlat</button>
             </div>
         </div>
     </div>
 
     <!-- Hidden PDF Template -->
     <div id="pdf-template" class="hidden p-8 bg-white text-slate-900">
-        <div class="border-b-2 border-indigo-900 pb-4 mb-6 flex justify-between items-center">
+        <div class="border-b-2 border-blue-900 pb-4 mb-6 flex justify-between items-center">
             <div>
-                <h1 class="text-2xl font-bold text-indigo-900">LOJİSTİK ASİSTANI A.Ş.</h1>
+                <h1 class="text-2xl font-bold text-blue-950">LOJİSTİK ASİSTANI A.Ş.</h1>
                 <p class="text-xs text-slate-500">Uluslararası Çok Modlu Taşımacılık ve Lojistik Çözümleri</p>
             </div>
             <div class="text-right">
@@ -367,7 +433,7 @@
             <p><strong>Müşteri:</strong> <span id="pdf-client"></span></p>
             <p><strong>Taşıma Modu:</strong> <span id="pdf-mode"></span></p>
             <p><strong>Güzergah:</strong> <span id="pdf-route"></span></p>
-            <p><strong>Teslim Şekli (Incoterms):</strong> <span id="pdf-incoterm"></span></p>
+            <p><strong>Incoterms:</strong> <span id="pdf-incoterm"></span></p>
             <p><strong>Yük Detayı:</strong> <span id="pdf-cargo"></span></p>
         </div>
         <table class="w-full border-collapse border border-slate-300 mb-6 text-sm">
@@ -387,9 +453,13 @@
         <p class="text-xs text-slate-500 border-t pt-4">Bu teklif 7 gün geçerlidir. Ödemeler fatura ibrazını takiben 30 gün içinde yapılmalıdır.</p>
     </div>
 
+    <!-- SCRIPT LOGIC -->
     <script>
         function appData() {
             return {
+                isLoggedIn: false,
+                loginType: 'firm',
+                loginEmail: '',
                 tab: 'dashboard',
                 darkMode: false,
                 userRole: 'admin',
@@ -397,8 +467,8 @@
                 showShipmentModal: false,
                 showNotifDropdown: false,
                 notifications: [
-                    { id: 1, title: 'Yeni Sevkiyat Başlatıldı', desc: 'TR-8842 nolu karayolu seferi yola çıktı.', time: '10 dk önce', read: false },
-                    { id: 2, title: 'Eksik Evrak Uyarısı', desc: 'MSCU1234567 konteyner B/L belgesi bekleniyor.', time: '1 saat önce', read: false }
+                    { id: 1, title: 'Yeni Sefer Başlatıldı', desc: 'TR-8842 nolu sefer yola çıktı.', time: '10 dk önce', read: false },
+                    { id: 2, title: 'Evrak Uyarısı', desc: 'MSCU1234567 konteyner B/L belgesi bekleniyor.', time: '1 saat önce', read: false }
                 ],
                 newOffer: { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', cargo: '', amount: '', currency: 'EUR' },
                 newShipment: { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', plate: '', driver: '', phone: '', vessel: '', containerNo: '', containerType: "40' HC", blNumber: '', income: '' },
@@ -410,6 +480,19 @@
                     { id: 101, mode: 'Karayolu', code: 'TR-8842', client: 'ABC Dış Ticaret A.Ş.', route: 'İstanbul ➡️ Sofya', incoterm: 'DDP', plate: '34 ABC 123', driver: 'Ahmet Yılmaz', phone: '0532 555 4433', status: 'Yola Çıktı', docUploaded: false, income: 2400, expense1: 850, expense2: 150, expense3: 150 },
                     { id: 102, mode: 'Denizyolu', code: 'SEA-5510', client: 'XYZ İthalat Ltd.', route: 'Ambarlı ➡️ Rotterdam', incoterm: 'FOB', vessel: 'MSC Güneşi V.12', containerNo: 'MSCU9988776', containerType: "40' HC", blNumber: 'BL-TR-9988', status: 'Denizde', docUploaded: true, income: 3800, expense1: 1200, expense2: 300, expense3: 200 }
                 ],
+                handleLogin() {
+                    this.isLoggedIn = true;
+                    this.userRole = this.loginType === 'client' ? 'client' : 'admin';
+                },
+                quickLogin(role) {
+                    this.isLoggedIn = true;
+                    this.userRole = role;
+                    this.loginType = role === 'client' ? 'client' : 'firm';
+                },
+                logout() {
+                    this.isLoggedIn = false;
+                    this.loginEmail = '';
+                },
                 unreadCount() {
                     return this.notifications.filter(n => !n.read).length;
                 },
