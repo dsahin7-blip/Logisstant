@@ -595,6 +595,7 @@
                         demoXmlNotice: "Demo sürümünde GİB XML dosyası oluşturulmuyor.",
                         downloadXmlDemo: "GİB XML (Demo)",
                         offerFieldsRequired: "Müşteri, güzergah, yük ve sıfırdan büyük tutar girin.",
+                        shipmentFieldsRequired: "Müşteri, güzergah ve sıfırdan büyük navlun geliri girin.",
                         ocrDemoNotice: "OCR yalnızca demoda gösteriliyor; dosya yüklenmiyor veya işlenmiyor.",
                         pdfUnavailable: "PDF aracı yüklenemedi. Sayfayı yenileyip tekrar deneyin.",
                         pdfFailed: "PDF oluşturulamadı. Lütfen tekrar deneyin.",
@@ -683,6 +684,7 @@
                         demoXmlNotice: "A GIB XML file is not generated in the demo.",
                         downloadXmlDemo: "GIB XML (Demo)",
                         offerFieldsRequired: "Enter a client, route, cargo, and an amount greater than zero.",
+                        shipmentFieldsRequired: "Enter a client, route, and freight income greater than zero.",
                         ocrDemoNotice: "OCR is only shown as a demo; no file is uploaded or processed.",
                         pdfUnavailable: "The PDF tool did not load. Refresh the page and try again.",
                         pdfFailed: "The PDF could not be created. Please try again.",
@@ -830,7 +832,7 @@
                 addShipment() {
                     const income = Number(this.newShipment.income);
                     if (!this.newShipment.client || !this.newShipment.route || !Number.isFinite(income) || income <= 0) {
-                        alert('Müşteri, güzergah ve sıfırdan büyük navlun geliri girin.');
+                        alert(this.t('shipmentFieldsRequired'));
                         return;
                     }
                     const modePrefix = this.newShipment.mode === 'Denizyolu' ? 'SEA-' : this.newShipment.mode === 'Havayolu' ? 'AIR-' : 'TR-';
