@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lojistik Asistanı - Kurumsal SaaS</title>
+    <title>Lojistik Asistanı</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -27,7 +27,7 @@
             <!-- Giriş Sekmeleri -->
             <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-sm font-medium">
                 <button @click="loginType = 'firm'" :class="loginType === 'firm' ? 'bg-blue-600 text-white shadow' : 'text-slate-600 dark:text-slate-400'" class="flex-1 py-2 rounded-lg transition">Firma Girişi</button>
-                <button @click="loginType = 'client'" :class="loginType === 'client' ? 'bg-blue-600 text-white shadow' : 'text-slate-600 dark:text-slate-400'" class="flex-1 py-2 rounded-lg transition">Müşteri Girişi (B2B)</button>
+                <button @click="loginType = 'client'" :class="loginType === 'client' ? 'bg-blue-600 text-white shadow' : 'text-slate-600 dark:text-slate-400'" class="flex-1 py-2 rounded-lg transition">Müşteri Portalı (B2B)</button>
             </div>
 
             <div class="space-y-4">
@@ -56,17 +56,22 @@
         </div>
     </div>
 
-    <!-- 2. ANA UYGULAMA (GİRİŞ YAPILDIKTAN SONRA) -->
+    <!-- 2. ANA UYGULAMA -->
     <div x-show="isLoggedIn" class="flex-grow flex flex-col" x-cloak>
         <!-- Header / Navbar -->
         <header class="bg-blue-950 dark:bg-slate-900 text-white shadow-lg border-b border-blue-900/50">
             <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
                 <div class="flex items-center space-x-3">
                     <span class="text-2xl font-bold tracking-tight">Lojistik Asistanı</span>
-                    <span class="bg-blue-600 text-white text-xs px-2.5 py-1 rounded-full uppercase tracking-wider font-semibold" x-text="userRole === 'client' ? 'Müşteri Portalı' : 'Enterprise SaaS'"></span>
                 </div>
                 
                 <div class="flex items-center space-x-3">
+                    <!-- Dil Seçici (TR / EN) -->
+                    <select x-model="language" class="bg-blue-900 dark:bg-slate-800 text-white text-xs px-2.5 py-2 rounded-lg font-semibold focus:outline-none cursor-pointer">
+                        <option value="tr">🇹🇷 TR</option>
+                        <option value="en">🇬🇧 EN</option>
+                    </select>
+
                     <!-- Notification Bell -->
                     <div class="relative">
                         <button @click="showNotifDropdown = !showNotifDropdown" class="bg-blue-900 dark:bg-slate-800 hover:bg-blue-800 p-2 rounded-lg relative transition">
@@ -107,9 +112,11 @@
             <div class="max-w-7xl mx-auto px-4 flex space-x-6 overflow-x-auto">
                 <button @click="tab = 'dashboard'" :class="tab === 'dashboard' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Ana Panel</button>
                 <button @click="tab = 'offers'" :class="tab === 'offers' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Teklif Yönetimi</button>
-                <button @click="tab = 'shipments'" :class="tab === 'shipments' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Sevkiyatlar (Karayolu & Denizyolu)</button>
+                <button @click="tab = 'shipments'" :class="tab === 'shipments' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Sevkiyatlar (Kara/Deniz/Hava)</button>
+                <button x-show="userRole !== 'operation' && userRole !== 'client'" @click="tab = 'reports'" :class="tab === 'reports' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Raporlar & BI</button>
                 <button x-show="userRole !== 'operation' && userRole !== 'client'" @click="tab = 'finances'" :class="tab === 'finances' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Masraf & Kârlılık</button>
-                <button x-show="userRole === 'admin' || userRole === 'finance'" @click="tab = 'invoices'" :class="tab === 'invoices' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Ön Muhasebe & E-Fatura</button>
+                <button x-show="userRole === 'admin' || userRole === 'finance'" @click="tab = 'invoices'" :class="tab === 'invoices' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Ön Muhasebe</button>
+                <button @click="tab = 'settings'" :class="tab === 'settings' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition">Ayarlar</button>
             </div>
         </nav>
 
@@ -118,11 +125,10 @@
             
             <!-- TAB 1: DASHBOARD -->
             <div x-show="tab === 'dashboard'" class="space-y-6">
-                <!-- Top Quick Actions Bar -->
                 <div class="bg-gradient-to-r from-blue-900 to-blue-950 rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
                     <div>
-                        <h2 class="text-2xl font-bold" x-text="userRole === 'client' ? 'Müşteri Portali & Yük Takip Paneli' : 'Lojistik Yönetim Paneli'"></h2>
-                        <p class="text-blue-200 text-sm mt-1">Karayolu ve denizyolu operasyonlarınızı tek ekrandan yönetin.</p>
+                        <h2 class="text-2xl font-bold" x-text="userRole === 'client' ? 'Müşteri Portalı & Yük Takip Paneli' : 'Lojistik Yönetim Paneli'"></h2>
+                        <p class="text-blue-200 text-sm mt-1">Çok modlu (Karayolu, Denizyolu, Havayolu) operasyonlarınız kontrol altında.</p>
                     </div>
                     <div class="flex space-x-3" x-show="userRole !== 'client'">
                         <button @click="showOfferModal = true" class="bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-xl font-medium text-sm shadow transition">+ Yeni Teklif</button>
@@ -141,8 +147,8 @@
                         <p class="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-2" x-text="offers.length"></p>
                     </div>
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Seferdeki Araç / Gemi</p>
-                        <p class="text-3xl font-bold text-amber-600 dark:text-amber-400 mt-2" x-text="filteredShipments().filter(s => s.status === 'Yola Çıktı' || s.status === 'Denizde').length"></p>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Seferdeki / Yoldaki Yükler</p>
+                        <p class="text-3xl font-bold text-amber-600 dark:text-amber-400 mt-2" x-text="filteredShipments().filter(s => s.status !== 'Teslim Edildi' && s.status !== 'Yükleme Bekliyor').length"></p>
                     </div>
                     <div x-show="userRole !== 'operation' && userRole !== 'client'" class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Toplam Net Kâr</p>
@@ -150,7 +156,7 @@
                     </div>
                 </div>
 
-                <!-- Recent Feed & Assistant Alerts -->
+                <!-- Recent Feed & OCR Notice -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="md:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
                         <div class="flex justify-between items-center">
@@ -162,7 +168,7 @@
                                 <div class="py-3 flex justify-between items-center">
                                     <div>
                                         <div class="flex items-center space-x-2">
-                                            <span class="text-xs px-2 py-0.5 rounded font-semibold" :class="shipment.mode === 'Denizyolu' ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'" x-text="shipment.mode"></span>
+                                            <span class="text-xs px-2 py-0.5 rounded font-semibold" :class="{'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300': shipment.mode === 'Denizyolu', 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300': shipment.mode === 'Havayolu', 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300': shipment.mode === 'Karayolu'}" x-text="shipment.mode"></span>
                                             <span class="font-bold text-sm text-slate-900 dark:text-white" x-text="shipment.code"></span>
                                         </div>
                                         <p class="text-xs text-slate-500 mt-1" x-text="shipment.client + ' (' + shipment.route + ')'"></p>
@@ -174,12 +180,10 @@
                     </div>
 
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
-                        <h3 class="font-bold text-slate-900 dark:text-white">Asistan Durum Raporu</h3>
-                        <div class="space-y-3">
-                            <div class="p-3 bg-amber-50 dark:bg-amber-950/40 border-l-4 border-amber-500 rounded text-xs space-y-1">
-                                <p class="font-bold text-amber-800 dark:text-amber-300">Belge Kontrolü</p>
-                                <p class="text-amber-700 dark:text-amber-400" x-text="missingDocCount() > 0 ? missingDocCount() + ' adet sevkiyatın evrakı eksik.' : 'Tüm evraklar tam.'"></p>
-                            </div>
+                        <h3 class="font-bold text-slate-900 dark:text-white">Akıllı Evrak OCR Asistanı</h3>
+                        <div class="p-3 bg-blue-50 dark:bg-blue-950/40 border-l-4 border-blue-600 rounded text-xs space-y-1">
+                            <p class="font-bold text-blue-800 dark:text-blue-300">Otomatik Veri Doğrulama</p>
+                            <p class="text-blue-700 dark:text-blue-400">Yüklenen tüm CMR, B/L ve AWB evrakları yapay zeka ile taranarak tonaj ve mühür bilgileri sisteme işlenmektedir.</p>
                         </div>
                     </div>
                 </div>
@@ -209,7 +213,7 @@
                             <template x-for="offer in offers" :key="offer.id">
                                 <tr>
                                     <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">
-                                        <span class="text-xs px-2 py-0.5 rounded mr-1 font-semibold" :class="offer.mode === 'Denizyolu' ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'" x-text="offer.mode"></span>
+                                        <span class="text-xs px-2 py-0.5 rounded mr-1 font-semibold" :class="{'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300': offer.mode === 'Denizyolu', 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300': offer.mode === 'Havayolu', 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300': offer.mode === 'Karayolu'}" x-text="offer.mode"></span>
                                         <div class="mt-1" x-text="offer.client"></div>
                                     </td>
                                     <td class="px-6 py-4 text-slate-600 dark:text-slate-300" x-text="offer.route"></td>
@@ -233,10 +237,10 @@
                 </div>
             </div>
 
-            <!-- TAB 3: SHIPMENTS -->
+            <!-- TAB 3: SHIPMENTS (KARA / DENİZ / HAVA + OCR SİMÜLASYONU) -->
             <div x-show="tab === 'shipments'" class="space-y-6">
                 <div class="flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-slate-900 dark:text-white">Sevkiyat Operasyonları (Karayolu & Denizyolu)</h2>
+                    <h2 class="text-xl font-bold text-slate-900 dark:text-white">Sevkiyat Operasyonları (Kara, Deniz, Hava)</h2>
                     <button x-show="userRole !== 'client'" @click="showShipmentModal = true" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition">+ Yeni Sefer Başlat</button>
                 </div>
 
@@ -246,7 +250,7 @@
                             <div class="flex flex-col md:flex-row justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
                                 <div>
                                     <div class="flex items-center space-x-2">
-                                        <span class="text-xs px-2.5 py-1 rounded-full font-semibold" :class="shipment.mode === 'Denizyolu' ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'" x-text="shipment.mode"></span>
+                                        <span class="text-xs px-2.5 py-1 rounded-full font-semibold" :class="{'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300': shipment.mode === 'Denizyolu', 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300': shipment.mode === 'Havayolu', 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300': shipment.mode === 'Karayolu'}" x-text="shipment.mode"></span>
                                         <span class="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full font-semibold" x-text="'Sefer #' + shipment.code"></span>
                                         <span class="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded font-mono font-bold" x-text="shipment.incoterm"></span>
                                     </div>
@@ -254,11 +258,12 @@
                                     <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                                         <span x-show="shipment.mode === 'Karayolu'">Plaka: <strong x-text="shipment.plate"></strong> | Şoför: <strong x-text="shipment.driver"></strong> (<span x-text="shipment.phone"></span>)</span>
                                         <span x-show="shipment.mode === 'Denizyolu'">Gemi: <strong x-text="shipment.vessel"></strong> | Konteyner: <strong x-text="shipment.containerNo"></strong> (<span x-text="shipment.containerType"></span>) | B/L: <strong x-text="shipment.blNumber"></strong></span>
+                                        <span x-show="shipment.mode === 'Havayolu'">Uçuş: <strong x-text="shipment.flightNo"></strong> | AWB No: <strong x-text="shipment.awbNumber"></strong> | Hacimsel Ağırlık: <strong x-text="shipment.volWeight + ' kg'"></strong></span>
                                     </p>
                                 </div>
-                                <div class="mt-4 md:mt-0 flex items-center space-x-2">
-                                    <span :class="shipment.docUploaded ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'" class="text-xs px-3 py-1 rounded-full font-semibold" x-text="shipment.docUploaded ? '✓ Belge Tam (CMR/BL)' : '⚠️ Belge Eksik'"></span>
-                                    <button x-show="userRole !== 'client'" @click="toggleDoc(shipment)" class="text-xs text-blue-600 dark:text-blue-400 underline" x-text="shipment.docUploaded ? 'Kaldır' : 'Yükle'"></button>
+                                <div class="mt-4 md:mt-0 flex items-center space-x-3">
+                                    <span :class="shipment.docUploaded ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'" class="text-xs px-3 py-1 rounded-full font-semibold" x-text="shipment.docUploaded ? '✓ OCR OCR Onaylı Evrak' : '⚠️ Evrak Bekleniyor'"></span>
+                                    <button x-show="userRole !== 'client'" @click="simulateOCR(shipment)" class="bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-lg text-xs font-semibold hover:bg-blue-100 transition">Evrak Yükle & OCR Tara</button>
                                 </div>
                             </div>
                             <!-- Milestone Progress Bar -->
@@ -266,7 +271,7 @@
                                 <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Sevkiyat Aşamaları</p>
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
                                     <button :disabled="userRole === 'client'" @click="shipment.status = 'Yükleme Bekliyor'" :class="shipment.status === 'Yükleme Bekliyor' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition">1. Yükleme Bekliyor</button>
-                                    <button :disabled="userRole === 'client'" @click="shipment.status = (shipment.mode === 'Denizyolu' ? 'Denizde' : 'Yola Çıktı')" :class="shipment.status === 'Yola Çıktı' || shipment.status === 'Denizde' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition" x-text="shipment.mode === 'Denizyolu' ? '2. Denizde' : '2. Yola Çıktı'"></button>
+                                    <button :disabled="userRole === 'client'" @click="shipment.status = (shipment.mode === 'Denizyolu' ? 'Denizde' : shipment.mode === 'Havayolu' ? 'Uçuşta' : 'Yola Çıktı')" :class="shipment.status === 'Yola Çıktı' || shipment.status === 'Denizde' || shipment.status === 'Uçuşta' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition" x-text="shipment.mode === 'Denizyolu' ? '2. Denizde' : shipment.mode === 'Havayolu' ? '2. Uçuşta' : '2. Yola Çıktı'"></button>
                                     <button :disabled="userRole === 'client'" @click="shipment.status = 'Gümrükte'" :class="shipment.status === 'Gümrükte' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition">3. Gümrükte</button>
                                     <button :disabled="userRole === 'client'" @click="shipment.status = 'Teslim Edildi'" :class="shipment.status === 'Teslim Edildi' ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition">4. Teslim Edildi</button>
                                 </div>
@@ -276,7 +281,57 @@
                 </div>
             </div>
 
-            <!-- TAB 4: FINANCES -->
+            <!-- TAB 4: REPORTS & BI (GRAFİKSEL ANALİTİK) -->
+            <div x-show="tab === 'reports' && userRole !== 'operation' && userRole !== 'client'" class="space-y-6">
+                <h2 class="text-xl font-bold text-slate-900 dark:text-white">İş Zekası & Grafiksel Raporlama (BI)</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
+                        <h3 class="font-bold text-slate-900 dark:text-white text-sm">En Karlı Güzergahlar</h3>
+                        <div class="space-y-3 text-xs">
+                            <div>
+                                <div class="flex justify-between font-semibold mb-1">
+                                    <span>İstanbul ➡️ Rotterdam (Deniz)</span>
+                                    <span class="text-emerald-600">3.800 EUR</span>
+                                </div>
+                                <div class="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden"><div class="bg-blue-600 h-full rounded-full" style="width: 85%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between font-semibold mb-1">
+                                    <span>Frankfurt ➡️ İstanbul (Hava)</span>
+                                    <span class="text-emerald-600">4.500 EUR</span>
+                                </div>
+                                <div class="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden"><div class="bg-indigo-600 h-full rounded-full" style="width: 95%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between font-semibold mb-1">
+                                    <span>İstanbul ➡️ Sofya (Kara)</span>
+                                    <span class="text-emerald-600">2.400 EUR</span>
+                                </div>
+                                <div class="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden"><div class="bg-cyan-600 h-full rounded-full" style="width: 60%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
+                        <h3 class="font-bold text-slate-900 dark:text-white text-sm">Taşıma Modu Dağılımı</h3>
+                        <div class="space-y-3 text-xs">
+                            <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                                <span class="font-semibold">Karayolu Operasyonları</span>
+                                <span class="bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full font-bold">45%</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                                <span class="font-semibold">Denizyolu Konteyner</span>
+                                <span class="bg-cyan-100 text-cyan-800 px-2.5 py-1 rounded-full font-bold">40%</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                                <span class="font-semibold">Havayolu Kargo</span>
+                                <span class="bg-indigo-100 text-indigo-800 px-2.5 py-1 rounded-full font-bold">15%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: FINANCES -->
             <div x-show="tab === 'finances' && userRole !== 'operation' && userRole !== 'client'" class="space-y-6">
                 <h2 class="text-xl font-bold text-slate-900 dark:text-white">Çoklu Para Birimi Masraf & Kârlılık Analizi</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -288,28 +343,24 @@
                             </div>
                             <div class="space-y-2 text-sm">
                                 <div class="flex justify-between text-slate-600 dark:text-slate-400">
-                                    <span x-text="shipment.mode === 'Denizyolu' ? 'Liman THC & Handling:' : 'Mazot Gideri:'"></span>
+                                    <span x-text="shipment.mode === 'Denizyolu' ? 'Liman THC & Handling:' : shipment.mode === 'Havayolu' ? 'Terminal & AWB Gideri:' : 'Mazot Gideri:'"></span>
                                     <span class="font-semibold" x-text="shipment.expense1 + ' EUR'"></span>
                                 </div>
                                 <div class="flex justify-between text-slate-600 dark:text-slate-400">
-                                    <span x-text="shipment.mode === 'Denizyolu' ? 'Demuraj / Ardiye:' : 'Gümrük & Sınır:'"></span>
+                                    <span>Operasyonel Masraflar:</span>
                                     <span class="font-semibold" x-text="shipment.expense2 + ' EUR'"></span>
-                                </div>
-                                <div class="flex justify-between text-slate-600 dark:text-slate-400">
-                                    <span>Diğer Masraflar:</span>
-                                    <span class="font-semibold" x-text="shipment.expense3 + ' EUR'"></span>
                                 </div>
                             </div>
                             <div class="bg-blue-50 dark:bg-blue-950/40 p-3 rounded-xl flex justify-between items-center font-bold">
                                 <span class="text-blue-900 dark:text-blue-300">Net Kâr:</span>
-                                <span class="text-blue-600 dark:text-blue-400 text-lg" x-text="(shipment.income - (shipment.expense1 + shipment.expense2 + shipment.expense3)) + ' EUR'"></span>
+                                <span class="text-blue-600 dark:text-blue-400 text-lg" x-text="(shipment.income - (shipment.expense1 + shipment.expense2)) + ' EUR'"></span>
                             </div>
                         </div>
                     </template>
                 </div>
             </div>
 
-            <!-- TAB 5: INVOICES -->
+            <!-- TAB 6: INVOICES -->
             <div x-show="tab === 'invoices' && (userRole === 'admin' || userRole === 'finance')" class="space-y-6">
                 <h2 class="text-xl font-bold text-slate-900 dark:text-white">Ön Muhasebe & E-Fatura Simülasyonu</h2>
                 <div class="bg-white dark:bg-slate-900 shadow-sm rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
@@ -318,7 +369,6 @@
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Fatura No</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Müşteri</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Hizmet Türü</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Tutar</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Durum</th>
                                 <th class="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase">İşlem</th>
@@ -328,15 +378,55 @@
                             <tr>
                                 <td class="px-6 py-4 font-mono font-bold text-slate-900 dark:text-white">ETRN2026000001</td>
                                 <td class="px-6 py-4 text-slate-800 dark:text-slate-200">ABC Dış Ticaret A.Ş.</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400">Uluslararası Navlun Hizmeti</td>
                                 <td class="px-6 py-4 font-semibold text-slate-900 dark:text-white">2.400 EUR</td>
-                                <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-xs px-2.5 py-1 rounded-full font-medium">e-Arşiv Onaylandı</span></td>
+                                <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-full font-medium">e-Arşiv Onaylandı</span></td>
                                 <td class="px-6 py-4 text-right">
-                                    <button @click="alert('e-Fatura GİB sistemine başarıyla gönderildi.')" class="bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-3 py-1 rounded hover:bg-blue-100 font-medium text-xs">GİB XML İndir</button>
+                                    <button @click="alert('GİB XML belgesi indirildi.')" class="bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-3 py-1 rounded text-xs font-medium">GİB XML İndir</button>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- TAB 7: SETTINGS & PROFILE -->
+            <div x-show="tab === 'settings'" class="space-y-6">
+                <h2 class="text-xl font-bold text-slate-900 dark:text-white">Sistem Ayarları ve Profilim</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Profilim -->
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
+                        <h3 class="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3">Profil Bilgilerim</h3>
+                        <div class="space-y-3 text-sm">
+                            <div>
+                                <label class="text-xs text-slate-500">Ad Soyad</label>
+                                <input type="text" value="Ahmet Yönetici" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-500">E-Posta Adresi</label>
+                                <input type="email" value="admin@lojistikasistani.com" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
+                            </div>
+                            <button @click="alert('Profil bilgileri güncellendi.')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold">Değişiklikleri Kaydet</button>
+                        </div>
+                    </div>
+                    <!-- Genel Ayarlar -->
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
+                        <h3 class="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3">Firma Genel Ayarları</h3>
+                        <div class="space-y-3 text-sm">
+                            <div>
+                                <label class="text-xs text-slate-500">Firma Ünvanı</label>
+                                <input type="text" value="Lojistik Asistanı A.Ş." class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-500">Varsayılan Para Birimi</label>
+                                <select class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
+                                    <option>EUR (€)</option>
+                                    <option>USD ($)</option>
+                                    <option>TRY (₺)</option>
+                                </select>
+                            </div>
+                            <button @click="alert('Genel ayarlar kaydedildi.')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold">Ayarları Güncelle</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -349,15 +439,16 @@
             <h3 class="text-lg font-bold text-slate-900 dark:text-white">Yeni Teklif Oluştur</h3>
             <select x-model="newOffer.mode" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
                 <option value="Karayolu">Karayolu Taşımacılığı</option>
-                <option value="Denizyolu">Denizyolu Konteyner (FCL/LCL)</option>
+                <option value="Denizyolu">Denizyolu Konteyner</option>
+                <option value="Havayolu">Havayolu Kargo (Air Freight)</option>
             </select>
             <input x-model="newOffer.client" type="text" placeholder="Müşteri Adı" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-            <input x-model="newOffer.route" type="text" placeholder="Güzergah (Örn: Ambarlı -> Rotterdam)" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+            <input x-model="newOffer.route" type="text" placeholder="Güzergah (Örn: Frankfurt -> İstanbul)" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
             <select x-model="newOffer.incoterm" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-                <option value="EXW">EXW (İşyerinde Teslim)</option>
-                <option value="FOB">FOB (Gemide Teslim)</option>
-                <option value="CIF">CIF (Masraf & Sigorta Dahil)</option>
-                <option value="DDP">DDP (Gümrük Vergileri Ödenmiş)</option>
+                <option value="EXW">EXW</option>
+                <option value="FOB">FOB</option>
+                <option value="CIF">CIF</option>
+                <option value="DDP">DDP</option>
             </select>
             <input x-model="newOffer.cargo" type="text" placeholder="Yük Detayı" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
             <div class="flex space-x-2">
@@ -382,6 +473,7 @@
             <select x-model="newShipment.mode" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
                 <option value="Karayolu">Karayolu</option>
                 <option value="Denizyolu">Denizyolu</option>
+                <option value="Havayolu">Havayolu</option>
             </select>
             <input x-model="newShipment.client" type="text" placeholder="Müşteri Adı" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
             <input x-model="newShipment.route" type="text" placeholder="Güzergah" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
@@ -392,21 +484,25 @@
                 <option value="DDP">DDP</option>
             </select>
             
+            <!-- Karayolu Alanları -->
             <div x-show="newShipment.mode === 'Karayolu'" class="space-y-3">
                 <input x-model="newShipment.plate" type="text" placeholder="Plaka" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
                 <input x-model="newShipment.driver" type="text" placeholder="Şoför Adı" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
                 <input x-model="newShipment.phone" type="text" placeholder="Şoför Telefonu" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
             </div>
 
+            <!-- Denizyolu Alanları -->
             <div x-show="newShipment.mode === 'Denizyolu'" class="space-y-3">
-                <input x-model="newShipment.vessel" type="text" placeholder="Gemi / Sefer Adı" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+                <input x-model="newShipment.vessel" type="text" placeholder="Gemi Adı" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
                 <input x-model="newShipment.containerNo" type="text" placeholder="Konteyner No" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-                <select x-model="newShipment.containerType" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-                    <option value="20' DC">20' DC Konteyner</option>
-                    <option value="40' HC">40' HC Konteyner</option>
-                    <option value="LCL">LCL (Parsiyel)</option>
-                </select>
-                <input x-model="newShipment.blNumber" type="text" placeholder="B/L (Konşimento) No" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+                <input x-model="newShipment.blNumber" type="text" placeholder="B/L No" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+            </div>
+
+            <!-- Havayolu Alanları -->
+            <div x-show="newShipment.mode === 'Havayolu'" class="space-y-3">
+                <input x-model="newShipment.flightNo" type="text" placeholder="Uçuş Kodu (Örn: TK-1921)" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+                <input x-model="newShipment.awbNumber" type="text" placeholder="AWB (Konşimento) No" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+                <input x-model="newShipment.volWeight" type="number" placeholder="Hacimsel Ağırlık (kg)" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
             </div>
 
             <input x-model="newShipment.income" type="number" placeholder="Navlun Geliri (EUR)" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
@@ -462,23 +558,26 @@
                 loginEmail: '',
                 tab: 'dashboard',
                 darkMode: false,
+                language: 'tr',
                 userRole: 'admin',
                 showOfferModal: false,
                 showShipmentModal: false,
                 showNotifDropdown: false,
                 notifications: [
                     { id: 1, title: 'Yeni Sefer Başlatıldı', desc: 'TR-8842 nolu sefer yola çıktı.', time: '10 dk önce', read: false },
-                    { id: 2, title: 'Evrak Uyarısı', desc: 'MSCU1234567 konteyner B/L belgesi bekleniyor.', time: '1 saat önce', read: false }
+                    { id: 2, title: 'OCR Evrak Doğrulama', desc: 'TK-1921 nolu havayolu AWB belgesi yapay zeka ile doğrulandı.', time: '1 saat önce', read: false }
                 ],
                 newOffer: { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', cargo: '', amount: '', currency: 'EUR' },
-                newShipment: { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', plate: '', driver: '', phone: '', vessel: '', containerNo: '', containerType: "40' HC", blNumber: '', income: '' },
+                newShipment: { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', plate: '', driver: '', phone: '', vessel: '', containerNo: '', blNumber: '', flightNo: '', awbNumber: '', volWeight: '', income: '' },
                 offers: [
                     { id: 1, mode: 'Karayolu', client: 'ABC Dış Ticaret A.Ş.', route: 'İstanbul ➡️ Sofya', incoterm: 'DDP', cargo: 'Tenteli Tır / 20 Ton', amount: 2400, currency: 'EUR', status: 'Onaylandı', converted: true },
-                    { id: 2, mode: 'Denizyolu', client: 'XYZ İthalat Ltd.', route: 'Ambarlı ➡️ Rotterdam', incoterm: 'FOB', cargo: "40' HC Konteyner", amount: 3800, currency: 'EUR', status: 'Onaylandı', converted: true }
+                    { id: 2, mode: 'Denizyolu', client: 'XYZ İthalat Ltd.', route: 'Ambarlı ➡️ Rotterdam', incoterm: 'FOB', cargo: "40' HC Konteyner", amount: 3800, currency: 'EUR', status: 'Onaylandı', converted: true },
+                    { id: 3, mode: 'Havayolu', client: 'Global Medikal A.Ş.', route: 'Frankfurt ➡️ İstanbul', incoterm: 'EXW', cargo: '12 Palet Hassas Kargo', amount: 4500, currency: 'EUR', status: 'Beklemede', converted: false }
                 ],
                 shipments: [
-                    { id: 101, mode: 'Karayolu', code: 'TR-8842', client: 'ABC Dış Ticaret A.Ş.', route: 'İstanbul ➡️ Sofya', incoterm: 'DDP', plate: '34 ABC 123', driver: 'Ahmet Yılmaz', phone: '0532 555 4433', status: 'Yola Çıktı', docUploaded: false, income: 2400, expense1: 850, expense2: 150, expense3: 150 },
-                    { id: 102, mode: 'Denizyolu', code: 'SEA-5510', client: 'XYZ İthalat Ltd.', route: 'Ambarlı ➡️ Rotterdam', incoterm: 'FOB', vessel: 'MSC Güneşi V.12', containerNo: 'MSCU9988776', containerType: "40' HC", blNumber: 'BL-TR-9988', status: 'Denizde', docUploaded: true, income: 3800, expense1: 1200, expense2: 300, expense3: 200 }
+                    { id: 101, mode: 'Karayolu', code: 'TR-8842', client: 'ABC Dış Ticaret A.Ş.', route: 'İstanbul ➡️ Sofya', incoterm: 'DDP', plate: '34 ABC 123', driver: 'Ahmet Yılmaz', phone: '0532 555 4433', status: 'Yola Çıktı', docUploaded: false, income: 2400, expense1: 850, expense2: 150 },
+                    { id: 102, mode: 'Denizyolu', code: 'SEA-5510', client: 'XYZ İthalat Ltd.', route: 'Ambarlı ➡️ Rotterdam', incoterm: 'FOB', vessel: 'MSC Güneşi', containerNo: 'MSCU9988776', blNumber: 'BL-9988', status: 'Denizde', docUploaded: true, income: 3800, expense1: 1200, expense2: 300 },
+                    { id: 103, mode: 'Havayolu', code: 'AIR-1102', client: 'Global Medikal A.Ş.', route: 'Frankfurt ➡️ İstanbul', incoterm: 'EXW', flightNo: 'TK-1921', awbNumber: 'AWB-2354', volWeight: 1450, status: 'Uçuşta', docUploaded: true, income: 4500, expense1: 1500, expense2: 400 }
                 ],
                 handleLogin() {
                     this.isLoggedIn = true;
@@ -501,7 +600,7 @@
                 },
                 filteredShipments() {
                     if(this.userRole === 'client') {
-                        return this.shipments.filter(s => s.client.includes('ABC') || s.client.includes('XYZ'));
+                        return this.shipments.filter(s => s.client.includes('ABC') || s.client.includes('XYZ') || s.client.includes('Global'));
                     }
                     return this.shipments;
                 },
@@ -518,62 +617,60 @@
                 },
                 addShipment() {
                     if(!this.newShipment.client) return;
-                    const isSea = this.newShipment.mode === 'Denizyolu';
+                    const modePrefix = this.newShipment.mode === 'Denizyolu' ? 'SEA-' : this.newShipment.mode === 'Havayolu' ? 'AIR-' : 'TR-';
                     this.shipments.push({
                         id: Date.now(),
                         ...this.newShipment,
-                        code: (isSea ? 'SEA-' : 'TR-') + Math.floor(1000 + Math.random() * 9000),
+                        code: modePrefix + Math.floor(1000 + Math.random() * 9000),
                         status: 'Yükleme Bekliyor',
                         docUploaded: false,
                         income: Number(this.newShipment.income) || 2500,
                         expense1: 600,
-                        expense2: 150,
-                        expense3: 100
+                        expense2: 150
                     });
                     this.notifications.unshift({
                         id: Date.now(),
                         title: 'Yeni Sefer Başlatıldı',
-                        desc: this.newShipment.client + ' için yeni sevkiyat kayda alındı.',
+                        desc: this.newShipment.client + ' için sevkiyat kayda alındı.',
                         time: 'Az önce',
                         read: false
                     });
-                    this.newShipment = { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', plate: '', driver: '', phone: '', vessel: '', containerNo: '', containerType: "40' HC", blNumber: '', income: '' };
+                    this.newShipment = { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', plate: '', driver: '', phone: '', vessel: '', containerNo: '', blNumber: '', flightNo: '', awbNumber: '', volWeight: '', income: '' };
                     this.showShipmentModal = false;
                 },
                 convertToShipment(offer) {
                     offer.converted = true;
-                    const isSea = offer.mode === 'Denizyolu';
+                    const modePrefix = offer.mode === 'Denizyolu' ? 'SEA-' : offer.mode === 'Havayolu' ? 'AIR-' : 'TR-';
                     this.shipments.push({
                         id: Date.now(),
                         mode: offer.mode,
-                        code: (isSea ? 'SEA-' : 'TR-') + Math.floor(1000 + Math.random() * 9000),
+                        code: modePrefix + Math.floor(1000 + Math.random() * 9000),
                         client: offer.client,
                         route: offer.route,
                         incoterm: offer.incoterm,
-                        plate: isSea ? '' : '34 ONAY 99',
-                        driver: isSea ? '' : 'Atanan Şoför',
-                        phone: isSea ? '' : '0500 000 0000',
-                        vessel: isSea ? 'Global Carrier V.1' : '',
-                        containerNo: isSea ? 'CONT' + Math.floor(100000 + Math.random() * 900000) : '',
-                        containerType: "40' HC",
-                        blNumber: isSea ? 'BL-' + Math.floor(1000 + Math.random() * 9000) : '',
+                        plate: '34 ONAY 99',
+                        driver: 'Atanan Şoför',
+                        phone: '0500 000 0000',
+                        vessel: 'Global Carrier',
+                        containerNo: 'CONT999',
+                        blNumber: 'BL-999',
+                        flightNo: 'TK-001',
+                        awbNumber: 'AWB-001',
+                        volWeight: 1000,
                         status: 'Yükleme Bekliyor',
                         docUploaded: false,
                         income: offer.amount,
                         expense1: 500,
-                        expense2: 120,
-                        expense3: 100
+                        expense2: 120
                     });
                     this.tab = 'shipments';
                 },
-                toggleDoc(shipment) {
-                    shipment.docUploaded = !shipment.docUploaded;
-                },
-                missingDocCount() {
-                    return this.shipments.filter(s => !s.docUploaded).length;
+                simulateOCR(shipment) {
+                    shipment.docUploaded = true;
+                    alert(shipment.code + ' nolu sevkiyatın evrakı yüklendi ve OCR yapay zekası ile başarıyla doğrulandı!');
                 },
                 calculateTotalProfit() {
-                    return this.shipments.reduce((total, s) => total + (s.income - (s.expense1 + s.expense2 + s.expense3)), 0);
+                    return this.shipments.reduce((total, s) => total + (s.income - (s.expense1 + s.expense2)), 0);
                 },
                 downloadPDF(offer) {
                     document.getElementById('pdf-client').innerText = offer.client;
