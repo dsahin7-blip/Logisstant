@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lojistik Asistanı</title>
+    <style>[x-cloak] { display: none !important; }</style>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -153,7 +154,7 @@
                     </div>
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider" x-text="t('statOffers')"></p>
-                        <p class="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-2" x-text="offers.length"></p>
+                        <p class="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-2" x-text="visibleOffers().length"></p>
                     </div>
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider" x-text="t('statOnRoad')"></p>
@@ -219,7 +220,7 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
-                            <template x-for="offer in offers" :key="offer.id">
+                            <template x-for="offer in visibleOffers()" :key="offer.id">
                                 <tr>
                                     <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">
                                         <span class="text-xs px-2 py-0.5 rounded mr-1 font-semibold" :class="{'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300': offer.mode === 'Denizyolu', 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300': offer.mode === 'Havayolu', 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300': offer.mode === 'Karayolu'}" x-text="offer.mode"></span>
@@ -232,11 +233,14 @@
                                     <td class="px-6 py-4">
                                         <span :class="{
                                             'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300': offer.status === 'Onaylandı',
-                                            'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300': offer.status === 'Beklemede'
+                                            'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300': offer.status === 'Beklemede',
+                                            'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300': offer.status === 'Reddedildi'
                                         }" class="text-xs px-2.5 py-1 rounded-full font-medium" x-text="offer.status"></span>
                                     </td>
                                     <td class="px-6 py-4 text-right space-x-2">
                                         <button @click="downloadPDF(offer)" class="text-blue-600 dark:text-blue-400 hover:underline font-medium">📄 PDF</button>
+                                        <button x-show="userRole !== 'client' && offer.status === 'Beklemede'" @click="approveOffer(offer)" class="bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-3 py-1 rounded hover:bg-emerald-100 font-medium text-xs" x-text="t('approveOffer')"></button>
+                                        <button x-show="userRole !== 'client' && offer.status === 'Beklemede'" @click="rejectOffer(offer)" class="bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-300 px-3 py-1 rounded hover:bg-rose-100 font-medium text-xs" x-text="t('rejectOffer')"></button>
                                         <button x-show="userRole !== 'client' && offer.status === 'Onaylandı' && !offer.converted" @click="convertToShipment(offer)" class="bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-3 py-1 rounded hover:bg-blue-100 font-medium text-xs" x-text="t('btnConvertToShipment')"></button>
                                     </td>
                                 </tr>
@@ -502,7 +506,23 @@
             </select>
             <input x-model="newShipment.client" type="text" placeholder="Müşteri Adı" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
             <input x-model="newShipment.route" type="text" placeholder="Güzergah" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
-            <input x-model="newShipment.income" type="number" placeholder="Navlun Geliri (EUR)" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+            <div x-show="newShipment.mode === 'Karayolu'" class="space-y-3">
+                <input x-model="newShipment.plate" type="text" placeholder="Plaka" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+                <input x-model="newShipment.driver" type="text" placeholder="Şoför Adı" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+                <input x-model="newShipment.phone" type="tel" placeholder="Şoför Telefonu" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+            </div>
+            <div x-show="newShipment.mode === 'Denizyolu'" class="space-y-3">
+                <input x-model="newShipment.vessel" type="text" placeholder="Gemi Adı" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+                <input x-model="newShipment.containerNo" type="text" placeholder="Konteyner No" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+                <input x-model="newShipment.containerType" type="text" placeholder="Konteyner Tipi" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+                <input x-model="newShipment.blNumber" type="text" placeholder="B/L No" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+            </div>
+            <div x-show="newShipment.mode === 'Havayolu'" class="space-y-3">
+                <input x-model="newShipment.flightNo" type="text" placeholder="Uçuş No" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+                <input x-model="newShipment.awbNumber" type="text" placeholder="AWB No" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+                <input x-model="newShipment.volWeight" type="number" min="0" placeholder="Hacimsel Ağırlık (kg)" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
+            </div>
+            <input x-model="newShipment.income" type="number" min="0.01" step="0.01" placeholder="Navlun Geliri (EUR)" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
             <div class="flex justify-end space-x-2 pt-2">
                 <button @click="showShipmentModal = false" class="px-4 py-2 text-slate-600 text-sm" x-text="t('cancelBtn')"></button>
                 <button @click="addShipment()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium" x-text="t('startBtn')"></button>
@@ -558,6 +578,7 @@
                 darkMode: false,
                 language: 'tr',
                 userRole: 'admin',
+                activeClient: null,
                 showOfferModal: false,
                 showShipmentModal: false,
                 showNotifDropdown: false,
@@ -625,6 +646,8 @@
                         ocrSub: "Otomatik Veri Doğrulama",
                         ocrDesc: "Yüklenen tüm CMR, B/L ve AWB evrakları yapay zeka ile taranmaktadır.",
                         btnConvertToShipment: "Sefer Yap",
+                        approveOffer: "Onayla",
+                        rejectOffer: "Reddet",
                         ocrApproved: "✓ OCR Onaylı Evrak",
                         ocrPending: "⚠️ Evrak Bekleniyor",
                         btnOCR: "Evrak Yükle & OCR Tara",
@@ -701,6 +724,8 @@
                         ocrSub: "Automatic Data Verification",
                         ocrDesc: "All uploaded CMR, B/L and AWB documents are verified via AI.",
                         btnConvertToShipment: "Make Shipment",
+                        approveOffer: "Approve",
+                        rejectOffer: "Reject",
                         ocrApproved: "✓ OCR Approved Doc",
                         ocrPending: "⚠️ Document Pending",
                         btnOCR: "Upload & OCR Scan",
@@ -733,15 +758,18 @@
                 handleLogin() {
                     this.isLoggedIn = true;
                     this.userRole = this.loginType === 'client' ? 'client' : 'admin';
+                    this.activeClient = this.userRole === 'client' ? 'ABC Dış Ticaret A.Ş.' : null;
                 },
                 quickLogin(role) {
                     this.isLoggedIn = true;
                     this.userRole = role;
                     this.loginType = role === 'client' ? 'client' : 'firm';
+                    this.activeClient = role === 'client' ? 'ABC Dış Ticaret A.Ş.' : null;
                 },
                 logout() {
                     this.isLoggedIn = false;
                     this.loginEmail = '';
+                    this.activeClient = null;
                 },
                 unreadCount() {
                     return this.notifications.filter(n => !n.read).length;
@@ -749,11 +777,23 @@
                 markAllAsRead() {
                     this.notifications.forEach(n => n.read = true);
                 },
+                visibleOffers() {
+                    if (this.userRole === 'client') {
+                        return this.offers.filter(offer => offer.client === this.activeClient);
+                    }
+                    return this.offers;
+                },
                 filteredShipments() {
-                    if(this.userRole === 'client') {
-                        return this.shipments.filter(s => s.client.includes('ABC') || s.client.includes('XYZ'));
+                    if (this.userRole === 'client') {
+                        return this.shipments.filter(shipment => shipment.client === this.activeClient);
                     }
                     return this.shipments;
+                },
+                approveOffer(offer) {
+                    if (offer.status === 'Beklemede') offer.status = 'Onaylandı';
+                },
+                rejectOffer(offer) {
+                    if (offer.status === 'Beklemede') offer.status = 'Reddedildi';
                 },
                 addOffer() {
                     if(!this.newOffer.client) return;
@@ -762,7 +802,11 @@
                     this.showOfferModal = false;
                 },
                 addShipment() {
-                    if(!this.newShipment.client) return;
+                    const income = Number(this.newShipment.income);
+                    if (!this.newShipment.client || !this.newShipment.route || !Number.isFinite(income) || income <= 0) {
+                        alert('Müşteri, güzergah ve sıfırdan büyük navlun geliri girin.');
+                        return;
+                    }
                     const modePrefix = this.newShipment.mode === 'Denizyolu' ? 'SEA-' : this.newShipment.mode === 'Havayolu' ? 'AIR-' : 'TR-';
                     this.shipments.push({
                         id: Date.now(),
@@ -770,10 +814,11 @@
                         code: modePrefix + Math.floor(1000 + Math.random() * 9000),
                         status: 'Yükleme Bekliyor',
                         docUploaded: false,
-                        income: Number(this.newShipment.income) || 2500,
+                        income,
                         expense1: 600,
                         expense2: 150
                     });
+                    this.newShipment = { mode: 'Karayolu', client: '', route: '', plate: '', driver: '', phone: '', vessel: '', containerNo: '', containerType: '', blNumber: '', flightNo: '', awbNumber: '', volWeight: '', income: 2500 };
                     this.showShipmentModal = false;
                 },
                 convertToShipment(offer) {
@@ -818,7 +863,7 @@
                     });
                 },
                 newOffer: { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', cargo: '', amount: '', currency: 'EUR' },
-                newShipment: { mode: 'Karayolu', client: '', route: '', income: 2500 }
+                newShipment: { mode: 'Karayolu', client: '', route: '', plate: '', driver: '', phone: '', vessel: '', containerNo: '', containerType: '', blNumber: '', flightNo: '', awbNumber: '', volWeight: '', income: 2500 }
             }
         }
     </script>
