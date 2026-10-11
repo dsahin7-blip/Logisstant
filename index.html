@@ -40,10 +40,19 @@
                     <input type="password" placeholder="••••••••" class="w-full mt-1 p-3 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
                 </div>
 
+                <!-- Beni Hatırla Seçeneği -->
+                <div class="flex items-center justify-between text-xs">
+                    <label class="flex items-center space-x-2 text-slate-600 dark:text-slate-400 cursor-pointer">
+                        <input type="checkbox" x-model="rememberMe" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4">
+                        <span x-text="t('rememberMe')"></span>
+                    </label>
+                    <a href="#" @click.prevent="alert('Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.')" class="text-blue-600 dark:text-blue-400 hover:underline" x-text="t('forgotPass')"></a>
+                </div>
+
                 <button @click="handleLogin()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition" x-text="loginType === 'firm' ? t('firmBtn') : t('clientBtn')"></button>
             </div>
 
-            <!-- Hızlı Test Girişleri -->
+            <!-- Hızlı Test Girişleri (Emojisiz) -->
             <div class="border-t border-slate-200 dark:border-slate-800 pt-4 space-y-2">
                 <p class="text-[11px] text-center text-slate-400 uppercase tracking-wider font-bold" x-text="t('quickTest')"></p>
                 <div class="grid grid-cols-2 gap-2">
@@ -382,10 +391,11 @@
                 </div>
             </div>
 
-            <!-- TAB 7: SETTINGS & PROFILE -->
+            <!-- TAB 7: SETTINGS & PROFILE (Zenginleştirilmiş Ayarlar) -->
             <div x-show="tab === 'settings'" class="space-y-6">
                 <h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('settingsTitle')"></h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Profilim -->
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
                         <h3 class="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3" x-text="t('profileTitle')"></h3>
                         <div class="space-y-3 text-sm">
@@ -397,9 +407,10 @@
                                 <label class="text-xs text-slate-500" x-text="t('emailLabel')"></label>
                                 <input type="email" value="admin@lojistikasistani.com" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
                             </div>
-                            <button @click="alert('Profil güncellendi')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('saveBtn')"></button>
+                            <button @click="alert('Profil bilgileri güncellendi.')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('saveBtn')"></button>
                         </div>
                     </div>
+                    <!-- Firma Genel Ayarları -->
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
                         <h3 class="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3" x-text="t('firmSettingsTitle')"></h3>
                         <div class="space-y-3 text-sm">
@@ -407,7 +418,45 @@
                                 <label class="text-xs text-slate-500" x-text="t('firmNameLabel')"></label>
                                 <input type="text" value="Lojistik Asistanı A.Ş." class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
                             </div>
-                            <button @click="alert('Firma ayarları kaydedildi')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('saveBtn')"></button>
+                            <div>
+                                <label class="text-xs text-slate-500" x-text="t('defaultCurrency')"></label>
+                                <select class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
+                                    <option>EUR (€)</option>
+                                    <option>USD ($)</option>
+                                    <option>TRY (₺)</option>
+                                </select>
+                            </div>
+                            <button @click="alert('Firma ayarları kaydedildi.')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('saveBtn')"></button>
+                        </div>
+                    </div>
+                    <!-- Güvenlik & Şifre -->
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
+                        <h3 class="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3" x-text="t('securityTitle')"></h3>
+                        <div class="space-y-3 text-sm">
+                            <div>
+                                <label class="text-xs text-slate-500" x-text="t('currentPass')"></label>
+                                <input type="password" placeholder="••••••••" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-500" x-text="t('newPass')"></label>
+                                <input type="password" placeholder="••••••••" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
+                            </div>
+                            <button @click="alert('Şifre başarıyla değiştirildi.')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('updatePassBtn')"></button>
+                        </div>
+                    </div>
+                    <!-- Bildirim Tercihleri -->
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
+                        <h3 class="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3" x-text="t('notifPrefTitle')"></h3>
+                        <div class="space-y-3 text-sm">
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="checkbox" checked class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4">
+                                <span class="text-slate-700 dark:text-slate-300 text-xs" x-text="t('emailAlerts')"></span>
+                            </label>
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="checkbox" checked class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4">
+                                <span class="text-slate-700 dark:text-slate-300 text-xs" x-text="t('systemAlerts')"></span>
+                            </label>
+                            <button @click="alert('Bildirim tercihleri güncellendi.')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('saveBtn')"></button>
                         </div>
                     </div>
                 </div>
@@ -504,6 +553,7 @@
                 isLoggedIn: false,
                 loginType: 'firm',
                 loginEmail: '',
+                rememberMe: false,
                 tab: 'dashboard',
                 darkMode: false,
                 language: 'tr',
@@ -519,11 +569,13 @@
                         clientLogin: "Müşteri Portalı (B2B)",
                         emailLabel: "E-Posta Adresi",
                         passLabel: "Şifre",
+                        rememberMe: "Beni Hatırla",
+                        forgotPass: "Şifremi Unuttum?",
                         firmBtn: "Firma Paneline Giriş Yap",
                         clientBtn: "Müşteri Portalına Giriş Yap",
                         quickTest: "Hızlı Test Etmek İçin:",
-                        adminFast: "🚀 Admin Olarak Gir",
-                        clientFast: "📦 Müşteri Olarak Gir",
+                        adminFast: "Admin Olarak Gir",
+                        clientFast: "Müşteri Olarak Gir",
                         notifTitle: "Bildirim Merkezi",
                         readAll: "Tümünü Okundu Say",
                         settings: "Ayarlar",
@@ -553,6 +605,14 @@
                         profileTitle: "Profil Bilgilerim",
                         firmSettingsTitle: "Firma Genel Ayarları",
                         firmNameLabel: "Firma Ünvanı",
+                        defaultCurrency: "Varsayılan Para Birimi",
+                        securityTitle: "Güvenlik & Şifre Değiştir",
+                        currentPass: "Mevcut Şifre",
+                        newPass: "Yeni Şifre",
+                        updatePassBtn: "Şifreyi Güncelle",
+                        notifPrefTitle: "Bildirim Tercihleri",
+                        emailAlerts: "Önemli durumlarda e-posta bildirimi gönder",
+                        systemAlerts: "Sistem içi uyarıları aktif et",
                         nameLabel: "Ad Soyad",
                         saveBtn: "Değişiklikleri Kaydet",
                         modalOfferTitle: "Yeni Teklif Oluştur",
@@ -585,6 +645,8 @@
                         clientLogin: "Client Portal (B2B)",
                         emailLabel: "Email Address",
                         passLabel: "Password",
+                        rememberMe: "Remember Me",
+                        forgotPass: "Forgot Password?",
                         firmBtn: "Login to Firm Panel",
                         clientBtn: "Login to Client Portal",
                         quickTest: "Quick Test Options:",
@@ -619,6 +681,14 @@
                         profileTitle: "My Profile",
                         firmSettingsTitle: "Firm General Settings",
                         firmNameLabel: "Company Name",
+                        defaultCurrency: "Default Currency",
+                        securityTitle: "Security & Password Change",
+                        currentPass: "Current Password",
+                        newPass: "New Password",
+                        updatePassBtn: "Update Password",
+                        notifPrefTitle: "Notification Preferences",
+                        emailAlerts: "Send email notifications on critical events",
+                        systemAlerts: "Enable in-app system warnings",
                         nameLabel: "Full Name",
                         saveBtn: "Save Changes",
                         modalOfferTitle: "Create New Offer",
