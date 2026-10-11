@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lojistik Asistanı</title>
+    <title>Logisstant</title>
     <style>[x-cloak] { display: none !important; }</style>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -140,7 +140,7 @@
                 <div class="bg-gradient-to-r from-blue-900 to-blue-950 rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
                     <div>
                         <h2 class="text-2xl font-bold" x-text="userRole === 'client' ? t('dashWelcomeClient') : t('dashWelcomeFirm')"></h2>
-                        <p class="text-blue-200 text-sm mt-1" x-text="t('dashSub')"></p>
+                        <p class="text-blue-200 text-sm mt-1" x-text="userRole === 'client' ? t('dashSubClient') : t('dashSubFirm')"></p>
                     </div>
                     <div class="flex space-x-3" x-show="userRole !== 'client'">
                         <button @click="showOfferModal = true" class="bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-xl font-medium text-sm shadow transition" x-text="t('btnNewOffer')"></button>
@@ -298,7 +298,7 @@
 
             <!-- TAB 4: REPORTS & BI -->
             <div x-show="tab === 'reports' && userRole !== 'operation' && userRole !== 'client'" class="space-y-6">
-                <h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navReports')"></h2>
+                <div><h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navReports')"></h2><p class="text-sm text-slate-500 mt-1" x-text="t('sampleDataNotice')"></p></div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
                         <h3 class="font-bold text-slate-900 dark:text-white text-sm" x-text="t('reportRoutes')"></h3>
@@ -375,7 +375,7 @@
                     <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
                         <thead class="bg-slate-50 dark:bg-slate-950">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Fatura No</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase" x-text="t('invoiceNumber')"></th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase" x-text="t('tblClient')"></th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase" x-text="t('tblAmount')"></th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase" x-text="t('tblStatus')"></th>
@@ -384,10 +384,10 @@
                         </thead>
                         <tbody class="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
                             <tr>
-                                <td class="px-6 py-4 font-mono font-bold text-slate-900 dark:text-white">ETRN2026000001</td>
+                                <td class="px-6 py-4 font-mono font-bold text-slate-900 dark:text-white">DEMO-2026-001</td>
                                 <td class="px-6 py-4 text-slate-800 dark:text-slate-200">ABC Dış Ticaret A.Ş.</td>
                                 <td class="px-6 py-4 font-semibold text-slate-900 dark:text-white">2.400 EUR</td>
-                                <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-full font-medium">e-Arşiv Onaylandı</span></td>
+                                <td class="px-6 py-4"><span class="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 text-xs px-2.5 py-1 rounded-full font-medium" x-text="t('sampleRecord')"></span></td>
                                 <td class="px-6 py-4 text-right">
                                     <button @click="alert(t('demoXmlNotice'))" class="bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-3 py-1 rounded text-xs font-medium" x-text="t('downloadXmlDemo')"></button>
                                 </td>
@@ -586,8 +586,8 @@
                 showNotifDropdown: false,
                 labels: {
                     tr: {
-                        brand: "Lojistik Asistanı",
-                        loginSubtitle: "Çok Modlu Uluslararası Lojistik Platformu",
+                        brand: "Logisstant",
+                        loginSubtitle: "Tekliften teslimata lojistik süreçlerinizi tek ekranda yönetin.",
                         demoNotice: "Demo sürümü: giriş ve veriler gerçek hizmetlere bağlanmaz; yaptığın değişiklikler kalıcı olarak saklanmaz.",
                         demoResetNotice: "Demo sürümünde şifre sıfırlama e-postası gönderilmiyor.",
                         demoSettingsNotice: "Demo sürümünde ayarlar kaydedilmiyor.",
@@ -607,7 +607,12 @@
                         forgotPass: "Şifremi Unuttum?",
                         firmBtn: "Firma Paneline Giriş Yap",
                         clientBtn: "Müşteri Portalına Giriş Yap",
-                        quickTest: "Hızlı Test Etmek İçin:",
+                        quickTest: "Demo giriş seçenekleri:",
+                        invoiceNumber: "Fatura No",
+                        sampleRecord: "Demo örnek kaydı",
+                        sampleDataNotice: "Bu ekrandaki rapor rakamları örnek veridir; gerçek operasyon veya finans kayıtlarını yansıtmaz.",
+                        dashSubFirm: "Teklifleri, sevkiyatları ve operasyon durumunu tek ekrandan takip edin.",
+                        dashSubClient: "Tekliflerinizi ve sevkiyat durumunuzu buradan takip edin.",
                         adminFast: "Admin Olarak Gir",
                         clientFast: "Müşteri Olarak Gir",
                         notifTitle: "Bildirim Merkezi",
@@ -655,8 +660,8 @@
                         startBtn: "Seferi Başlat",
                         recentShipments: "Son Aktif Seferler",
                         viewAll: "Tümünü Gör",
-                        ocrTitle: "Akıllı Evrak OCR Asistanı",
-                        ocrSub: "Otomatik Veri Doğrulama",
+                        ocrTitle: "Evrak İşleme (Demo)",
+                        ocrSub: "OCR henüz etkin değil",
                         ocrDesc: "OCR demodur; henüz dosya yükleme veya belge işleme yapılmıyor.",
                         btnConvertToShipment: "Sefer Yap",
                         approveOffer: "Onayla",
@@ -671,12 +676,12 @@
                         m2Air: "2. Uçuşta",
                         m3: "3. Gümrükte",
                         m4: "4. Teslim Edildi",
-                        reportRoutes: "En Karlı Güzergahlar",
-                        reportModes: "Taşıma Modu Dağılımı"
+                        reportRoutes: "Örnek: En Karlı Güzergahlar",
+                        reportModes: "Örnek: Taşıma Modu Dağılımı"
                     },
                     en: {
-                        brand: "Logistics Assistant",
-                        loginSubtitle: "Multi-Modal International Logistics Platform",
+                        brand: "Logisstant",
+                        loginSubtitle: "Manage logistics from quote to delivery in one place.",
                         demoNotice: "Demo version: sign-in and data are not connected to real services; changes are not saved permanently.",
                         demoResetNotice: "Password reset email is not sent in the demo.",
                         demoSettingsNotice: "Settings are not saved in the demo.",
@@ -696,7 +701,12 @@
                         forgotPass: "Forgot Password?",
                         firmBtn: "Login to Firm Panel",
                         clientBtn: "Login to Client Portal",
-                        quickTest: "Quick Test Options:",
+                        quickTest: "Demo sign-in options:",
+                        invoiceNumber: "Invoice No.",
+                        sampleRecord: "Demo sample record",
+                        sampleDataNotice: "Figures on this screen are examples and do not represent real operational or financial records.",
+                        dashSubFirm: "Track offers, shipments, and operations from one place.",
+                        dashSubClient: "Track your offers and shipment status here.",
                         adminFast: "Login as Admin",
                         clientFast: "Login as Client",
                         notifTitle: "Notification Center",
@@ -744,8 +754,8 @@
                         startBtn: "Start Shipment",
                         recentShipments: "Recent Active Shipments",
                         viewAll: "View All",
-                        ocrTitle: "Smart OCR Assistant",
-                        ocrSub: "Automatic Data Verification",
+                        ocrTitle: "Document Processing (Demo)",
+                        ocrSub: "OCR is not active yet",
                         ocrDesc: "OCR is a demo placeholder; document upload and processing are not available yet.",
                         btnConvertToShipment: "Make Shipment",
                         approveOffer: "Approve",
@@ -760,8 +770,8 @@
                         m2Air: "2. In Flight",
                         m3: "3. At Customs",
                         m4: "4. Delivered",
-                        reportRoutes: "Most Profitable Routes",
-                        reportModes: "Transportation Mode Distribution"
+                        reportRoutes: "Example: Most Profitable Routes",
+                        reportModes: "Example: Transportation Mode Distribution"
                     }
                 },
                 t(key) {
