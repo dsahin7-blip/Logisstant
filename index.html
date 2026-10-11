@@ -70,7 +70,7 @@
         <p role="status" class="bg-amber-100 dark:bg-amber-950 px-4 py-2 text-center text-xs text-amber-900 dark:text-amber-100" x-text="t('demoNotice')"></p>
         <!-- Header / Navbar -->
         <header class="bg-blue-950 dark:bg-slate-900 text-white shadow-lg border-b border-blue-900/50">
-            <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap gap-3 justify-between items-center">
                 <div class="flex items-center space-x-3">
                     <span class="text-2xl font-bold tracking-tight" x-text="t('brand')"></span>
                 </div>
@@ -152,15 +152,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider" x-text="t('statActive')"></p>
-                        <p class="text-3xl font-bold text-slate-900 dark:text-white mt-2" x-text="filteredShipments().length"></p>
+                        <p class="text-3xl font-bold text-slate-900 dark:text-white mt-2" x-text="activeShipmentCount()"></p>
                     </div>
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider" x-text="t('statOffers')"></p>
-                        <p class="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-2" x-text="visibleOffers().length"></p>
+                        <p class="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-2" x-text="pendingOfferCount()"></p>
                     </div>
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider" x-text="t('statOnRoad')"></p>
-                        <p class="text-3xl font-bold text-amber-600 dark:text-amber-400 mt-2" x-text="filteredShipments().filter(s => s.status !== 'Teslim Edildi' && s.status !== 'Yükleme Bekliyor').length"></p>
+                        <p class="text-3xl font-bold text-amber-600 dark:text-amber-400 mt-2" x-text="inTransitCount()"></p>
                     </div>
                     <div x-show="userRole !== 'operation' && userRole !== 'client'" class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider" x-text="t('statProfit')"></p>
@@ -188,6 +188,7 @@
                                     <span class="text-xs px-2.5 py-1 rounded-full font-medium bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300" x-text="shipment.status"></span>
                                 </div>
                             </template>
+                            <p x-show="filteredShipments().length === 0" class="text-sm text-slate-500 py-4" x-text="t('noShipmentsFound')"></p>
                         </div>
                     </div>
 
@@ -203,13 +204,13 @@
 
             <!-- TAB 2: OFFERS -->
             <div x-show="tab === 'offers'" class="space-y-6">
-                <div class="flex justify-between items-center">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                     <h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navOffers')"></h2>
                     <button x-show="userRole !== 'client'" @click="showOfferModal = true" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition" x-text="t('btnNewOffer')"></button>
                 </div>
-
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><input x-model.trim="offerSearch" type="search" :placeholder="t('searchOffers')" class="w-full p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 dark:text-white text-sm"><select x-model="offerStatusFilter" class="w-full p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 dark:text-white text-sm"><option value="all" x-text="t('allOfferStatuses')"></option><option value="Beklemede" x-text="t('offerPending')"></option><option value="Onaylandı" x-text="t('offerApproved')"></option><option value="Reddedildi" x-text="t('offerRejected')"></option></select></div>
                 <div class="bg-white dark:bg-slate-900 shadow-sm rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                    <div class="overflow-x-auto"><table class="min-w-[760px] w-full divide-y divide-slate-200 dark:divide-slate-800">
                         <thead class="bg-slate-50 dark:bg-slate-950">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase" x-text="t('tblClient')"></th>
@@ -222,7 +223,7 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
-                            <template x-for="offer in visibleOffers()" :key="offer.id">
+                            <template x-for="offer in filteredOffers()" :key="offer.id">
                                 <tr>
                                     <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">
                                         <span class="text-xs px-2 py-0.5 rounded mr-1 font-semibold" :class="{'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300': offer.mode === 'Denizyolu', 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300': offer.mode === 'Havayolu', 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300': offer.mode === 'Karayolu'}" x-text="offer.mode"></span>
@@ -247,21 +248,21 @@
                                     </td>
                                 </tr>
                             </template>
+                            <tr x-show="filteredOffers().length === 0"><td colspan="7" class="px-6 py-8 text-center text-slate-500" x-text="t('noOffersFound')"></td></tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 </div>
             </div>
 
             <!-- TAB 3: SHIPMENTS -->
             <div x-show="tab === 'shipments'" class="space-y-6">
-                <div class="flex justify-between items-center">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                     <h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navShipments')"></h2>
                     <button x-show="userRole !== 'client'" @click="showShipmentModal = true" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition" x-text="t('btnNewShipment')"></button>
-                </div>
-
+                </div><div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><input x-model.trim="shipmentSearch" type="search" :placeholder="t('searchShipments')" class="w-full p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 dark:text-white text-sm"><select x-model="shipmentStatusFilter" class="w-full p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 dark:text-white text-sm"><option value="all" x-text="t('allShipmentStatuses')"></option><option value="pending" x-text="t('shipmentPending')"></option><option value="progress" x-text="t('shipmentInProgress')"></option><option value="delivered" x-text="t('shipmentDelivered')"></option></select></div>
                 <div class="grid grid-cols-1 gap-6">
                     <template x-for="shipment in filteredShipments()" :key="shipment.id">
-                        <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-6">
+                        <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-6">
                             <div class="flex flex-col md:flex-row justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
                                 <div>
                                     <div class="flex items-center space-x-2">
@@ -285,56 +286,30 @@
                             <div>
                                 <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3" x-text="t('milestoneTitle')"></p>
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
-                                    <button :disabled="userRole === 'client'" @click="shipment.status = 'Yükleme Bekliyor'" :class="shipment.status === 'Yükleme Bekliyor' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition" x-text="t('m1')"></button>
-                                    <button :disabled="userRole === 'client'" @click="shipment.status = (shipment.mode === 'Denizyolu' ? 'Denizde' : shipment.mode === 'Havayolu' ? 'Uçuşta' : 'Yola Çıktı')" :class="shipment.status === 'Yola Çıktı' || shipment.status === 'Denizde' || shipment.status === 'Uçuşta' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition" x-text="shipment.mode === 'Denizyolu' ? t('m2Sea') : shipment.mode === 'Havayolu' ? t('m2Air') : t('m2Road')"></button>
-                                    <button :disabled="userRole === 'client'" @click="shipment.status = 'Gümrükte'" :class="shipment.status === 'Gümrükte' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition" x-text="t('m3')"></button>
-                                    <button :disabled="userRole === 'client'" @click="shipment.status = 'Teslim Edildi'" :class="shipment.status === 'Teslim Edildi' ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition" x-text="t('m4')"></button>
+                                    <button :disabled="userRole === 'client'" @click="updateShipmentStatus(shipment, 'Yükleme Bekliyor')" :class="shipment.status === 'Yükleme Bekliyor' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition" x-text="t('m1')"></button>
+                                    <button :disabled="userRole === 'client'" @click="updateShipmentStatus(shipment, shipment.mode === 'Denizyolu' ? 'Denizde' : shipment.mode === 'Havayolu' ? 'Uçuşta' : 'Yola Çıktı')" :class="shipment.status === 'Yola Çıktı' || shipment.status === 'Denizde' || shipment.status === 'Uçuşta' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition" x-text="shipment.mode === 'Denizyolu' ? t('m2Sea') : shipment.mode === 'Havayolu' ? t('m2Air') : t('m2Road')"></button>
+                                    <button :disabled="userRole === 'client'" @click="updateShipmentStatus(shipment, 'Gümrükte')" :class="shipment.status === 'Gümrükte' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition" x-text="t('m3')"></button>
+                                    <button :disabled="userRole === 'client'" @click="updateShipmentStatus(shipment, 'Teslim Edildi')" :class="shipment.status === 'Teslim Edildi' ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition" x-text="t('m4')"></button>
                                 </div>
-                            </div>
+                            </div><div class="flex justify-end border-t border-slate-200 dark:border-slate-800 pt-4"><button @click="selectedShipment = shipment" class="w-full sm:w-auto bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-xl text-sm font-semibold" x-text="t('viewShipmentDetails')"></button></div>
                         </div>
-                    </template>
+                    </template><p x-show="filteredShipments().length === 0" class="text-sm text-slate-500 text-center py-8" x-text="t('noShipmentsFound')"></p>
                 </div>
             </div>
 
             <!-- TAB 4: REPORTS & BI -->
             <div x-show="tab === 'reports' && userRole !== 'operation' && userRole !== 'client'" class="space-y-6">
-                <div><h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navReports')"></h2><p class="text-sm text-slate-500 mt-1" x-text="t('sampleDataNotice')"></p></div>
+                <div><h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navReports')"></h2><p class="text-sm text-slate-500 mt-1" x-text="t('liveReportNotice')"></p></div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
                         <h3 class="font-bold text-slate-900 dark:text-white text-sm" x-text="t('reportRoutes')"></h3>
-                        <div class="space-y-3 text-xs">
-                            <div>
-                                <div class="flex justify-between font-semibold mb-1">
-                                    <span>İstanbul ➡️ Rotterdam (Deniz)</span>
-                                    <span class="text-emerald-600">3.800 EUR</span>
-                                </div>
-                                <div class="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden"><div class="bg-blue-600 h-full rounded-full" style="width: 85%"></div></div>
-                            </div>
-                            <div>
-                                <div class="flex justify-between font-semibold mb-1">
-                                    <span>Frankfurt ➡️ İstanbul (Hava)</span>
-                                    <span class="text-emerald-600">4.500 EUR</span>
-                                </div>
-                                <div class="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden"><div class="bg-indigo-600 h-full rounded-full" style="width: 95%"></div></div>
-                            </div>
-                        </div>
+                        <template x-for="item in routeProfitReport()" :key="item.route"><div class="space-y-2 text-xs"><div class="flex justify-between gap-3 font-semibold"><span x-text="item.route" class="text-slate-700 dark:text-slate-300"></span><span class="text-emerald-600 whitespace-nowrap" x-text="item.profit.toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US') + ' EUR'"></span></div><div class="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden"><div class="bg-blue-600 h-full rounded-full" :style="'width:' + item.percent + '%'"></div></div></div></template>
+                        <p x-show="routeProfitReport().length === 0" class="text-sm text-slate-500" x-text="t('noReportData')"></p>
                     </div>
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
                         <h3 class="font-bold text-slate-900 dark:text-white text-sm" x-text="t('reportModes')"></h3>
-                        <div class="space-y-3 text-xs">
-                            <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
-                                <span class="font-semibold">Karayolu</span>
-                                <span class="bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full font-bold">45%</span>
-                            </div>
-                            <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
-                                <span class="font-semibold">Denizyolu</span>
-                                <span class="bg-cyan-100 text-cyan-800 px-2.5 py-1 rounded-full font-bold">40%</span>
-                            </div>
-                            <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
-                                <span class="font-semibold">Havayolu</span>
-                                <span class="bg-indigo-100 text-indigo-800 px-2.5 py-1 rounded-full font-bold">15%</span>
-                            </div>
-                        </div>
+                        <template x-for="item in modeDistribution()" :key="item.mode"><div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-xl"><span class="font-semibold" x-text="item.label"></span><span class="bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full font-bold" x-text="item.percent + '%'"></span></div></template>
+                        <p x-show="filteredShipments().length === 0" class="text-sm text-slate-500" x-text="t('noReportData')"></p>
                     </div>
                 </div>
             </div>
@@ -371,8 +346,8 @@
             <!-- TAB 6: INVOICES -->
             <div x-show="tab === 'invoices' && (userRole === 'admin' || userRole === 'finance')" class="space-y-6">
                 <h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navInvoices')"></h2>
-                <div class="bg-white dark:bg-slate-900 shadow-sm rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                <div class="bg-white dark:bg-slate-900 shadow-sm rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden"><div class="overflow-x-auto">
+                    <table class="min-w-[560px] w-full divide-y divide-slate-200 dark:divide-slate-800">
                         <thead class="bg-slate-50 dark:bg-slate-950">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase" x-text="t('invoiceNumber')"></th>
@@ -393,7 +368,7 @@
                                 </td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 </div>
             </div>
 
@@ -462,18 +437,19 @@
                                 <input type="checkbox" checked class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4">
                                 <span class="text-slate-700 dark:text-slate-300 text-xs" x-text="t('systemAlerts')"></span>
                             </label>
-                            <button @click="alert(t('demoSettingsNotice'))" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('saveBtn')"></button>
+                            <div class="flex flex-wrap gap-3"><button @click="alert(t('demoSettingsNotice'))" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('saveBtn')"></button><button @click="if(confirm(t('confirmResetDemoData'))) resetDemoData()" class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('resetDemoData')"></button></div>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <div x-show="selectedShipment" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-50" @keydown.escape.window="selectedShipment = null" x-cloak><section class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5" role="dialog" aria-modal="true" :aria-label="t('shipmentDetailsTitle')"><div class="flex justify-between items-start gap-4"><div><h3 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('shipmentDetailsTitle')"></h3><p class="text-sm text-slate-500 mt-1" x-show="selectedShipment" x-text="selectedShipment ? selectedShipment.code + ' · ' + selectedShipment.route : ''"></p></div><button @click="selectedShipment = null" class="text-slate-500 text-xl" aria-label="Close">×</button></div><template x-if="selectedShipment"><div class="space-y-5"><div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm"><div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-3"><span class="block text-xs text-slate-500" x-text="t('tblClient')"></span><strong x-text="selectedShipment.client"></strong></div><div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-3"><span class="block text-xs text-slate-500" x-text="t('tblRoute')"></span><strong x-text="selectedShipment.route"></strong></div><div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-3"><span class="block text-xs text-slate-500" x-text="t('detailMode')"></span><strong x-text="selectedShipment.mode"></strong></div><div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-3"><span class="block text-xs text-slate-500" x-text="t('tblStatus')"></span><strong x-text="selectedShipment.status"></strong></div><div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-3"><span class="block text-xs text-slate-500" x-text="t('detailCargo')"></span><strong x-text="selectedShipment.cargo || '—'"></strong></div><div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-3"><span class="block text-xs text-slate-500" x-text="t('detailIncome')"></span><strong x-text="(selectedShipment.income || 0).toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US') + ' EUR'"></strong></div></div><div><h4 class="font-bold text-slate-900 dark:text-white mb-3" x-text="t('milestoneTitle')"></h4><div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs"><template x-for="stage in shipmentStages(selectedShipment)" :key="stage.status"><div :class="stage.complete ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'" class="rounded-xl p-3 font-semibold" x-text="stage.label"></div></template></div></div><div class="space-y-2" x-show="selectedShipment.history && selectedShipment.history.length"><h4 class="font-bold text-slate-900 dark:text-white" x-text="t('statusHistory')"></h4><template x-for="(event, index) in (selectedShipment.history || []).slice().reverse()" :key="index"><div class="flex justify-between gap-3 text-xs border-l-2 border-blue-500 pl-3 py-1"><span x-text="event.status"></span><span class="text-slate-500" x-text="event.at"></span></div></template></div></div></template></section></div>
         </main>
     </div>
 
     <!-- MODAL: YENİ TEKLİF -->
     <div x-show="showOfferModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" x-cloak>
-        <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
             <h3 class="text-lg font-bold text-slate-900 dark:text-white" x-text="t('modalOfferTitle')"></h3>
             <select x-model="newOffer.mode" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
                 <option value="Karayolu">Karayolu</option>
@@ -499,7 +475,7 @@
 
     <!-- MODAL: YENİ SEVKİYAT -->
     <div x-show="showShipmentModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" x-cloak>
-        <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
             <h3 class="text-lg font-bold text-slate-900 dark:text-white" x-text="t('modalShipmentTitle')"></h3>
             <select x-model="newShipment.mode" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
                 <option value="Karayolu">Karayolu</option>
@@ -583,12 +559,14 @@
                 activeClient: null,
                 showOfferModal: false,
                 showShipmentModal: false,
+                selectedShipment: null,
+                offerSearch: '', offerStatusFilter: 'all', shipmentSearch: '', shipmentStatusFilter: 'all',
                 showNotifDropdown: false,
                 labels: {
                     tr: {
                         brand: "Logisstant",
                         loginSubtitle: "Tekliften teslimata lojistik süreçlerinizi tek ekranda yönetin.",
-                        demoNotice: "Demo sürümü: giriş ve veriler gerçek hizmetlere bağlanmaz; yaptığın değişiklikler kalıcı olarak saklanmaz.",
+                        demoNotice: "Demo sürümü: giriş gerçek bir hesaba bağlı değildir. Kayıtlar yalnızca bu tarayıcıda saklanır; sunucuya gönderilmez.",
                         demoResetNotice: "Demo sürümünde şifre sıfırlama e-postası gönderilmiyor.",
                         demoSettingsNotice: "Demo sürümünde ayarlar kaydedilmiyor.",
                         demoPasswordNotice: "Demo sürümünde parola değiştirilmiyor.",
@@ -610,7 +588,16 @@
                         quickTest: "Demo giriş seçenekleri:",
                         invoiceNumber: "Fatura No",
                         sampleRecord: "Demo örnek kaydı",
+                        reportRoutes: "Güzergâha göre net kâr", reportModes: "Taşıma modu dağılımı",
+                        confirmResetDemoData: "Bu tarayıcıdaki demo teklif ve sevkiyat kayıtları silinip örnek veriler geri yüklenecek. Devam edilsin?",
                         sampleDataNotice: "Bu ekrandaki rapor rakamları örnek veridir; gerçek operasyon veya finans kayıtlarını yansıtmaz.",
+                        resetDemoData: "Demo kayıtlarını sıfırla",
+                        searchOffers: "Müşteri, güzergah veya yük ara", searchShipments: "Sefer no, müşteri veya güzergah ara",
+                        allOfferStatuses: "Tüm teklif durumları", offerPending: "Beklemede", offerApproved: "Onaylandı", offerRejected: "Reddedildi",
+                        allShipmentStatuses: "Tüm sevkiyat durumları", shipmentPending: "Yükleme bekliyor", shipmentInProgress: "Devam ediyor", shipmentDelivered: "Teslim edildi",
+                        noShipmentsFound: "Aramanızla eşleşen sevkiyat bulunamadı.", noOffersFound: "Aramanızla eşleşen teklif bulunamadı.",
+                        viewShipmentDetails: "Sevkiyat detaylarını gör", shipmentDetailsTitle: "Sevkiyat detayları", detailMode: "Taşıma modu", detailCargo: "Yük bilgisi", detailIncome: "Navlun geliri", statusHistory: "Durum geçmişi",
+                        liveReportNotice: "Raporlar sevkiyat kayıtlarınızdan hesaplanır.", noReportData: "Henüz rapor oluşturacak sevkiyat kaydı yok.", modeRoad: "Karayolu", modeSea: "Denizyolu", modeAir: "Havayolu",
                         dashSubFirm: "Teklifleri, sevkiyatları ve operasyon durumunu tek ekrandan takip edin.",
                         dashSubClient: "Tekliflerinizi ve sevkiyat durumunuzu buradan takip edin.",
                         adminFast: "Admin Olarak Gir",
@@ -631,7 +618,7 @@
                         btnNewOffer: "+ Yeni Teklif",
                         btnNewShipment: "+ Sefer Başlat",
                         statActive: "Aktif Sevkiyatlar",
-                        statOffers: "Toplam Teklifler",
+                        statOffers: "Bekleyen Teklifler",
                         statOnRoad: "Yoldaki Yükler",
                         statProfit: "Toplam Net Kâr",
                         tblClient: "Müşteri",
@@ -676,13 +663,11 @@
                         m2Air: "2. Uçuşta",
                         m3: "3. Gümrükte",
                         m4: "4. Teslim Edildi",
-                        reportRoutes: "Örnek: En Karlı Güzergahlar",
-                        reportModes: "Örnek: Taşıma Modu Dağılımı"
                     },
                     en: {
                         brand: "Logisstant",
                         loginSubtitle: "Manage logistics from quote to delivery in one place.",
-                        demoNotice: "Demo version: sign-in and data are not connected to real services; changes are not saved permanently.",
+                        demoNotice: "Demo version: sign-in is not connected to a real account. Records are stored only in this browser and are not sent to a server.",
                         demoResetNotice: "Password reset email is not sent in the demo.",
                         demoSettingsNotice: "Settings are not saved in the demo.",
                         demoPasswordNotice: "Password is not changed in the demo.",
@@ -704,7 +689,16 @@
                         quickTest: "Demo sign-in options:",
                         invoiceNumber: "Invoice No.",
                         sampleRecord: "Demo sample record",
+                        reportRoutes: "Net profit by route", reportModes: "Shipments by transport mode",
+                        confirmResetDemoData: "This will remove demo offers and shipments saved in this browser and restore the sample records. Continue?",
                         sampleDataNotice: "Figures on this screen are examples and do not represent real operational or financial records.",
+                        resetDemoData: "Reset demo records",
+                        searchOffers: "Search client, route, or cargo", searchShipments: "Search shipment no., client, or route",
+                        allOfferStatuses: "All offer statuses", offerPending: "Pending", offerApproved: "Approved", offerRejected: "Rejected",
+                        allShipmentStatuses: "All shipment statuses", shipmentPending: "Awaiting loading", shipmentInProgress: "In progress", shipmentDelivered: "Delivered",
+                        noShipmentsFound: "No shipments match your search.", noOffersFound: "No offers match your search.",
+                        viewShipmentDetails: "View shipment details", shipmentDetailsTitle: "Shipment details", detailMode: "Transport mode", detailCargo: "Cargo", detailIncome: "Freight income", statusHistory: "Status history",
+                        liveReportNotice: "Reports are calculated from your shipment records.", noReportData: "There are no shipment records to report yet.", modeRoad: "Road", modeSea: "Sea", modeAir: "Air",
                         dashSubFirm: "Track offers, shipments, and operations from one place.",
                         dashSubClient: "Track your offers and shipment status here.",
                         adminFast: "Login as Admin",
@@ -725,7 +719,7 @@
                         btnNewOffer: "+ New Offer",
                         btnNewShipment: "+ Start Shipment",
                         statActive: "Active Shipments",
-                        statOffers: "Total Offers",
+                        statOffers: "Pending Offers",
                         statOnRoad: "On The Road",
                         statProfit: "Total Net Profit",
                         tblClient: "Client",
@@ -770,12 +764,27 @@
                         m2Air: "2. In Flight",
                         m3: "3. At Customs",
                         m4: "4. Delivered",
-                        reportRoutes: "Example: Most Profitable Routes",
-                        reportModes: "Example: Transportation Mode Distribution"
                     }
                 },
                 t(key) {
                     return this.labels[this.language][key] || key;
+                },
+                init() {
+                    try {
+                        const savedOffers = JSON.parse(localStorage.getItem('logisstant-demo-offers'));
+                        const savedShipments = JSON.parse(localStorage.getItem('logisstant-demo-shipments'));
+                        if (Array.isArray(savedOffers)) this.offers = savedOffers;
+                        if (Array.isArray(savedShipments)) this.shipments = savedShipments;
+                    } catch (error) { /* Ignore invalid browser storage and use the demo records. */ }
+                    this.$watch('offers', value => this.saveDemoData('logisstant-demo-offers', value));
+                    this.$watch('shipments', value => this.saveDemoData('logisstant-demo-shipments', value));
+                },
+                saveDemoData(key, value) {
+                    try { localStorage.setItem(key, JSON.stringify(value)); } catch (error) { /* Browser storage may be unavailable. */ }
+                },
+                resetDemoData() {
+                    try { localStorage.removeItem('logisstant-demo-offers'); localStorage.removeItem('logisstant-demo-shipments'); } catch (error) {}
+                    window.location.reload();
                 },
                 notifications: [
                     { id: 1, title: 'Yeni Sefer Başlatıldı', desc: 'TR-8842 nolu sefer yola çıktı.', time: '10 dk önce', read: false },
@@ -812,16 +821,60 @@
                     this.notifications.forEach(n => n.read = true);
                 },
                 visibleOffers() {
-                    if (this.userRole === 'client') {
-                        return this.offers.filter(offer => offer.client === this.activeClient);
-                    }
-                    return this.offers;
+                    return this.userRole === 'client' ? this.offers.filter(offer => offer.client === this.activeClient) : this.offers;
+                },
+                filteredOffers() {
+                    const query = this.offerSearch.toLocaleLowerCase(this.language === 'tr' ? 'tr-TR' : 'en-US');
+                    return this.visibleOffers().filter(offer => {
+                        const matchesQuery = !query || [offer.client, offer.route, offer.cargo].some(value => (value || '').toLocaleLowerCase(this.language === 'tr' ? 'tr-TR' : 'en-US').includes(query));
+                        return matchesQuery && (this.offerStatusFilter === 'all' || offer.status === this.offerStatusFilter);
+                    });
+                },
+                visibleShipments() {
+                    return this.userRole === 'client' ? this.shipments.filter(shipment => shipment.client === this.activeClient) : this.shipments;
                 },
                 filteredShipments() {
-                    if (this.userRole === 'client') {
-                        return this.shipments.filter(shipment => shipment.client === this.activeClient);
-                    }
-                    return this.shipments;
+                    const query = this.shipmentSearch.toLocaleLowerCase(this.language === 'tr' ? 'tr-TR' : 'en-US');
+                    return this.visibleShipments().filter(shipment => {
+                        const matchesQuery = !query || [shipment.code, shipment.client, shipment.route].some(value => (value || '').toLocaleLowerCase(this.language === 'tr' ? 'tr-TR' : 'en-US').includes(query));
+                        const matchesStatus = this.shipmentStatusFilter === 'all' || (this.shipmentStatusFilter === 'pending' ? shipment.status === 'Yükleme Bekliyor' : this.shipmentStatusFilter === 'delivered' ? shipment.status === 'Teslim Edildi' : ['Yola Çıktı', 'Denizde', 'Uçuşta', 'Gümrükte'].includes(shipment.status));
+                        return matchesQuery && matchesStatus;
+                    });
+                },
+                activeShipmentCount() { return this.visibleShipments().filter(s => s.status !== 'Teslim Edildi').length; },
+                inTransitCount() { return this.visibleShipments().filter(s => !['Teslim Edildi', 'Yükleme Bekliyor'].includes(s.status)).length; },
+                pendingOfferCount() { return this.visibleOffers().filter(offer => offer.status === 'Beklemede').length; },
+                routeProfitReport() {
+                    const routes = this.visibleShipments().reduce((result, shipment) => {
+                        const profit = Number(shipment.income || 0) - Number(shipment.expense1 || 0) - Number(shipment.expense2 || 0);
+                        result[shipment.route] = (result[shipment.route] || 0) + profit;
+                        return result;
+                    }, {});
+                    const rows = Object.entries(routes).map(([route, profit]) => ({ route, profit }));
+                    const max = Math.max(1, ...rows.map(row => Math.max(0, row.profit)));
+                    return rows.sort((a, b) => b.profit - a.profit).slice(0, 5).map(row => ({ ...row, percent: Math.max(5, Math.round(Math.max(0, row.profit) / max * 100)) }));
+                },
+                modeDistribution() {
+                    const shipments = this.visibleShipments();
+                    return [
+                        { mode: 'Karayolu', label: this.t('modeRoad') },
+                        { mode: 'Denizyolu', label: this.t('modeSea') },
+                        { mode: 'Havayolu', label: this.t('modeAir') }
+                    ].map(item => ({ ...item, percent: shipments.length ? Math.round(shipments.filter(shipment => shipment.mode === item.mode).length / shipments.length * 100) : 0 }));
+                },
+                updateShipmentStatus(shipment, status) {
+                    if (shipment.status === status) return;
+                    shipment.status = status;
+                    if (!Array.isArray(shipment.history)) shipment.history = [];
+                    shipment.history.push({ status, at: new Date().toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US') });
+                    shipment.updatedAt = new Date().toISOString();
+                },
+                shipmentStages(shipment) {
+                    const stage2 = shipment.mode === 'Denizyolu' ? 'Denizde' : shipment.mode === 'Havayolu' ? 'Uçuşta' : 'Yola Çıktı';
+                    const order = ['Yükleme Bekliyor', stage2, 'Gümrükte', 'Teslim Edildi'];
+                    const labels = [this.t('m1'), shipment.mode === 'Denizyolu' ? this.t('m2Sea') : shipment.mode === 'Havayolu' ? this.t('m2Air') : this.t('m2Road'), this.t('m3'), this.t('m4')];
+                    const current = order.indexOf(shipment.status);
+                    return order.map((status, index) => ({ status, label: labels[index], complete: current >= index }));
                 },
                 approveOffer(offer) {
                     if (offer.status === 'Beklemede') offer.status = 'Onaylandı';
@@ -851,6 +904,7 @@
                         ...this.newShipment,
                         code: modePrefix + Math.floor(1000 + Math.random() * 9000),
                         status: 'Yükleme Bekliyor',
+                        history: [{ status: 'Yükleme Bekliyor', at: new Date().toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US') }],
                         docUploaded: false,
                         income,
                         expense1: 600,
@@ -862,7 +916,7 @@
                 convertToShipment(offer) {
                     offer.converted = true;
                     const modePrefix = offer.mode === 'Denizyolu' ? 'SEA-' : offer.mode === 'Havayolu' ? 'AIR-' : 'TR-';
-                    this.shipments.push({
+                    const shipment = {
                         id: Date.now(),
                         mode: offer.mode,
                         code: modePrefix + Math.floor(1000 + Math.random() * 9000),
@@ -871,10 +925,14 @@
                         incoterm: offer.incoterm,
                         status: 'Yükleme Bekliyor',
                         docUploaded: false,
+                        cargo: offer.cargo,
                         income: offer.amount,
                         expense1: 500,
-                        expense2: 120
-                    });
+                        expense2: 120,
+                        history: [{ status: 'Yükleme Bekliyor', at: new Date().toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US') }]
+                    };
+                    this.shipments.push(shipment);
+                    this.selectedShipment = shipment;
                     this.tab = 'shipments';
                 },
                 simulateOCR() {
