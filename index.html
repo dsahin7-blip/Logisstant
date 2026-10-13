@@ -88,12 +88,12 @@
                             </div>
                             <div class="space-y-2 max-h-60 overflow-y-auto">
                                 <template x-for="notif in notifications" :key="notif.id">
-                                    <div :class="notif.read ? 'bg-slate-50 dark:bg-slate-800/40 opacity-75' : 'bg-blue-50 dark:bg-blue-950/40 border-l-2 border-blue-600'" class="p-2.5 rounded text-xs space-y-1">
-                                        <p class="font-semibold text-slate-900 dark:text-white" x-text="notif.title"></p>
-                                        <p class="text-slate-600 dark:text-slate-400" x-text="notif.desc"></p>
-                                        <span class="text-[10px] text-slate-400" x-text="notif.time"></span>
-                                    </div>
-                                </template>
+                                    <button type="button" @click="openNotification(notif)" :class="notif.read ? 'bg-slate-50 dark:bg-slate-800/40 opacity-75' : 'bg-blue-50 dark:bg-blue-950/40 border-l-2 border-blue-600'" class="w-full text-left p-2.5 rounded text-xs space-y-1 hover:ring-1 hover:ring-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <span class="block font-semibold text-slate-900 dark:text-white" x-text="notif.title"></span>
+                                        <span class="block text-slate-600 dark:text-slate-400" x-text="notif.desc"></span>
+                                        <span class="block text-[10px] text-slate-400" x-text="notif.time"></span>
+                                    </button>
+                                </template></template>
                                 <p x-show="notifications.length === 0" class="text-xs text-slate-500 text-center py-3" x-text="t('noNotifications')"></p>
                             </div>
                         </div>
@@ -229,7 +229,7 @@
                         </thead>
                         <tbody class="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
                             <template x-for="offer in filteredOffers()" :key="offer.id">
-                                <tr>
+                                <tr :id="'offer-row-' + offer.id" :class="focusedOfferId === offer.id ? 'bg-amber-50 dark:bg-amber-950/30' : ''">
                                     <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">
                                         <span class="text-xs px-2 py-0.5 rounded mr-1 font-semibold" :class="{'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300': offer.mode === 'Denizyolu', 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300': offer.mode === 'Havayolu', 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300': offer.mode === 'Karayolu'}" x-text="offer.mode"></span>
                                         <div class="mt-1" x-text="offer.client"></div>
@@ -1033,45 +1033,33 @@
                 async loadNotifications() {
                     if (!this.currentUser || !this.activeOrganization) return;
                     const { data, error } = await this.supabase.from('user_notifications')
-                        .select('id, title_key, description, is_read, created_at')
-                        .eq('user_id', this.currentUser.id)
-                        .eq('organization_id', this.activeOrganization.id)
-                        .order('created_at', { ascending: false })
-                        .limit(20);
+                        .select('id, title_key, description, entity_type, entity_id, is_read, created_at')
+                        .eq('user_id', this.currentUser.id).eq('organization_id', this.activeOrganization.id)
+                        .order('created_at', { ascending: false }).limit(20);
                     if (error) throw error;
                     this.notifications = (data || []).map(row => ({
-                        id: row.id,
-                        title: this.t(row.title_key),
-                        desc: row.description || '',
-                        time: new Date(row.created_at).toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US'),
-                        read: row.is_read
+                        id: row.id, titleKey: row.title_key, title: this.t(row.title_key),
+                        desc: row.description || '', entityType: row.entity_type || null, entityId: row.entity_id || null,
+                        time: new Date(row.created_at).toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US'), read: row.is_read
                     }));
                 },
                 subscribeToNotifications() {
                     if (!this.supabase || !this.currentUser || !this.activeOrganization) return;
                     if (this.notificationChannel) this.supabase.removeChannel(this.notificationChannel);
-                    const userId = this.currentUser.id;
-                    const organizationId = this.activeOrganization.id;
+                    const userId = this.currentUser.id, organizationId = this.activeOrganization.id;
                     this.notificationChannel = this.supabase.channel('notifications:' + userId)
                         .on('postgres_changes', {
-                            event: 'INSERT',
-                            schema: 'public',
-                            table: 'user_notifications',
-                            filter: 'user_id=eq.' + userId
+                            event: 'INSERT', schema: 'public', table: 'user_notifications', filter: 'user_id=eq.' + userId
                         }, payload => {
                             const row = payload.new;
                             if (!row || row.organization_id !== organizationId) return;
                             const notification = {
-                                id: row.id,
-                                title: this.t(row.title_key),
-                                desc: row.description || '',
-                                time: new Date(row.created_at).toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US'),
-                                read: row.is_read
+                                id: row.id, titleKey: row.title_key, title: this.t(row.title_key),
+                                desc: row.description || '', entityType: row.entity_type || null, entityId: row.entity_id || null,
+                                time: new Date(row.created_at).toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US'), read: row.is_read
                             };
                             const pending = this.notifications.find(item =>
-                                String(item.id).startsWith('pending-') &&
-                                item.title === notification.title &&
-                                item.desc === notification.desc
+                                String(item.id).startsWith('pending-') && item.title === notification.title && item.desc === notification.desc
                             );
                             if (pending) Object.assign(pending, notification);
                             else if (!this.notifications.some(item => item.id === notification.id)) this.notifications.unshift(notification);
@@ -1091,11 +1079,43 @@
                 async markAllAsRead() {
                     if (!this.currentUser || !this.activeOrganization) return;
                     const { error } = await this.supabase.from('user_notifications').update({ is_read: true })
-                        .eq('user_id', this.currentUser.id)
-                        .eq('organization_id', this.activeOrganization.id)
-                        .eq('is_read', false);
+                        .eq('user_id', this.currentUser.id).eq('organization_id', this.activeOrganization.id).eq('is_read', false);
                     if (error) { this.showDataError(error); return; }
                     this.notifications.forEach(n => n.read = true);
+                },
+                async openNotification(notification) {
+                    this.showNotifDropdown = false;
+                    if (!notification.read) {
+                        if (this.currentUser && this.activeOrganization && !String(notification.id).startsWith('pending-')) {
+                            const { error } = await this.supabase.from('user_notifications').update({ is_read: true })
+                                .eq('id', notification.id).eq('user_id', this.currentUser.id).eq('organization_id', this.activeOrganization.id);
+                            if (error) this.showDataError(error);
+                        }
+                        notification.read = true;
+                    }
+                    const entityType = notification.entityType || null, entityId = notification.entityId || null;
+                    if (entityType === 'shipment') {
+                        this.tab = 'shipments';
+                        this.selectedShipment = this.shipments.find(item => item.id === entityId) || null;
+                        if (!this.selectedShipment) alert(this.t('notificationTargetMissing'));
+                        return;
+                    }
+                    if (entityType === 'offer') {
+                        this.tab = 'offers'; this.offerStatusFilter = 'all'; this.offerSearch = ''; this.focusedOfferId = entityId;
+                        this.$nextTick(() => document.getElementById('offer-row-' + entityId)?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+                        if (!this.offers.some(item => item.id === entityId)) alert(this.t('notificationTargetMissing'));
+                        return;
+                    }
+                    const isShipment = (notification.titleKey || '').includes('Shipment') || (notification.titleKey || '').includes('Documents');
+                    this.tab = isShipment ? 'shipments' : 'offers';
+                    if (isShipment) this.selectedShipment = this.shipments.find(item => item.code === notification.desc) || null;
+                    else {
+                        const offer = this.offers.find(item => notification.desc === item.client + ' · ' + item.route);
+                        if (offer) {
+                            this.offerStatusFilter = 'all'; this.offerSearch = ''; this.focusedOfferId = offer.id;
+                            this.$nextTick(() => document.getElementById('offer-row-' + offer.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+                        }
+                    }
                 },
                 visibleOffers() {
                     return this.userRole === 'client' ? this.offers.filter(offer => offer.client === this.activeClient) : this.offers;
@@ -1255,24 +1275,20 @@
                     if (error) { this.showDataError(error); return; }
                     shipment.documents = documents;
                     const required = this.documentChecklist(shipment).filter(document => document.required || document.applicability === 'required');
-                    if (required.length && required.every(document => document.done)) this.addNotification('notifDocumentsComplete', shipment.code);
+                    if (required.length && required.every(document => document.done)) this.addNotification('notifDocumentsComplete', shipment.code, 'shipment', shipment.id);
                 },
-                addNotification(titleKey, description) {
+                addNotification(titleKey, description, entityType = null, entityId = null) {
                     const notification = {
-                        id: 'pending-' + crypto.randomUUID(),
-                        title: this.t(titleKey),
-                        desc: description || '',
-                        time: new Date().toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US'),
-                        read: false
+                        id: 'pending-' + crypto.randomUUID(), title: this.t(titleKey), titleKey,
+                        desc: description || '', entityType, entityId,
+                        time: new Date().toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US'), read: false
                     };
                     this.notifications.unshift(notification);
                     this.notifications = this.notifications.slice(0, 20);
                     if (!this.supabase || !this.currentUser || !this.activeOrganization) return;
                     this.supabase.from('user_notifications').insert({
-                        user_id: this.currentUser.id,
-                        organization_id: this.activeOrganization.id,
-                        title_key: titleKey,
-                        description: description || ''
+                        user_id: this.currentUser.id, organization_id: this.activeOrganization.id,
+                        title_key: titleKey, description: description || '', entity_type: entityType, entity_id: entityId
                     }).select('id, created_at').single().then(({ data, error }) => {
                         if (error) { this.showDataError(error); return; }
                         const pending = this.notifications.find(item => item.id === notification.id);
@@ -1427,14 +1443,14 @@
                     if (offer.status !== 'Beklemede') return;
                     const { error } = await this.supabase.from('offers').update({ status: 'Onaylandı' }).eq('id', offer.id).eq('organization_id', this.activeOrganization.id);
                     if (error) { this.showDataError(error); return; }
-                    offer.status = 'Onaylandı'; this.addNotification('notifOfferApproved', offer.client + ' · ' + offer.route);
+                    offer.status = 'Onaylandı'; this.addNotification('notifOfferApproved', offer.client + ' · ' + offer.route, 'offer', offer.id);
                 },
                 async rejectOffer(offer) {
                     if (!this.canManageOffers()) return;
                     if (offer.status !== 'Beklemede') return;
                     const { error } = await this.supabase.from('offers').update({ status: 'Reddedildi' }).eq('id', offer.id).eq('organization_id', this.activeOrganization.id);
                     if (error) { this.showDataError(error); return; }
-                    offer.status = 'Reddedildi'; this.addNotification('notifOfferRejected', offer.client + ' · ' + offer.route);
+                    offer.status = 'Reddedildi'; this.addNotification('notifOfferRejected', offer.client + ' · ' + offer.route, 'offer', offer.id);
                 },
                 async addOffer() {
                     if (!this.canManageOffers() || this.savingOffer) return;
@@ -1470,7 +1486,7 @@
                             this.offers.unshift({ id: data.id, customerId: customer.id, mode: data.mode, client: customer.name, route: data.route,
                                 incoterm: data.incoterm, cargo: data.cargo, amount: Number(data.amount), currency: data.currency,
                                 status: data.status, converted: false, validUntil: data.valid_until, notes: data.notes || '', createdAt: data.created_at.slice(0, 10) });
-                            this.addNotification('notifOfferCreated', customer.name + ' · ' + data.route);
+                            this.addNotification('notifOfferCreated', customer.name + ' · ' + data.route, 'offer', data.id);
                         }
                         this.newOffer = { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', cargo: '', amount: '', currency: 'EUR', validUntil: '', notes: '' };
                         this.editingOfferId = null;
@@ -1520,7 +1536,7 @@
                         const shipment = await this.createShipmentRecord(this.newShipment);
                         this.shipments.unshift(shipment);
                         this.newShipment = { mode: 'Karayolu', client: '', route: '', plate: '', driver: '', phone: '', vessel: '', containerNo: '', containerType: '', blNumber: '', flightNo: '', awbNumber: '', volWeight: '', eta: '', cargo: '', income: '' };
-                        this.showShipmentModal = false; this.addNotification('notifShipmentCreated', shipment.code);
+                        this.showShipmentModal = false; this.addNotification('notifShipmentCreated', shipment.code, 'shipment', shipment.id);
                     } catch (error) { this.showDataError(error); }
                     finally { this.savingShipment = false; }
                 },
@@ -1534,7 +1550,7 @@
                         await this.loadWorkspaceData();
                         const shipment = this.shipments.find(item => item.id === shipmentId);
                         if (shipment) {
-                            this.addNotification('notifShipmentCreated', shipment.code);
+                            this.addNotification('notifShipmentCreated', shipment.code, 'shipment', shipment.id);
                             this.selectedShipment = shipment;
                             this.tab = 'shipments';
                         }
