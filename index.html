@@ -2126,6 +2126,8 @@
                         if (!data) throw new Error(this.t('shipmentSaveDenied'));
                         Object.assign(shipment, { ...updated, eta: updated.eta || '' });
                         this.shipmentEditForm = null;
+                        try { await this.loadShipmentEvents(shipment); }
+                        catch (activityError) { this.showDataError(activityError); }
                         alert(this.t('shipmentSaved'));
                     } catch (error) { this.showDataError(error); }
                     finally { this.shipmentSaveBusy = false; }
