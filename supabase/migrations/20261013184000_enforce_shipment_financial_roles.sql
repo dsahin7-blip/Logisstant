@@ -17,10 +17,7 @@ create policy shipment_private_insert_operations
     )
   );
 drop policy if exists shipment_private_update_staff on public.shipment_private;
-create policy shipment_private_update_operations
-  on public.shipment_private for update to authenticated
-  using ((select private.has_org_role(organization_id, array['owner','admin','operations']::text[])))
-  with check ((select private.has_org_role(organization_id, array['owner','admin','operations']::text[])));
+revoke update on public.shipment_private from authenticated;
 
 create or replace function private.capture_shipment_financials()
 returns trigger
@@ -39,10 +36,7 @@ begin
   )
   on conflict (shipment_id) do nothing;
 
-  update public.shipment_private
-     set internal_data = coalesce(internal_data, '{}'::jsonb) - array['income','expense1','expense2']
-   where shipment_id = new.shipment_id;
-
+  new.internal_data := coalesce(new.internal_data, '{}'::jsonb) - array['income','expense1','expense2'];
   return new;
 end;
 $function$;
@@ -50,5 +44,5 @@ revoke all on function private.capture_shipment_financials() from public, anon, 
 
 drop trigger if exists shipment_private_capture_financials on public.shipment_private;
 create trigger shipment_private_capture_financials
-  after insert on public.shipment_private
+  before insert on public.shipment_private
   for each row execute function private.capture_shipment_financials();
