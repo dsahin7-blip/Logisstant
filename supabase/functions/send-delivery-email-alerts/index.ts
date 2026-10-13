@@ -1,7 +1,14 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+const allowedOrigin = "https://logisstant.vercel.app";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": allowedOrigin,
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cron-secret",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Content-Type": "application/json",
+};
 const json = (body: Record<string, unknown>, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
+  new Response(JSON.stringify(body), { status, headers: corsHeaders });
 
 function escapeHtml(value: unknown) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]!);
@@ -10,7 +17,31 @@ function dayDifference(eta: string, today: string) {
   return Math.round((Date.parse(eta + "T00:00:00Z") - Date.parse(today + "T00:00:00Z")) / 86400000);
 }
 Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed." }, 405);
+  if (req.headers.get("origin") && req.headers.get("origin") !== allowedOrigin) return json({ error: "Origin not allowed." }, 403);
+  let body: { action?: string; organization_id?: string };
+  try { body = await req.json(); } catch { return json({ error: "Invalid request." }, 400); }
+  const url = Deno.env.get("SUPABASE_URL"), serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const resendKey = Deno.env.get("RESEND_API_KEY"), from = Deno.env.get("RESEND_FROM_EMAIL") || "Logisstant <onboarding@resend.dev>";
+  if (!url || !serviceKey || !resendKey) return json({ error: "Email delivery is not configured." }, 503);
+  const db = createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
+  if (body.action === "test") {
+    const authorization = req.headers.get("Authorization") || "";
+    const token = authorization.toLowerCase().startsWith("bearer ") ? authorization.slice(7).trim() : "";
+    if (!token || !body.organization_id) return json({ error: "Sign in as an organization admin to send a test." }, 401);
+    const { data: authData, error: authError } = await db.auth.getUser(token);
+    const user = authData?.user;
+    if (authError || !user) return json({ error: "Sign in as an organization admin to send a test." }, 401);
+    const { data: member } = await db.from("organization_members").select("role").eq("organization_id", body.organization_id).eq("user_id", user.id).maybeSingle();
+    if (!member || !["owner", "admin"].includes(member.role)) return json({ error: "Only organization owners and admins can send a test." }, 403);
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST", headers: { "Authorization": "Bearer " + resendKey, "Content-Type": "application/json" },
+      body: JSON.stringify({ from, to: ["delivered@resend.dev"], subject: "Logisstant test e-postası", html: "<div style=\"font-family:Arial,sans-serif\"><h2>Logisstant e-posta bağlantısı hazır</h2><p>Bu, Resend\u0027in test adresine gönderilen deneme mesajıdır. Gerçek bir müşteri posta kutusuna gönderilmemiştir.</p></div>" }),
+    });
+    if (!response.ok) return json({ error: "Resend test gönderimi başarısız oldu. API anahtarını ve gönderen adresini kontrol edin." }, 502);
+    return json({ ok: true, simulated: true });
+  }
   const expected = Deno.env.get("DELIVERY_ALERT_CRON_SECRET");
   const provided = req.headers.get("x-cron-secret") || "";
   if (!expected || provided.length !== expected.length || !crypto.subtle) return json({ error: "Unauthorized." }, 401);
@@ -19,11 +50,6 @@ Deno.serve(async (req: Request) => {
   const digestB = new Uint8Array(await crypto.subtle.digest("SHA-256", b));
   let mismatch = 0; for (let i = 0; i < digestA.length; i++) mismatch |= digestA[i] ^ digestB[i];
   if (mismatch !== 0) return json({ error: "Unauthorized." }, 401);
-
-  const url = Deno.env.get("SUPABASE_URL"), serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  const resendKey = Deno.env.get("RESEND_API_KEY"), from = Deno.env.get("RESEND_FROM_EMAIL");
-  if (!url || !serviceKey || !resendKey || !from) return json({ error: "Email delivery is not configured." }, 503);
-  const db = createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
   const today = new Date().toISOString().slice(0, 10);
   const { data: preferences, error: prefError } = await db.from("notification_preferences")
     .select("organization_id, user_id").eq("email_delivery_alerts", true);
