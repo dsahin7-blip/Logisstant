@@ -387,6 +387,17 @@
                             <div x-show="newInvite.role === 'client'" class="sm:col-span-2"><label class="text-xs text-slate-500" x-text="t('inviteCustomerLabel')"></label><select x-model="newInvite.customerId" :required="newInvite.role === 'client'" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm"><option value="" x-text="t('chooseCustomer')"></option><template x-for="customer in customers" :key="customer.id"><option :value="customer.id" x-text="customer.name"></option></template></select></div>
                             <div class="sm:col-span-2 flex flex-wrap items-center gap-3"><button type="submit" :disabled="inviteBusy" class="bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="inviteBusy ? t('inviteSending') : t('sendInvite')"></button><p role="status" aria-live="polite" x-show="teamMessage" x-text="teamMessage" class="text-xs text-slate-600 dark:text-slate-300"></p></div>
                         </form>
+                        <div class="border-t border-slate-200 dark:border-slate-800 pt-4 space-y-3">
+                            <div class="flex justify-between items-center"><h4 class="text-sm font-semibold text-slate-900 dark:text-white" x-text="t('teamMembersTitle')"></h4><button type="button" @click="loadTeamMembers()" :disabled="teamLoading" class="text-xs text-blue-600 dark:text-blue-400 disabled:opacity-50" x-text="teamLoading ? t('teamLoading') : t('teamRefresh')"></button></div>
+                            <p x-show="teamLoading" class="text-xs text-slate-500" x-text="t('teamLoading')"></p>
+                            <p x-show="!teamLoading && teamMembers.length === 0" class="text-xs text-slate-500" x-text="t('teamEmpty')"></p>
+                            <div class="space-y-3"><template x-for="member in teamMembers" :key="member.user_id"><div class="rounded-xl border border-slate-200 dark:border-slate-700 p-3 grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                                <div class="md:col-span-4 min-w-0"><p class="text-sm font-semibold text-slate-900 dark:text-white truncate" x-text="member.name || member.email"></p><p class="text-xs text-slate-500 truncate" x-text="member.email"></p></div>
+                                <div class="md:col-span-3"><label class="sr-only" x-text="t('teamRoleLabel')"></label><select x-model="member.editRole" :disabled="['owner','admin'].includes(member.role) || member.user_id === currentUser?.id" class="w-full p-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700 text-xs"><option value="owner" x-show="member.role === 'owner'" x-text="t('roleOwner')"></option><option value="admin" x-show="member.role === 'admin'" x-text="t('roleAdmin')"></option><option value="operations" x-text="t('roleOperations')"></option><option value="finance" x-text="t('roleFinance')"></option><option value="client" x-text="t('roleClient')"></option></select></div>
+                                <div class="md:col-span-3" x-show="member.editRole === 'client'"><label class="sr-only" x-text="t('teamCustomerLabel')"></label><select x-model="member.editCustomerId" class="w-full p-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700 text-xs"><option value="" x-text="t('chooseCustomer')"></option><template x-for="customer in customers" :key="customer.id"><option :value="customer.id" x-text="customer.name"></option></template></select></div>
+                                <div class="md:col-span-2 flex gap-2"><button type="button" @click="saveTeamMember(member)" :disabled="teamLoading || ['owner','admin'].includes(member.role) || member.user_id === currentUser?.id" class="text-xs bg-blue-600 text-white px-3 py-2 rounded-lg disabled:opacity-40" x-text="t('teamSave')"></button><button type="button" @click="removeTeamMember(member)" :disabled="teamLoading || ['owner','admin'].includes(member.role) || member.user_id === currentUser?.id" class="text-xs bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 px-3 py-2 rounded-lg disabled:opacity-40" x-text="t('teamRemove')"></button></div>
+                            </div></template></div>
+                        </div>
                     </div>
                     <!-- Güvenlik & Şifre -->
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
@@ -528,6 +539,8 @@
                 uploadingDocuments: {},
                 inviteBusy: false,
                 teamMessage: '',
+                teamMembers: [],
+                teamLoading: false,
                 newInvite: { email: '', role: 'operations', customerId: '' },
                 customers: [],
                 loadingWorkspace: false,
@@ -598,7 +611,7 @@
                         clientFast: "Müşteri Olarak Gir",
                         notifTitle: "Bildirim Merkezi",
                         readAll: "Tümünü Okundu Say",
-                        settings: "Ayarlar", teamTitle: "Ekip ve müşteri daveti", teamDescription: "Ekip arkadaşlarına rol, müşterilere ise yalnızca kendi sevkiyatlarını görebilecekleri erişim ver.", inviteEmailLabel: "E-posta adresi", inviteRoleLabel: "Hesap türü", inviteCustomerLabel: "Bağlı müşteri", chooseCustomer: "Müşteri seçin", roleOperations: "Operasyon ekibi", roleFinance: "Finans ekibi", roleClient: "Müşteri portalı", sendInvite: "Davet e-postası gönder", inviteSending: "Gönderiliyor…", inviteSuccess: "Davet e-postası gönderildi. Davet edilen kişi bağlantıdan hesabını etkinleştirebilir.", inviteEmailError: "Geçerli bir e-posta adresi girin.", inviteCustomerError: "Müşteri portalı için bağlı müşteriyi seçin.", inviteFailed: "Davet gönderilemedi.",
+                        settings: "Ayarlar", teamTitle: "Ekip ve müşteri daveti", teamDescription: "Ekip arkadaşlarına rol, müşterilere ise yalnızca kendi sevkiyatlarını görebilecekleri erişim ver.", teamMembersTitle: "Ekip üyeleri", teamRefresh: "Yenile", teamLoading: "Ekip yükleniyor…", teamEmpty: "Henüz davet edilmiş ekip üyesi yok.", teamRoleLabel: "Rol", teamCustomerLabel: "Müşteri", teamSave: "Yetkiyi kaydet", teamRemove: "Erişimi kaldır", teamRemoveConfirm: "Bu kişinin firma erişimini kaldırmak istiyor musunuz?", teamUpdated: "Ekip erişimi güncellendi.", teamRemoved: "Ekip üyesinin erişimi kaldırıldı.", teamSaveFailed: "Ekip erişimi güncellenemedi.", teamLoadFailed: "Ekip listesi yüklenemedi.", inviteEmailLabel: "E-posta adresi", inviteRoleLabel: "Hesap türü", inviteCustomerLabel: "Bağlı müşteri", chooseCustomer: "Müşteri seçin", roleOperations: "Operasyon ekibi", roleFinance: "Finans ekibi", roleClient: "Müşteri portalı", sendInvite: "Davet e-postası gönder", inviteSending: "Gönderiliyor…", inviteSuccess: "Davet e-postası gönderildi. Davet edilen kişi bağlantıdan hesabını etkinleştirebilir.", inviteEmailError: "Geçerli bir e-posta adresi girin.", inviteCustomerError: "Müşteri portalı için bağlı müşteriyi seçin.", inviteFailed: "Davet gönderilemedi.",
                         logout: "Çıkış Yap",
                         navDashboard: "Ana Panel",
                         navOffers: "Teklif Yönetimi",
@@ -710,7 +723,7 @@
                         clientFast: "Login as Client",
                         notifTitle: "Notification Center",
                         readAll: "Mark All as Read",
-                        settings: "Settings", teamTitle: "Team and client invitations", teamDescription: "Give teammates a role; client users can only see shipments for their assigned customer.", inviteEmailLabel: "Email address", inviteRoleLabel: "Account type", inviteCustomerLabel: "Assigned customer", chooseCustomer: "Choose a customer", roleOperations: "Operations team", roleFinance: "Finance team", roleClient: "Client portal", sendInvite: "Send invitation email", inviteSending: "Sending…", inviteSuccess: "Invitation email sent. The user can activate their account from the link.", inviteEmailError: "Enter a valid email address.", inviteCustomerError: "Choose a customer for the client portal account.", inviteFailed: "Could not send the invitation.",
+                        settings: "Settings", teamTitle: "Team and client invitations", teamDescription: "Give teammates a role; client users can only see shipments for their assigned customer.", teamMembersTitle: "Team members", teamRefresh: "Refresh", teamLoading: "Loading team…", teamEmpty: "No invited team members yet.", teamRoleLabel: "Role", teamCustomerLabel: "Customer", teamSave: "Save access", teamRemove: "Remove access", teamRemoveConfirm: "Remove this person's access to the organization?", teamUpdated: "Team access updated.", teamRemoved: "Team member access removed.", teamSaveFailed: "Could not update team access.", teamLoadFailed: "Could not load team members.", inviteEmailLabel: "Email address", inviteRoleLabel: "Account type", inviteCustomerLabel: "Assigned customer", chooseCustomer: "Choose a customer", roleOperations: "Operations team", roleFinance: "Finance team", roleClient: "Client portal", sendInvite: "Send invitation email", inviteSending: "Sending…", inviteSuccess: "Invitation email sent. The user can activate their account from the link.", inviteEmailError: "Enter a valid email address.", inviteCustomerError: "Choose a customer for the client portal account.", inviteFailed: "Could not send the invitation.",
                         logout: "Logout",
                         navDashboard: "Dashboard",
                         navOffers: "Offers",
@@ -901,6 +914,7 @@
                     });
                     await this.loadNotifications();
                     this.subscribeToNotifications();
+                    if (this.canManageTeam()) await this.loadTeamMembers();
                 },
                 async ensureCustomer(name) {
                     const normalized = (name || '').trim();
@@ -929,6 +943,37 @@
                     this.authMessage = error ? error.message : (this.language === 'tr' ? 'Parola sıfırlama bağlantısı e-posta adresinize gönderildi.' : 'A password reset link has been sent to your email.');
                 },
                 canManageTeam() { return this.userRole === 'admin'; },
+                async loadTeamMembers() {
+                    if (!this.canManageTeam() || !this.activeOrganization) return;
+                    this.teamLoading = true;
+                    try {
+                        const { data, error } = await this.supabase.functions.invoke('manage-team', { body: { action: 'list', organization_id: this.activeOrganization.id } });
+                        if (error) throw error; if (data?.error) throw new Error(data.error);
+                        this.teamMembers = (data?.members || []).map(member => ({ ...member, editRole: member.role, editCustomerId: member.customer_id || '' }));
+                    } catch (error) { this.teamMessage = error?.message || this.t('teamLoadFailed'); }
+                    finally { this.teamLoading = false; }
+                },
+                async saveTeamMember(member) {
+                    if (!this.canManageTeam() || this.teamLoading) return;
+                    if (member.editRole === 'client' && !member.editCustomerId) { this.teamMessage = this.t('inviteCustomerError'); return; }
+                    this.teamLoading = true; this.teamMessage = '';
+                    try {
+                        const { data, error } = await this.supabase.functions.invoke('manage-team', { body: { action: 'update', organization_id: this.activeOrganization.id, user_id: member.user_id, role: member.editRole, customer_id: member.editRole === 'client' ? member.editCustomerId : null } });
+                        if (error) throw error; if (data?.error) throw new Error(data.error);
+                        this.teamMessage = this.t('teamUpdated'); await this.loadTeamMembers();
+                    } catch (error) { this.teamMessage = error?.message || this.t('teamSaveFailed'); }
+                    finally { this.teamLoading = false; }
+                },
+                async removeTeamMember(member) {
+                    if (!this.canManageTeam() || this.teamLoading || !confirm(this.t('teamRemoveConfirm'))) return;
+                    this.teamLoading = true; this.teamMessage = '';
+                    try {
+                        const { data, error } = await this.supabase.functions.invoke('manage-team', { body: { action: 'remove', organization_id: this.activeOrganization.id, user_id: member.user_id } });
+                        if (error) throw error; if (data?.error) throw new Error(data.error);
+                        this.teamMessage = this.t('teamRemoved'); await this.loadTeamMembers();
+                    } catch (error) { this.teamMessage = error?.message || this.t('teamSaveFailed'); }
+                    finally { this.teamLoading = false; }
+                },
                 async inviteTeamMember() {
                     if (!this.canManageTeam() || this.inviteBusy) return;
                     const email = (this.newInvite.email || '').trim().toLowerCase();
