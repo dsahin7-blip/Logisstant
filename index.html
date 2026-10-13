@@ -11,6 +11,8 @@
             darkMode: 'class',
         }
     </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script defer src="./supabase-client.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- HTML to PDF Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -23,51 +25,41 @@
             <div class="text-center space-y-2">
                 <h1 class="text-2xl font-bold tracking-tight text-blue-950 dark:text-white" x-text="t('brand')"></h1>
                 <p class="text-xs text-slate-500" x-text="t('loginSubtitle')"></p>
-                <p role="status" class="rounded-lg bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-xs text-amber-800 dark:text-amber-200" x-text="t('demoNotice')"></p>
+                <p role="status" aria-live="polite" class="rounded-lg bg-blue-50 dark:bg-blue-950/40 px-3 py-2 text-xs text-blue-800 dark:text-blue-200" x-show="authMessage" x-text="authMessage"></p>
             </div>
-
-            <!-- Giriş Sekmeleri -->
-            <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-sm font-medium">
-                <button @click="loginType = 'firm'" :class="loginType === 'firm' ? 'bg-blue-600 text-white shadow' : 'text-slate-600 dark:text-slate-400'" class="flex-1 py-2 rounded-lg transition" x-text="t('firmLogin')"></button>
-                <button @click="loginType = 'client'" :class="loginType === 'client' ? 'bg-blue-600 text-white shadow' : 'text-slate-600 dark:text-slate-400'" class="flex-1 py-2 rounded-lg transition" x-text="t('clientLogin')"></button>
-            </div>
-
-            <div class="space-y-4">
+            <form class="space-y-4" @submit.prevent="submitAuth()">
+                <div x-show="authMode === 'signup'">
+                    <label class="text-xs font-semibold text-slate-600 dark:text-slate-400" x-text="t('nameLabel')"></label>
+                    <input type="text" x-model.trim="fullName" autocomplete="name" :required="authMode === 'signup'" :disabled="authMode !== 'signup'" class="w-full mt-1 p-3 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                </div>
+                <div x-show="authMode === 'signup'">
+                    <label class="text-xs font-semibold text-slate-600 dark:text-slate-400" x-text="t('firmNameLabel')"></label>
+                    <input type="text" x-model.trim="organizationName" autocomplete="organization" :required="authMode === 'signup'" :disabled="authMode !== 'signup'" class="w-full mt-1 p-3 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                </div>
                 <div>
                     <label class="text-xs font-semibold text-slate-600 dark:text-slate-400" x-text="t('emailLabel')"></label>
-                    <input type="email" x-model="loginEmail" placeholder="ornek@sirket.com" class="w-full mt-1 p-3 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                    <input type="email" x-model.trim="loginEmail" autocomplete="email" required class="w-full mt-1 p-3 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
                 </div>
                 <div>
                     <label class="text-xs font-semibold text-slate-600 dark:text-slate-400" x-text="t('passLabel')"></label>
-                    <input type="password" placeholder="••••••••" class="w-full mt-1 p-3 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                    <input type="password" x-model="loginPassword" :autocomplete="authMode === 'signup' ? 'new-password' : 'current-password'" minlength="8" required class="w-full mt-1 p-3 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
                 </div>
-
-                <!-- Beni Hatırla Seçeneği -->
-                <div class="flex items-center justify-between text-xs">
-                    <label class="flex items-center space-x-2 text-slate-600 dark:text-slate-400 cursor-pointer">
-                        <input type="checkbox" x-model="rememberMe" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4">
-                        <span x-text="t('rememberMe')"></span>
-                    </label>
-                    <a href="#" @click.prevent="alert(t('demoResetNotice'))" class="text-blue-600 dark:text-blue-400 hover:underline" x-text="t('forgotPass')"></a>
+                <div class="flex justify-end text-xs" x-show="authMode === 'login'">
+                    <a href="#" @click.prevent="resetPassword()" class="text-blue-600 dark:text-blue-400 hover:underline" x-text="t('forgotPass')"></a>
                 </div>
-
-                <button @click="handleLogin()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition" x-text="loginType === 'firm' ? t('firmBtn') : t('clientBtn')"></button>
-            </div>
-
-            <!-- Hızlı Test Girişleri (Emojisiz) -->
-            <div class="border-t border-slate-200 dark:border-slate-800 pt-4 space-y-2">
-                <p class="text-[11px] text-center text-slate-400 uppercase tracking-wider font-bold" x-text="t('quickTest')"></p>
-                <div class="grid grid-cols-2 gap-2">
-                    <button @click="quickLogin('admin')" class="bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 hover:bg-blue-100 p-2 rounded-xl text-xs font-semibold transition" x-text="t('adminFast')"></button>
-                    <button @click="quickLogin('client')" class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 p-2 rounded-xl text-xs font-semibold transition" x-text="t('clientFast')"></button>
-                </div>
-            </div>
+                <button type="submit" :disabled="authBusy" class="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition" x-text="authBusy ? t('pleaseWait') : authMode === 'signup' ? t('createAccount') : t('firmBtn')"></button>
+            </form>
+            <p class="text-center text-xs text-slate-500">
+                <span x-text="authMode === 'signup' ? t('alreadyHaveAccount') : t('needAccount')"></span>
+                <button type="button" @click="authMode = authMode === 'signup' ? 'login' : 'signup'; authMessage = ''" class="text-blue-600 dark:text-blue-400 font-semibold hover:underline ml-1" x-text="authMode === 'signup' ? t('loginLink') : t('signupLink')"></button>
+            </p>
+            <p class="text-[11px] text-center text-slate-400" x-text="t('authSecurityNote')"></p>
         </div>
     </div>
 
-    <!-- 2. ANA UYGULAMA -->
+        <!-- 2. ANA UYGULAMA -->
     <div x-show="isLoggedIn" class="flex-grow flex flex-col" x-cloak>
-        <p role="status" class="bg-amber-100 dark:bg-amber-950 px-4 py-2 text-center text-xs text-amber-900 dark:text-amber-100" x-text="t('demoNotice')"></p>
+        <p role="status" class="bg-amber-100 dark:bg-amber-950 px-4 py-2 text-center text-xs text-amber-900 dark:text-amber-100" x-text="t('connectedNotice')"></p>
         <!-- Header / Navbar -->
         <header class="bg-blue-950 dark:bg-slate-900 text-white shadow-lg border-b border-blue-900/50">
             <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap gap-3 justify-between items-center">
@@ -129,7 +121,7 @@
                 <button @click="tab = 'shipments'" :class="tab === 'shipments' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition" x-text="t('navShipments')"></button>
                 <button x-show="userRole !== 'operation' && userRole !== 'client'" @click="tab = 'reports'" :class="tab === 'reports' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition" x-text="t('navReports')"></button>
                 <button x-show="userRole !== 'operation' && userRole !== 'client'" @click="tab = 'finances'" :class="tab === 'finances' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition" x-text="t('navFinances')"></button>
-                <button x-show="userRole === 'admin' || userRole === 'finance'" @click="tab = 'invoices'" :class="tab === 'invoices' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition" x-text="t('navInvoices')"></button>
+                
             </div>
         </nav>
 
@@ -343,34 +335,7 @@
                 </div>
             </div>
 
-            <!-- TAB 6: INVOICES -->
-            <div x-show="tab === 'invoices' && (userRole === 'admin' || userRole === 'finance')" class="space-y-6">
-                <h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navInvoices')"></h2>
-                <div class="bg-white dark:bg-slate-900 shadow-sm rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden"><div class="overflow-x-auto">
-                    <table class="min-w-[560px] w-full divide-y divide-slate-200 dark:divide-slate-800">
-                        <thead class="bg-slate-50 dark:bg-slate-950">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase" x-text="t('invoiceNumber')"></th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase" x-text="t('tblClient')"></th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase" x-text="t('tblAmount')"></th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase" x-text="t('tblStatus')"></th>
-                                <th class="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase" x-text="t('tblAction')"></th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
-                            <tr>
-                                <td class="px-6 py-4 font-mono font-bold text-slate-900 dark:text-white">DEMO-2026-001</td>
-                                <td class="px-6 py-4 text-slate-800 dark:text-slate-200">ABC Dış Ticaret A.Ş.</td>
-                                <td class="px-6 py-4 font-semibold text-slate-900 dark:text-white">2.400 EUR</td>
-                                <td class="px-6 py-4"><span class="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 text-xs px-2.5 py-1 rounded-full font-medium" x-text="t('sampleRecord')"></span></td>
-                                <td class="px-6 py-4 text-right">
-                                    <button @click="alert(t('demoXmlNotice'))" class="bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-3 py-1 rounded text-xs font-medium" x-text="t('downloadXmlDemo')"></button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table></div>
-                </div>
-            </div>
+            <!-- Fatura modülü, gerçek veri akışı eklenene kadar gizli. -->
 
             <!-- TAB 7: SETTINGS & PROFILE (Zenginleştirilmiş Ayarlar) -->
             <div x-show="tab === 'settings'" class="space-y-6">
@@ -382,13 +347,13 @@
                         <div class="space-y-3 text-sm">
                             <div>
                                 <label class="text-xs text-slate-500" x-text="t('nameLabel')"></label>
-                                <input type="text" value="Ahmet Yönetici" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
+                                <input type="text" x-model="fullName" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
                             </div>
                             <div>
                                 <label class="text-xs text-slate-500" x-text="t('emailLabel')"></label>
-                                <input type="email" value="admin@lojistikasistani.com" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
+                                <input type="email" x-model="loginEmail" disabled class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
                             </div>
-                            <button @click="alert(t('demoSettingsNotice'))" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('saveBtn')"></button>
+                            <button @click="saveProfile()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('saveBtn')"></button>
                         </div>
                     </div>
                     <!-- Firma Genel Ayarları -->
@@ -397,17 +362,9 @@
                         <div class="space-y-3 text-sm">
                             <div>
                                 <label class="text-xs text-slate-500" x-text="t('firmNameLabel')"></label>
-                                <input type="text" value="Lojistik Asistanı A.Ş." class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
+                                <input type="text" x-model="organizationName" disabled class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
                             </div>
-                            <div>
-                                <label class="text-xs text-slate-500" x-text="t('defaultCurrency')"></label>
-                                <select class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
-                                    <option>EUR (€)</option>
-                                    <option>USD ($)</option>
-                                    <option>TRY (₺)</option>
-                                </select>
-                            </div>
-                            <button @click="alert(t('demoSettingsNotice'))" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('saveBtn')"></button>
+
                         </div>
                     </div>
                     <!-- Güvenlik & Şifre -->
@@ -415,29 +372,10 @@
                         <h3 class="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3" x-text="t('securityTitle')"></h3>
                         <div class="space-y-3 text-sm">
                             <div>
-                                <label class="text-xs text-slate-500" x-text="t('currentPass')"></label>
-                                <input type="password" placeholder="••••••••" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
-                            </div>
-                            <div>
                                 <label class="text-xs text-slate-500" x-text="t('newPass')"></label>
-                                <input type="password" placeholder="••••••••" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
+                                <input type="password" x-model="newPassword" minlength="8" placeholder="••••••••" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
                             </div>
-                            <button @click="alert(t('demoPasswordNotice'))" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('updatePassBtn')"></button>
-                        </div>
-                    </div>
-                    <!-- Bildirim Tercihleri -->
-                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
-                        <h3 class="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3" x-text="t('notifPrefTitle')"></h3>
-                        <div class="space-y-3 text-sm">
-                            <label class="flex items-center space-x-3 cursor-pointer">
-                                <input type="checkbox" checked class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4">
-                                <span class="text-slate-700 dark:text-slate-300 text-xs" x-text="t('emailAlerts')"></span>
-                            </label>
-                            <label class="flex items-center space-x-3 cursor-pointer">
-                                <input type="checkbox" checked class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4">
-                                <span class="text-slate-700 dark:text-slate-300 text-xs" x-text="t('systemAlerts')"></span>
-                            </label>
-                            <div class="flex flex-wrap gap-3"><button @click="alert(t('demoSettingsNotice'))" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('saveBtn')"></button><button @click="if(confirm(t('confirmResetDemoData'))) resetDemoData()" class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('resetDemoData')"></button></div>
+                            <button @click="updatePassword()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('updatePassBtn')"></button>
                         </div>
                     </div>
                 </div>
@@ -557,7 +495,18 @@
                 isLoggedIn: false,
                 loginType: 'firm',
                 loginEmail: '',
-                rememberMe: false,
+                loginPassword: '',
+                fullName: '',
+                organizationName: '',
+                authMode: 'login',
+                authMessage: '',
+                authBusy: false,
+                supabase: null,
+                currentUser: null,
+                activeOrganization: null,
+                customers: [],
+                loadingWorkspace: false,
+                newPassword: '',
                 tab: 'dashboard',
                 darkMode: false,
                 language: 'tr',
@@ -575,6 +524,8 @@
                         brand: "Logisstant",
                         loginSubtitle: "Tekliften teslimata lojistik süreçlerinizi tek ekranda yönetin.",
                         demoNotice: "Demo sürümü: giriş gerçek bir hesaba bağlı değildir. Kayıtlar yalnızca bu tarayıcıda saklanır; sunucuya gönderilmez.",
+                        connectedNotice: "Hesabınız ve kayıtlarınız sunucuda, erişim kurallarıyla saklanır.",
+                        createAccount: "Firma hesabı oluştur", needAccount: "Yeni misiniz?", alreadyHaveAccount: "Zaten hesabınız var mı?", signupLink: "Kayıt ol", loginLink: "Giriş yap", pleaseWait: "Lütfen bekleyin…", authSecurityNote: "Parolanız Supabase Auth tarafından korunur. Kayıtlarınıza yalnızca yetkili hesabınız erişebilir.",
                         demoResetNotice: "Demo sürümünde şifre sıfırlama e-postası gönderilmiyor.",
                         demoSettingsNotice: "Demo sürümünde ayarlar kaydedilmiyor.",
                         demoPasswordNotice: "Demo sürümünde parola değiştirilmiyor.",
@@ -598,7 +549,7 @@
                         sampleRecord: "Demo örnek kaydı",
                         reportRoutes: "Güzergâha göre net kâr", reportModes: "Taşıma modu dağılımı",
                         confirmResetDemoData: "Bu tarayıcıdaki demo teklif ve sevkiyat kayıtları silinip örnek veriler geri yüklenecek. Devam edilsin?",
-                        sampleDataNotice: "Bu ekrandaki rapor rakamları örnek veridir; gerçek operasyon veya finans kayıtlarını yansıtmaz.",
+                        sampleDataNotice: "Raporlarınız şirketinizin kayıtlarından hesaplanır.",
                         resetDemoData: "Demo kayıtlarını sıfırla",
                         exportCsv: "CSV indir", reportStart: "Başlangıç tarihi", reportEnd: "Bitiş tarihi",
                         reportRevenue: "Toplam gelir", reportExpenses: "Toplam gider", reportProfit: "Net kâr", reportShipmentCount: "Sevkiyat sayısı",
@@ -683,6 +634,8 @@
                         brand: "Logisstant",
                         loginSubtitle: "Manage logistics from quote to delivery in one place.",
                         demoNotice: "Demo version: sign-in is not connected to a real account. Records are stored only in this browser and are not sent to a server.",
+                        connectedNotice: "Your account and records are stored on the server with access controls.",
+                        createAccount: "Create firm account", needAccount: "New here?", alreadyHaveAccount: "Already have an account?", signupLink: "Sign up", loginLink: "Log in", pleaseWait: "Please wait…", authSecurityNote: "Your password is protected by Supabase Auth. Only authorized accounts can access your records.",
                         demoResetNotice: "Password reset email is not sent in the demo.",
                         demoSettingsNotice: "Settings are not saved in the demo.",
                         demoPasswordNotice: "Password is not changed in the demo.",
@@ -706,7 +659,7 @@
                         sampleRecord: "Demo sample record",
                         reportRoutes: "Net profit by route", reportModes: "Shipments by transport mode",
                         confirmResetDemoData: "This will remove demo offers and shipments saved in this browser and restore the sample records. Continue?",
-                        sampleDataNotice: "Figures on this screen are examples and do not represent real operational or financial records.",
+                        sampleDataNotice: "Reports are calculated from your company records.",
                         resetDemoData: "Reset demo records",
                         exportCsv: "Download CSV", reportStart: "Start date", reportEnd: "End date",
                         reportRevenue: "Total income", reportExpenses: "Total expenses", reportProfit: "Net profit", reportShipmentCount: "Shipment count",
@@ -791,53 +744,172 @@
                 t(key) {
                     return this.labels[this.language][key] || key;
                 },
-                init() {
+                async init() {
+                    if (!window.supabase || !window.LOGISSTANT_SUPABASE_CONFIG) {
+                        this.authMessage = this.language === 'tr' ? 'Giriş hizmeti yüklenemedi. Sayfayı yenileyin.' : 'The sign-in service did not load. Refresh the page.';
+                        return;
+                    }
+                    this.supabase = window.supabase.createClient(window.LOGISSTANT_SUPABASE_CONFIG.url, window.LOGISSTANT_SUPABASE_CONFIG.publishableKey);
+                    const { data: { session }, error } = await this.supabase.auth.getSession();
+                    if (error) this.showAuthError(error);
+                    if (session?.user) await this.finishLogin(session.user);
+                    this.supabase.auth.onAuthStateChange((event, nextSession) => {
+                        if (nextSession?.user && !this.isLoggedIn) {
+                            Promise.resolve().then(() => this.finishLogin(nextSession.user)).catch(error => this.showAuthError(error));
+                        } else if (!nextSession && event === 'SIGNED_OUT') this.clearSession();
+                    });
+                },
+                async submitAuth() {
+                    if (!this.supabase || this.authBusy) return;
+                    this.authBusy = true; this.authMessage = '';
                     try {
-                        const savedOffers = JSON.parse(localStorage.getItem('logisstant-demo-offers'));
-                        const savedShipments = JSON.parse(localStorage.getItem('logisstant-demo-shipments'));
-                        const savedNotifications = JSON.parse(localStorage.getItem('logisstant-demo-notifications'));
-                        if (Array.isArray(savedOffers)) this.offers = savedOffers;
-                        if (Array.isArray(savedShipments)) this.shipments = savedShipments;
-                        if (Array.isArray(savedNotifications)) this.notifications = savedNotifications;
-                    } catch (error) { /* Ignore invalid browser storage and use the demo records. */ }
-                    this.$watch('offers', value => this.saveDemoData('logisstant-demo-offers', value));
-                    const today = new Date().toISOString().slice(0, 10);
-                    this.offers = this.offers.map(offer => ({ ...offer, createdAt: offer.createdAt || today, validUntil: offer.validUntil || '' }));
-                    this.shipments = this.shipments.map(shipment => ({ ...shipment, createdAt: shipment.createdAt || today, documents: shipment.documents || {}, documentApplicability: shipment.documentApplicability || {}, history: shipment.history || [] }));
-                    this.$watch('shipments', value => this.saveDemoData('logisstant-demo-shipments', value));
-                    this.$watch('notifications', value => this.saveDemoData('logisstant-demo-notifications', value));
+                        if (this.authMode === 'signup') {
+                            const { data, error } = await this.supabase.auth.signUp({
+                                email: this.loginEmail, password: this.loginPassword,
+                                options: { emailRedirectTo: window.location.origin, data: { full_name: this.fullName, company_name: this.organizationName } }
+                            });
+                            if (error) throw error;
+                            if (data.session && data.user) await this.finishLogin(data.user);
+                            else {
+                                this.authMessage = this.language === 'tr'
+                                    ? 'Hesabınız oluşturuldu. E-postanızdaki doğrulama bağlantısına tıklayıp giriş yapın.'
+                                    : 'Your account was created. Confirm your email using the link we sent, then log in.';
+                                this.authMode = 'login';
+                            }
+                        } else {
+                            const { data, error } = await this.supabase.auth.signInWithPassword({ email: this.loginEmail, password: this.loginPassword });
+                            if (error) throw error;
+                            if (data.user) await this.finishLogin(data.user);
+                        }
+                    } catch (error) { this.showAuthError(error); }
+                    finally { this.authBusy = false; }
                 },
-                saveDemoData(key, value) {
-                    try { localStorage.setItem(key, JSON.stringify(value)); } catch (error) { /* Browser storage may be unavailable. */ }
+                async finishLogin(user) {
+                    if (!this.supabase || !user || this.loadingWorkspace) return;
+                    this.loadingWorkspace = true;
+                    try {
+                        this.currentUser = user;
+                        const fullName = user.user_metadata?.full_name || user.email || '';
+                        const { error: profileError } = await this.supabase.from('profiles').upsert({ id: user.id, full_name: fullName }, { onConflict: 'id' });
+                        if (profileError) throw profileError;
+                        let { data: memberships, error: membershipError } = await this.supabase.from('organization_members')
+                            .select('organization_id, role, customer_id').eq('user_id', user.id).limit(1);
+                        if (membershipError) throw membershipError;
+                        if (!memberships?.length) {
+                            const companyName = (user.user_metadata?.company_name || '').trim();
+                            if (!companyName) throw new Error(this.language === 'tr' ? 'Bu hesap bir firmaya bağlı değil. Firma yöneticinizden davet isteyin.' : 'This account is not linked to a firm. Ask your firm administrator for an invitation.');
+                            const { data: organization, error: organizationError } = await this.supabase.from('organizations')
+                                .insert({ name: companyName, created_by: user.id }).select('id, name').single();
+                            if (organizationError) throw organizationError;
+                            const { data: membership, error: ownerError } = await this.supabase.from('organization_members')
+                                .insert({ organization_id: organization.id, user_id: user.id, role: 'owner' }).select('organization_id, role, customer_id').single();
+                            if (ownerError) throw ownerError;
+                            memberships = [membership]; this.activeOrganization = organization;
+                        }
+                        const membership = memberships[0];
+                        if (!this.activeOrganization || this.activeOrganization.id !== membership.organization_id) {
+                            const { data: organization, error: organizationError } = await this.supabase.from('organizations')
+                                .select('id, name').eq('id', membership.organization_id).single();
+                            if (organizationError) throw organizationError;
+                            this.activeOrganization = organization;
+                        }
+                        this.userRole = membership.role === 'client' ? 'client' : membership.role === 'finance' ? 'finance' : membership.role === 'operations' ? 'operation' : 'admin';
+                        const { data: customerRows, error: customerError } = await this.supabase.from('customers')
+                            .select('id, name').eq('organization_id', membership.organization_id);
+                        if (customerError) throw customerError;
+                        this.customers = customerRows || [];
+                        this.activeClient = membership.customer_id ? (this.customers.find(customer => customer.id === membership.customer_id)?.name || null) : null;
+                        await this.loadWorkspaceData();
+                        this.loginEmail = user.email || this.loginEmail;
+                        this.fullName = user.user_metadata?.full_name || this.fullName || '';
+                        this.organizationName = this.activeOrganization.name || '';
+                        this.loginPassword = ''; this.isLoggedIn = true; this.authMessage = '';
+                    } catch (error) { this.isLoggedIn = false; this.showAuthError(error); }
+                    finally { this.loadingWorkspace = false; }
                 },
-                resetDemoData() {
-                    try { localStorage.removeItem('logisstant-demo-offers'); localStorage.removeItem('logisstant-demo-shipments'); localStorage.removeItem('logisstant-demo-notifications'); } catch (error) {}
-                    window.location.reload();
+                async loadWorkspaceData() {
+                    const organizationId = this.activeOrganization?.id;
+                    if (!organizationId) return;
+                    const [offerResult, shipmentResult] = await Promise.all([
+                        this.supabase.from('offers').select('*, customers(name)').eq('organization_id', organizationId).order('created_at', { ascending: false }),
+                        this.supabase.from('shipments').select('*, customers(name)').eq('organization_id', organizationId).order('created_at', { ascending: false })
+                    ]);
+                    if (offerResult.error) throw offerResult.error;
+                    if (shipmentResult.error) throw shipmentResult.error;
+                    this.offers = (offerResult.data || []).map(row => ({
+                        id: row.id, customerId: row.customer_id, mode: row.mode, client: row.customers?.name || '', route: row.route,
+                        incoterm: row.incoterm, cargo: row.cargo, amount: Number(row.amount), currency: row.currency, status: row.status,
+                        converted: Boolean(row.converted_shipment_id), validUntil: row.valid_until || '', notes: row.notes || '',
+                        createdAt: (row.created_at || '').slice(0, 10)
+                    }));
+                    const shipmentRows = shipmentResult.data || [], privateByShipment = new Map();
+                    if (this.userRole !== 'client' && shipmentRows.length) {
+                        const { data: privateRows, error: privateError } = await this.supabase.from('shipment_private')
+                            .select('shipment_id, internal_data').eq('organization_id', organizationId);
+                        if (privateError) throw privateError;
+                        for (const row of privateRows || []) privateByShipment.set(row.shipment_id, row.internal_data || {});
+                    }
+                    this.shipments = shipmentRows.map(row => {
+                        const internal = privateByShipment.get(row.id) || {};
+                        return {
+                            id: row.id, customerId: row.customer_id, mode: row.mode, code: row.code, client: row.customers?.name || '',
+                            route: row.route, incoterm: row.incoterm, status: row.status, createdAt: (row.created_at || '').slice(0, 10),
+                            eta: row.eta || '', documents: row.documents || {}, documentApplicability: row.document_applicability || {},
+                            history: row.history || [], cargo: row.cargo, docUploaded: false,
+                            income: Number(internal.income || 0), expense1: Number(internal.expense1 || 0), expense2: Number(internal.expense2 || 0),
+                            plate: internal.plate || '', driver: internal.driver || '', phone: internal.phone || '', vessel: internal.vessel || '',
+                            containerNo: internal.containerNo || '', containerType: internal.containerType || '', blNumber: internal.blNumber || '',
+                            flightNo: internal.flightNo || '', awbNumber: internal.awbNumber || '', volWeight: internal.volWeight || ''
+                        };
+                    });
+                },
+                async ensureCustomer(name) {
+                    const normalized = (name || '').trim();
+                    if (!normalized) throw new Error(this.language === 'tr' ? 'Müşteri adı gerekli.' : 'A client name is required.');
+                    let customer = this.customers.find(item => item.name.toLocaleLowerCase() === normalized.toLocaleLowerCase());
+                    if (customer) return customer;
+                    const { data, error } = await this.supabase.from('customers').insert({ organization_id: this.activeOrganization.id, name: normalized }).select('id, name').single();
+                    if (error) throw error;
+                    this.customers.push(data); return data;
+                },
+                showAuthError(error) { this.authMessage = error?.message || String(error); },
+                showDataError(error) { alert(error?.message || String(error)); },
+                clearSession() {
+                    this.isLoggedIn = false; this.currentUser = null; this.activeOrganization = null; this.activeClient = null;
+                    this.customers = []; this.offers = []; this.shipments = [];
+                },
+                async resetPassword() {
+                    if (!this.supabase || !this.loginEmail) {
+                        this.authMessage = this.language === 'tr' ? 'Önce e-posta adresinizi yazın.' : 'Enter your email address first.';
+                        return;
+                    }
+                    const { error } = await this.supabase.auth.resetPasswordForEmail(this.loginEmail, { redirectTo: window.location.origin });
+                    this.authMessage = error ? error.message : (this.language === 'tr' ? 'Parola sıfırlama bağlantısı e-posta adresinize gönderildi.' : 'A password reset link has been sent to your email.');
+                },
+                async saveProfile() {
+                    if (!this.currentUser) return;
+                    const { error } = await this.supabase.from('profiles').update({ full_name: this.fullName.trim() }).eq('id', this.currentUser.id);
+                    if (error) { this.showDataError(error); return; }
+                    const { error: authError } = await this.supabase.auth.updateUser({ data: { full_name: this.fullName.trim() } });
+                    if (authError) { this.showDataError(authError); return; }
+                    alert(this.language === 'tr' ? 'Profil kaydedildi.' : 'Profile saved.');
+                },
+                async updatePassword() {
+                    if (!this.newPassword || this.newPassword.length < 8) {
+                        alert(this.language === 'tr' ? 'Yeni parola en az 8 karakter olmalı.' : 'The new password must be at least 8 characters.');
+                        return;
+                    }
+                    const { error } = await this.supabase.auth.updateUser({ password: this.newPassword });
+                    if (error) { this.showDataError(error); return; }
+                    this.newPassword = '';
+                    alert(this.language === 'tr' ? 'Parolanız güncellendi.' : 'Your password was updated.');
                 },
                 notifications: [],
-                offers: [
-                    { id: 1, mode: 'Karayolu', client: 'ABC Dış Ticaret A.Ş.', route: 'İstanbul ➡️ Sofya', incoterm: 'DDP', cargo: 'Tenteli Tır / 20 Ton', amount: 2400, currency: 'EUR', status: 'Onaylandı', converted: true, validUntil: '2026-10-18', createdAt: '2026-10-01', notes: '' },
-                    { id: 2, mode: 'Denizyolu', client: 'XYZ İthalat Ltd.', route: 'Ambarlı ➡️ Rotterdam', incoterm: 'FOB', cargo: "40' HC Konteyner", amount: 3800, currency: 'EUR', status: 'Onaylandı', converted: true, validUntil: '2026-10-20', createdAt: '2026-10-02', notes: '' }
-                ],
-                shipments: [
-                    { id: 101, mode: 'Karayolu', code: 'TR-8842', client: 'ABC Dış Ticaret A.Ş.', route: 'İstanbul ➡️ Sofya', incoterm: 'DDP', plate: '34 ABC 123', driver: 'Ahmet Yılmaz', phone: '0532 555 4433', status: 'Yola Çıktı', createdAt: '2026-10-01', eta: '2026-10-16', documents: { cmr: true, invoice: false }, docUploaded: false, income: 2400, expense1: 850, expense2: 150 },
-                    { id: 102, mode: 'Denizyolu', code: 'SEA-5510', client: 'XYZ İthalat Ltd.', route: 'Ambarlı ➡️ Rotterdam', incoterm: 'FOB', vessel: 'MSC Güneşi', containerNo: 'MSCU9988776', blNumber: 'BL-9988', status: 'Denizde', createdAt: '2026-10-02', eta: '2026-10-20', documents: { bl: true, invoice: true }, docUploaded: true, income: 3800, expense1: 1200, expense2: 300 }
-                ],
-                handleLogin() {
-                    this.isLoggedIn = true;
-                    this.userRole = this.loginType === 'client' ? 'client' : 'admin';
-                    this.activeClient = this.userRole === 'client' ? 'ABC Dış Ticaret A.Ş.' : null;
-                },
-                quickLogin(role) {
-                    this.isLoggedIn = true;
-                    this.userRole = role;
-                    this.loginType = role === 'client' ? 'client' : 'firm';
-                    this.activeClient = role === 'client' ? 'ABC Dış Ticaret A.Ş.' : null;
-                },
-                logout() {
-                    this.isLoggedIn = false;
-                    this.loginEmail = '';
-                    this.activeClient = null;
+                offers: [],
+                shipments: [],
+                async logout() {
+                    if (this.supabase) await this.supabase.auth.signOut();
+                    this.clearSession();
                 },
                 unreadCount() {
                     return this.notifications.filter(n => !n.read).length;
@@ -911,18 +983,25 @@
                     const documents = this.documentChecklist(shipment).filter(document => document.required || document.applicability === 'required');
                     return documents.filter(document => document.done).length + '/' + documents.length + ' ' + this.t('documentsComplete');
                 },
-                setDocumentApplicability(shipment, key, value) {
+                async setDocumentApplicability(shipment, key, value) {
                     if (this.userRole === 'client') return;
-                    if (!shipment.documentApplicability) shipment.documentApplicability = {};
-                    shipment.documentApplicability[key] = value;
-                    if (value !== 'required' && shipment.documents) shipment.documents[key] = false;
+                    const applicability = { ...(shipment.documentApplicability || {}), [key]: value };
+                    const documents = { ...(shipment.documents || {}) };
+                    if (value !== 'required') documents[key] = false;
+                    const { error } = await this.supabase.from('shipments').update({ document_applicability: applicability, documents, updated_at: new Date().toISOString() })
+                        .eq('id', shipment.id).eq('organization_id', this.activeOrganization.id);
+                    if (error) { this.showDataError(error); return; }
+                    shipment.documentApplicability = applicability; shipment.documents = documents;
                 },
-                toggleDocument(shipment, key) {
+                async toggleDocument(shipment, key) {
                     if (this.userRole === 'client') return;
-                    if (!shipment.documents) shipment.documents = {};
-                    shipment.documents[key] = !shipment.documents[key];
-                    const documents = this.documentChecklist(shipment).filter(document => document.required || document.applicability === 'required');
-                    if (documents.length && documents.every(document => document.done)) this.addNotification('notifDocumentsComplete', shipment.code);
+                    const documents = { ...(shipment.documents || {}), [key]: !shipment.documents?.[key] };
+                    const { error } = await this.supabase.from('shipments').update({ documents, updated_at: new Date().toISOString() })
+                        .eq('id', shipment.id).eq('organization_id', this.activeOrganization.id);
+                    if (error) { this.showDataError(error); return; }
+                    shipment.documents = documents;
+                    const required = this.documentChecklist(shipment).filter(document => document.required || document.applicability === 'required');
+                    if (required.length && required.every(document => document.done)) this.addNotification('notifDocumentsComplete', shipment.code);
                 },
                 addNotification(titleKey, description) {
                     this.notifications.unshift({
@@ -990,12 +1069,13 @@
                         { mode: 'Havayolu', label: this.t('modeAir') }
                     ].map(item => ({ ...item, percent: shipments.length ? Math.round(shipments.filter(shipment => shipment.mode === item.mode).length / shipments.length * 100) : 0 }));
                 },
-                updateShipmentStatus(shipment, status) {
-                    if (shipment.status === status) return;
-                    shipment.status = status;
-                    if (!Array.isArray(shipment.history)) shipment.history = [];
-                    shipment.history.push({ status, at: new Date().toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US') });
-                    shipment.updatedAt = new Date().toISOString();
+                async updateShipmentStatus(shipment, status) {
+                    if (shipment.status === status || this.userRole === 'client') return;
+                    const history = [...(shipment.history || []), { status, at: new Date().toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US') }];
+                    const { error } = await this.supabase.from('shipments').update({ status, history, updated_at: new Date().toISOString() })
+                        .eq('id', shipment.id).eq('organization_id', this.activeOrganization.id);
+                    if (error) { this.showDataError(error); return; }
+                    shipment.status = status; shipment.history = history;
                     this.addNotification('notifShipmentUpdate', shipment.code + ' · ' + status);
                 },
                 shipmentStages(shipment) {
@@ -1005,75 +1085,97 @@
                     const current = order.indexOf(shipment.status);
                     return order.map((status, index) => ({ status, label: labels[index], complete: current >= index }));
                 },
-                approveOffer(offer) {
+                async approveOffer(offer) {
                     if (offer.status === 'Beklemede' && offer.validUntil && offer.validUntil < new Date().toISOString().slice(0, 10)) { alert(this.t('offerExpiryPast')); return; }
-                    if (offer.status === 'Beklemede') { offer.status = 'Onaylandı'; this.addNotification('notifOfferApproved', offer.client + ' · ' + offer.route); }
+                    if (offer.status !== 'Beklemede') return;
+                    const { error } = await this.supabase.from('offers').update({ status: 'Onaylandı' }).eq('id', offer.id).eq('organization_id', this.activeOrganization.id);
+                    if (error) { this.showDataError(error); return; }
+                    offer.status = 'Onaylandı'; this.addNotification('notifOfferApproved', offer.client + ' · ' + offer.route);
                 },
-                rejectOffer(offer) {
-                    if (offer.status === 'Beklemede') { offer.status = 'Reddedildi'; this.addNotification('notifOfferRejected', offer.client + ' · ' + offer.route); }
+                async rejectOffer(offer) {
+                    if (offer.status !== 'Beklemede') return;
+                    const { error } = await this.supabase.from('offers').update({ status: 'Reddedildi' }).eq('id', offer.id).eq('organization_id', this.activeOrganization.id);
+                    if (error) { this.showDataError(error); return; }
+                    offer.status = 'Reddedildi'; this.addNotification('notifOfferRejected', offer.client + ' · ' + offer.route);
                 },
-                addOffer() {
+                async addOffer() {
                     const amount = Number(this.newOffer.amount);
                     if (!this.newOffer.client || !this.newOffer.route || !this.newOffer.cargo || !this.newOffer.validUntil || !Number.isFinite(amount) || amount <= 0) {
-                        alert(!this.newOffer.validUntil ? this.t('offerExpiryRequired') : this.t('offerFieldsRequired'));
-                        return;
+                        alert(!this.newOffer.validUntil ? this.t('offerExpiryRequired') : this.t('offerFieldsRequired')); return;
                     }
                     if (this.newOffer.validUntil < new Date().toISOString().slice(0, 10)) { alert(this.t('offerExpiryPast')); return; }
-                    const offer = { id: Date.now(), ...this.newOffer, amount, status: 'Beklemede', converted: false, createdAt: new Date().toISOString().slice(0, 10) };
-                    this.offers.push(offer);
-                    this.addNotification('notifOfferCreated', offer.client + ' · ' + offer.route);
-                    this.newOffer = { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', cargo: '', amount: '', currency: 'EUR', validUntil: '', notes: '' };
-                    this.showOfferModal = false;
+                    try {
+                        const customer = await this.ensureCustomer(this.newOffer.client);
+                        const payload = {
+                            organization_id: this.activeOrganization.id, customer_id: customer.id, created_by: this.currentUser.id,
+                            mode: this.newOffer.mode, route: this.newOffer.route.trim(), incoterm: this.newOffer.incoterm,
+                            cargo: this.newOffer.cargo.trim(), amount, currency: this.newOffer.currency, status: 'Beklemede',
+                            valid_until: this.newOffer.validUntil, notes: this.newOffer.notes || ''
+                        };
+                        const { data, error } = await this.supabase.from('offers').insert(payload).select('*, customers(name)').single();
+                        if (error) throw error;
+                        this.offers.unshift({ id: data.id, customerId: customer.id, mode: data.mode, client: customer.name, route: data.route,
+                            incoterm: data.incoterm, cargo: data.cargo, amount: Number(data.amount), currency: data.currency,
+                            status: data.status, converted: false, validUntil: data.valid_until, notes: data.notes || '', createdAt: data.created_at.slice(0, 10) });
+                        this.addNotification('notifOfferCreated', customer.name + ' · ' + data.route);
+                        this.newOffer = { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', cargo: '', amount: '', currency: 'EUR', validUntil: '', notes: '' };
+                        this.showOfferModal = false;
+                    } catch (error) { this.showDataError(error); }
                 },
-                addShipment() {
-                    const income = Number(this.newShipment.income);
-                    if (!this.newShipment.client || !this.newShipment.route || !Number.isFinite(income) || income <= 0) {
-                        alert(this.t('shipmentFieldsRequired'));
-                        return;
-                    }
-                    const modePrefix = this.newShipment.mode === 'Denizyolu' ? 'SEA-' : this.newShipment.mode === 'Havayolu' ? 'AIR-' : 'TR-';
-                    this.shipments.push({
-                        id: Date.now(),
-                        ...this.newShipment,
-                        code: modePrefix + Math.floor(1000 + Math.random() * 9000),
-                        status: 'Yükleme Bekliyor',
-                        createdAt: new Date().toISOString().slice(0, 10),
-                        documents: {},
-                        history: [{ status: 'Yükleme Bekliyor', at: new Date().toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US') }],
-                        docUploaded: false,
-                        income,
-                        expense1: 600,
-                        expense2: 150
-                    });
-                    this.newShipment = { mode: 'Karayolu', client: '', route: '', plate: '', driver: '', phone: '', vessel: '', containerNo: '', containerType: '', blNumber: '', flightNo: '', awbNumber: '', volWeight: '', eta: '', cargo: '', income: 2500 };
-                    this.showShipmentModal = false;
-                    this.addNotification('notifShipmentCreated', this.shipments[this.shipments.length - 1].code);
-                },
-                convertToShipment(offer) {
-                    if (offer.validUntil && offer.validUntil < new Date().toISOString().slice(0, 10)) { alert(this.t('offerExpiryPast')); return; }
-                    offer.converted = true;
-                    const modePrefix = offer.mode === 'Denizyolu' ? 'SEA-' : offer.mode === 'Havayolu' ? 'AIR-' : 'TR-';
-                    const shipment = {
-                        id: Date.now(),
-                        mode: offer.mode,
-                        code: modePrefix + Math.floor(1000 + Math.random() * 9000),
-                        client: offer.client,
-                        route: offer.route,
-                        incoterm: offer.incoterm,
-                        status: 'Yükleme Bekliyor',
-                        createdAt: new Date().toISOString().slice(0, 10),
-                        eta: '', documents: {},
-                        docUploaded: false,
-                        cargo: offer.cargo,
-                        income: offer.amount,
-                        expense1: 500,
-                        expense2: 120,
-                        history: [{ status: 'Yükleme Bekliyor', at: new Date().toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US') }]
+                async createShipmentRecord(form, offer) {
+                    const customer = await this.ensureCustomer(form.client);
+                    const modePrefix = form.mode === 'Denizyolu' ? 'SEA-' : form.mode === 'Havayolu' ? 'AIR-' : form.mode === 'Demiryolu' ? 'RAIL-' : 'TR-';
+                    const now = new Date().toISOString();
+                    const status = 'Yükleme Bekliyor';
+                    const history = [{ status, at: new Date().toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US') }];
+                    const code = modePrefix + crypto.randomUUID().slice(0, 8).toUpperCase();
+                    const payload = {
+                        organization_id: this.activeOrganization.id, customer_id: customer.id, created_by: this.currentUser.id,
+                        code, mode: form.mode, route: form.route.trim(), incoterm: form.incoterm || '', cargo: form.cargo || '',
+                        status, eta: form.eta || null, documents: {}, document_applicability: {}, history, updated_at: now
                     };
-                    this.shipments.push(shipment);
-                    this.addNotification('notifShipmentCreated', shipment.code);
-                    this.selectedShipment = shipment;
-                    this.tab = 'shipments';
+                    const { data, error } = await this.supabase.from('shipments').insert(payload).select('*, customers(name)').single();
+                    if (error) throw error;
+                    if (this.userRole !== 'client') {
+                        const internalData = offer ? { income: Number(offer.amount || 0), expense1: 0, expense2: 0 } : {
+                            income: Number(form.income || 0), expense1: 0, expense2: 0, plate: form.plate || '', driver: form.driver || '',
+                            phone: form.phone || '', vessel: form.vessel || '', containerNo: form.containerNo || '',
+                            containerType: form.containerType || '', blNumber: form.blNumber || '', flightNo: form.flightNo || '',
+                            awbNumber: form.awbNumber || '', volWeight: form.volWeight || ''
+                        };
+                        const { error: privateError } = await this.supabase.from('shipment_private')
+                            .insert({ shipment_id: data.id, organization_id: this.activeOrganization.id, internal_data: internalData });
+                        if (privateError) throw privateError;
+                    }
+                    const shipment = {
+                        id: data.id, customerId: customer.id, mode: data.mode, code: data.code, client: customer.name, route: data.route,
+                        incoterm: data.incoterm, status: data.status, createdAt: data.created_at.slice(0, 10), eta: data.eta || '',
+                        documents: data.documents || {}, documentApplicability: data.document_applicability || {}, history: data.history || [],
+                        cargo: data.cargo, docUploaded: false, income: Number(offer?.amount || form.income || 0), expense1: 0, expense2: 0,
+                        plate: form.plate || '', driver: form.driver || '', phone: form.phone || ''
+                    };
+                    return shipment;
+                },
+                async addShipment() {
+                    const income = Number(this.newShipment.income);
+                    if (!this.newShipment.client || !this.newShipment.route || !Number.isFinite(income) || income <= 0) { alert(this.t('shipmentFieldsRequired')); return; }
+                    try {
+                        const shipment = await this.createShipmentRecord(this.newShipment);
+                        this.shipments.unshift(shipment);
+                        this.newShipment = { mode: 'Karayolu', client: '', route: '', plate: '', driver: '', phone: '', vessel: '', containerNo: '', containerType: '', blNumber: '', flightNo: '', awbNumber: '', volWeight: '', eta: '', cargo: '', income: '' };
+                        this.showShipmentModal = false; this.addNotification('notifShipmentCreated', shipment.code);
+                    } catch (error) { this.showDataError(error); }
+                },
+                async convertToShipment(offer) {
+                    if (offer.validUntil && offer.validUntil < new Date().toISOString().slice(0, 10)) { alert(this.t('offerExpiryPast')); return; }
+                    try {
+                        const shipment = await this.createShipmentRecord({ ...offer, eta: '' }, offer);
+                        const { error } = await this.supabase.from('offers').update({ converted_shipment_id: shipment.id }).eq('id', offer.id).eq('organization_id', this.activeOrganization.id);
+                        if (error) throw error;
+                        offer.converted = true; this.shipments.unshift(shipment);
+                        this.addNotification('notifShipmentCreated', shipment.code);
+                        this.selectedShipment = shipment; this.tab = 'shipments';
+                    } catch (error) { this.showDataError(error); }
                 },
                 simulateOCR() {
                     alert(this.t('ocrDemoNotice'));
@@ -1108,7 +1210,7 @@
                     }
                 },
                 newOffer: { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', cargo: '', amount: '', currency: 'EUR', validUntil: '', notes: '' },
-                newShipment: { mode: 'Karayolu', client: '', route: '', plate: '', driver: '', phone: '', vessel: '', containerNo: '', containerType: '', blNumber: '', flightNo: '', awbNumber: '', volWeight: '', eta: '', cargo: '', income: 2500 }
+                newShipment: { mode: 'Karayolu', client: '', route: '', plate: '', driver: '', phone: '', vessel: '', containerNo: '', containerType: '', blNumber: '', flightNo: '', awbNumber: '', volWeight: '', eta: '', cargo: '', income: '' }
             }
         }
     </script>
