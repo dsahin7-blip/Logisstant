@@ -367,6 +367,15 @@
 
                         </div>
                     </div>
+                    <div x-show="canManageTeam()" class="md:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
+                        <div><h3 class="font-bold text-slate-900 dark:text-white" x-text="t('teamTitle')"></h3><p class="text-xs text-slate-500 mt-1" x-text="t('teamDescription')"></p></div>
+                        <form @submit.prevent="inviteTeamMember()" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div><label class="text-xs text-slate-500" x-text="t('inviteEmailLabel')"></label><input type="email" x-model.trim="newInvite.email" required autocomplete="email" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm"></div>
+                            <div><label class="text-xs text-slate-500" x-text="t('inviteRoleLabel')"></label><select x-model="newInvite.role" @change="newInvite.customerId = ''" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm"><option value="operations" x-text="t('roleOperations')"></option><option value="finance" x-text="t('roleFinance')"></option><option value="client" x-text="t('roleClient')"></option></select></div>
+                            <div x-show="newInvite.role === 'client'" class="sm:col-span-2"><label class="text-xs text-slate-500" x-text="t('inviteCustomerLabel')"></label><select x-model="newInvite.customerId" :required="newInvite.role === 'client'" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm"><option value="" x-text="t('chooseCustomer')"></option><template x-for="customer in customers" :key="customer.id"><option :value="customer.id" x-text="customer.name"></option></template></select></div>
+                            <div class="sm:col-span-2 flex flex-wrap items-center gap-3"><button type="submit" :disabled="inviteBusy" class="bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="inviteBusy ? t('inviteSending') : t('sendInvite')"></button><p role="status" aria-live="polite" x-show="teamMessage" x-text="teamMessage" class="text-xs text-slate-600 dark:text-slate-300"></p></div>
+                        </form>
+                    </div>
                     <!-- Güvenlik & Şifre -->
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
                         <h3 class="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3" x-text="t('securityTitle')"></h3>
@@ -505,6 +514,9 @@
                 currentUser: null,
                 activeOrganization: null,
                 uploadingDocuments: {},
+                inviteBusy: false,
+                teamMessage: '',
+                newInvite: { email: '', role: 'operations', customerId: '' },
                 customers: [],
                 loadingWorkspace: false,
                 newPassword: '',
@@ -571,7 +583,7 @@
                         clientFast: "Müşteri Olarak Gir",
                         notifTitle: "Bildirim Merkezi",
                         readAll: "Tümünü Okundu Say",
-                        settings: "Ayarlar",
+                        settings: "Ayarlar", teamTitle: "Ekip ve müşteri daveti", teamDescription: "Ekip arkadaşlarına rol, müşterilere ise yalnızca kendi sevkiyatlarını görebilecekleri erişim ver.", inviteEmailLabel: "E-posta adresi", inviteRoleLabel: "Hesap türü", inviteCustomerLabel: "Bağlı müşteri", chooseCustomer: "Müşteri seçin", roleOperations: "Operasyon ekibi", roleFinance: "Finans ekibi", roleClient: "Müşteri portalı", sendInvite: "Davet e-postası gönder", inviteSending: "Gönderiliyor…", inviteSuccess: "Davet e-postası gönderildi. Davet edilen kişi bağlantıdan hesabını etkinleştirebilir.", inviteEmailError: "Geçerli bir e-posta adresi girin.", inviteCustomerError: "Müşteri portalı için bağlı müşteriyi seçin.", inviteFailed: "Davet gönderilemedi.",
                         logout: "Çıkış Yap",
                         navDashboard: "Ana Panel",
                         navOffers: "Teklif Yönetimi",
@@ -681,7 +693,7 @@
                         clientFast: "Login as Client",
                         notifTitle: "Notification Center",
                         readAll: "Mark All as Read",
-                        settings: "Settings",
+                        settings: "Settings", teamTitle: "Team and client invitations", teamDescription: "Give teammates a role; client users can only see shipments for their assigned customer.", inviteEmailLabel: "Email address", inviteRoleLabel: "Account type", inviteCustomerLabel: "Assigned customer", chooseCustomer: "Choose a customer", roleOperations: "Operations team", roleFinance: "Finance team", roleClient: "Client portal", sendInvite: "Send invitation email", inviteSending: "Sending…", inviteSuccess: "Invitation email sent. The user can activate their account from the link.", inviteEmailError: "Enter a valid email address.", inviteCustomerError: "Choose a customer for the client portal account.", inviteFailed: "Could not send the invitation.",
                         logout: "Logout",
                         navDashboard: "Dashboard",
                         navOffers: "Offers",
@@ -893,6 +905,37 @@
                     }
                     const { error } = await this.supabase.auth.resetPasswordForEmail(this.loginEmail, { redirectTo: window.location.origin });
                     this.authMessage = error ? error.message : (this.language === 'tr' ? 'Parola sıfırlama bağlantısı e-posta adresinize gönderildi.' : 'A password reset link has been sent to your email.');
+                },
+                canManageTeam() { return this.userRole === 'admin'; },
+                async inviteTeamMember() {
+                    if (!this.canManageTeam() || this.inviteBusy) return;
+                    const email = (this.newInvite.email || '').trim().toLowerCase();
+                    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) { this.teamMessage = this.t('inviteEmailError'); return; }
+                    if (this.newInvite.role === 'client' && !this.newInvite.customerId) { this.teamMessage = this.t('inviteCustomerError'); return; }
+                    this.inviteBusy = true; this.teamMessage = '';
+                    try {
+                        const { data, error } = await this.supabase.functions.invoke('invite-member', {
+                            body: {
+                                organization_id: this.activeOrganization.id,
+                                email,
+                                role: this.newInvite.role,
+                                customer_id: this.newInvite.role === 'client' ? this.newInvite.customerId : null
+                            }
+                        });
+                        if (error) {
+                            let message = error.message || this.t('inviteFailed');
+                            try {
+                                const detail = await error.context?.clone?.().json();
+                                message = detail?.error || message;
+                            } catch (_) {}
+                            throw new Error(message);
+                        }
+                        if (data?.error) throw new Error(data.error);
+                        this.teamMessage = this.t('inviteSuccess');
+                        this.newInvite = { email: '', role: 'operations', customerId: '' };
+                    } catch (error) {
+                        this.teamMessage = error?.message || this.t('inviteFailed');
+                    } finally { this.inviteBusy = false; }
                 },
                 async saveProfile() {
                     if (!this.currentUser) return;
