@@ -352,6 +352,10 @@
             <!-- TAB 7: SETTINGS & PROFILE (Zenginleştirilmiş Ayarlar) -->
             <div x-show="tab === 'settings'" class="space-y-6">
                 <h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('settingsTitle')"></h2>
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div><h3 class="font-semibold text-slate-900 dark:text-white" x-text="t('emailAlertsTitle')"></h3><p class="text-xs text-slate-500 mt-1" x-text="t('emailAlertsDescription')"></p><p role="status" aria-live="polite" class="text-xs text-blue-700 dark:text-blue-300 mt-2" x-show="emailPreferenceMessage" x-text="emailPreferenceMessage"></p></div>
+                    <label class="inline-flex items-center gap-3 text-sm font-medium"><span x-text="t('emailAlertsToggle')"></span><input type="checkbox" x-model="emailDeliveryAlerts" @change="saveEmailPreferences()" :disabled="emailPreferenceBusy" class="h-5 w-5 rounded text-blue-600"><span class="sr-only" x-text="emailAlertsTitle"></span></label>
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Profilim -->
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
@@ -541,6 +545,9 @@
                 teamMessage: '',
                 teamMembers: [],
                 teamLoading: false,
+                emailDeliveryAlerts: false,
+                emailPreferenceBusy: false,
+                emailPreferenceMessage: '',
                 newInvite: { email: '', role: 'operations', customerId: '' },
                 customers: [],
                 loadingWorkspace: false,
@@ -611,7 +618,7 @@
                         clientFast: "Müşteri Olarak Gir",
                         notifTitle: "Bildirim Merkezi",
                         readAll: "Tümünü Okundu Say",
-                        settings: "Ayarlar", teamTitle: "Ekip ve müşteri daveti", teamDescription: "Ekip arkadaşlarına rol, müşterilere ise yalnızca kendi sevkiyatlarını görebilecekleri erişim ver.", teamMembersTitle: "Ekip üyeleri", teamRefresh: "Yenile", teamLoading: "Ekip yükleniyor…", teamEmpty: "Henüz davet edilmiş ekip üyesi yok.", teamRoleLabel: "Rol", teamCustomerLabel: "Müşteri", teamSave: "Yetkiyi kaydet", teamRemove: "Erişimi kaldır", teamRemoveConfirm: "Bu kişinin firma erişimini kaldırmak istiyor musunuz?", teamUpdated: "Ekip erişimi güncellendi.", teamRemoved: "Ekip üyesinin erişimi kaldırıldı.", teamSaveFailed: "Ekip erişimi güncellenemedi.", teamLoadFailed: "Ekip listesi yüklenemedi.", inviteEmailLabel: "E-posta adresi", inviteRoleLabel: "Hesap türü", inviteCustomerLabel: "Bağlı müşteri", chooseCustomer: "Müşteri seçin", roleOperations: "Operasyon ekibi", roleFinance: "Finans ekibi", roleClient: "Müşteri portalı", sendInvite: "Davet e-postası gönder", inviteSending: "Gönderiliyor…", inviteSuccess: "Davet e-postası gönderildi. Davet edilen kişi bağlantıdan hesabını etkinleştirebilir.", inviteEmailError: "Geçerli bir e-posta adresi girin.", inviteCustomerError: "Müşteri portalı için bağlı müşteriyi seçin.", inviteFailed: "Davet gönderilemedi.",
+                        settings: "Ayarlar", emailAlertsTitle: "Teslimat e-posta uyarıları", emailAlertsDescription: "Yaklaşan ve geciken sevkiyatlar için e-posta al. Bu tercih yalnızca senin hesabını etkiler.", emailAlertsToggle: "E-posta uyarıları", emailAlertsSaved: "E-posta tercihin kaydedildi.", emailAlertsFailed: "E-posta tercihi kaydedilemedi.", teamTitle: "Ekip ve müşteri daveti", teamDescription: "Ekip arkadaşlarına rol, müşterilere ise yalnızca kendi sevkiyatlarını görebilecekleri erişim ver.", teamMembersTitle: "Ekip üyeleri", teamRefresh: "Yenile", teamLoading: "Ekip yükleniyor…", teamEmpty: "Henüz davet edilmiş ekip üyesi yok.", teamRoleLabel: "Rol", teamCustomerLabel: "Müşteri", teamSave: "Yetkiyi kaydet", teamRemove: "Erişimi kaldır", teamRemoveConfirm: "Bu kişinin firma erişimini kaldırmak istiyor musunuz?", teamUpdated: "Ekip erişimi güncellendi.", teamRemoved: "Ekip üyesinin erişimi kaldırıldı.", teamSaveFailed: "Ekip erişimi güncellenemedi.", teamLoadFailed: "Ekip listesi yüklenemedi.", inviteEmailLabel: "E-posta adresi", inviteRoleLabel: "Hesap türü", inviteCustomerLabel: "Bağlı müşteri", chooseCustomer: "Müşteri seçin", roleOperations: "Operasyon ekibi", roleFinance: "Finans ekibi", roleClient: "Müşteri portalı", sendInvite: "Davet e-postası gönder", inviteSending: "Gönderiliyor…", inviteSuccess: "Davet e-postası gönderildi. Davet edilen kişi bağlantıdan hesabını etkinleştirebilir.", inviteEmailError: "Geçerli bir e-posta adresi girin.", inviteCustomerError: "Müşteri portalı için bağlı müşteriyi seçin.", inviteFailed: "Davet gönderilemedi.",
                         logout: "Çıkış Yap",
                         navDashboard: "Ana Panel",
                         navOffers: "Teklif Yönetimi",
@@ -723,7 +730,7 @@
                         clientFast: "Login as Client",
                         notifTitle: "Notification Center",
                         readAll: "Mark All as Read",
-                        settings: "Settings", teamTitle: "Team and client invitations", teamDescription: "Give teammates a role; client users can only see shipments for their assigned customer.", teamMembersTitle: "Team members", teamRefresh: "Refresh", teamLoading: "Loading team…", teamEmpty: "No invited team members yet.", teamRoleLabel: "Role", teamCustomerLabel: "Customer", teamSave: "Save access", teamRemove: "Remove access", teamRemoveConfirm: "Remove this person's access to the organization?", teamUpdated: "Team access updated.", teamRemoved: "Team member access removed.", teamSaveFailed: "Could not update team access.", teamLoadFailed: "Could not load team members.", inviteEmailLabel: "Email address", inviteRoleLabel: "Account type", inviteCustomerLabel: "Assigned customer", chooseCustomer: "Choose a customer", roleOperations: "Operations team", roleFinance: "Finance team", roleClient: "Client portal", sendInvite: "Send invitation email", inviteSending: "Sending…", inviteSuccess: "Invitation email sent. The user can activate their account from the link.", inviteEmailError: "Enter a valid email address.", inviteCustomerError: "Choose a customer for the client portal account.", inviteFailed: "Could not send the invitation.",
+                        settings: "Settings", emailAlertsTitle: "Delivery email alerts", emailAlertsDescription: "Receive email for upcoming and overdue shipments. This setting only affects your account.", emailAlertsToggle: "Email alerts", emailAlertsSaved: "Email preference saved.", emailAlertsFailed: "Could not save email preference.", teamTitle: "Team and client invitations", teamDescription: "Give teammates a role; client users can only see shipments for their assigned customer.", teamMembersTitle: "Team members", teamRefresh: "Refresh", teamLoading: "Loading team…", teamEmpty: "No invited team members yet.", teamRoleLabel: "Role", teamCustomerLabel: "Customer", teamSave: "Save access", teamRemove: "Remove access", teamRemoveConfirm: "Remove this person's access to the organization?", teamUpdated: "Team access updated.", teamRemoved: "Team member access removed.", teamSaveFailed: "Could not update team access.", teamLoadFailed: "Could not load team members.", inviteEmailLabel: "Email address", inviteRoleLabel: "Account type", inviteCustomerLabel: "Assigned customer", chooseCustomer: "Choose a customer", roleOperations: "Operations team", roleFinance: "Finance team", roleClient: "Client portal", sendInvite: "Send invitation email", inviteSending: "Sending…", inviteSuccess: "Invitation email sent. The user can activate their account from the link.", inviteEmailError: "Enter a valid email address.", inviteCustomerError: "Choose a customer for the client portal account.", inviteFailed: "Could not send the invitation.",
                         logout: "Logout",
                         navDashboard: "Dashboard",
                         navOffers: "Offers",
@@ -914,6 +921,7 @@
                     });
                     await this.loadNotifications();
                     this.subscribeToNotifications();
+                    await this.loadEmailPreferences();
                     if (this.canManageTeam()) await this.loadTeamMembers();
                 },
                 async ensureCustomer(name) {
@@ -931,6 +939,7 @@
                     if (this.notificationChannel && this.supabase) this.supabase.removeChannel(this.notificationChannel);
                     this.notificationChannel = null;
                     this.notifications = [];
+                    this.emailDeliveryAlerts = false; this.emailPreferenceMessage = '';
                     this.isLoggedIn = false; this.currentUser = null; this.activeOrganization = null; this.activeClient = null;
                     this.customers = []; this.offers = []; this.shipments = [];
                 },
@@ -943,6 +952,24 @@
                     this.authMessage = error ? error.message : (this.language === 'tr' ? 'Parola sıfırlama bağlantısı e-posta adresinize gönderildi.' : 'A password reset link has been sent to your email.');
                 },
                 canManageTeam() { return this.userRole === 'admin'; },
+                async loadEmailPreferences() {
+                    if (!this.currentUser || !this.activeOrganization) return;
+                    const { data, error } = await this.supabase.from('notification_preferences').select('email_delivery_alerts').eq('organization_id', this.activeOrganization.id).eq('user_id', this.currentUser.id).maybeSingle();
+                    if (error) throw error;
+                    this.emailDeliveryAlerts = Boolean(data?.email_delivery_alerts);
+                },
+                async saveEmailPreferences() {
+                    if (!this.currentUser || !this.activeOrganization || this.emailPreferenceBusy) return;
+                    this.emailPreferenceBusy = true; this.emailPreferenceMessage = '';
+                    try {
+                        const { error } = await this.supabase.from('notification_preferences').upsert({ organization_id: this.activeOrganization.id, user_id: this.currentUser.id, email_delivery_alerts: this.emailDeliveryAlerts }, { onConflict: 'organization_id,user_id' });
+                        if (error) throw error;
+                        this.emailPreferenceMessage = this.t('emailAlertsSaved');
+                    } catch (error) {
+                        this.emailDeliveryAlerts = !this.emailDeliveryAlerts;
+                        this.emailPreferenceMessage = error?.message || this.t('emailAlertsFailed');
+                    } finally { this.emailPreferenceBusy = false; }
+                },
                 async loadTeamMembers() {
                     if (!this.canManageTeam() || !this.activeOrganization) return;
                     this.teamLoading = true;
