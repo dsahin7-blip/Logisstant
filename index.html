@@ -100,7 +100,7 @@
                     </div>
 
                     <!-- Dark/Light Mode Switcher -->
-                    <button @click="darkMode = !darkMode" class="bg-blue-900 dark:bg-slate-800 hover:bg-blue-800 px-3 py-2 rounded-lg text-sm flex items-center space-x-2 transition">
+                    <button @click="toggleDarkMode()" class="bg-blue-900 dark:bg-slate-800 hover:bg-blue-800 px-3 py-2 rounded-lg text-sm flex items-center space-x-2 transition">
                         <span x-text="darkMode ? '☀️' : '🌙'"></span>
                     </button>
 
@@ -368,6 +368,21 @@
                             <button @click="saveProfile()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('saveBtn')"></button>
                         </div>
                     </div>
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
+                        <h3 class="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3" x-text="t('appearanceTitle')"></h3>
+                        <div class="space-y-3 text-sm">
+                            <div>
+                                <label class="text-xs text-slate-500" x-text="t('languageLabel')"></label>
+                                <select x-model="language" @change="saveUiPreferences()" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700">
+                                    <option value="tr">Türkçe</option><option value="en">English</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center justify-between gap-3">
+                                <span class="text-xs text-slate-500" x-text="t('themeLabel')"></span>
+                                <button type="button" @click="toggleDarkMode()" class="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs" x-text="darkMode ? t('darkTheme') : t('lightTheme')"></button>
+                            </div>
+                        </div>
+                    </div>
                     <!-- Firma Genel Ayarları -->
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
                         <h3 class="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3" x-text="t('firmSettingsTitle')"></h3>
@@ -405,7 +420,11 @@
                         <div class="space-y-3 text-sm">
                             <div>
                                 <label class="text-xs text-slate-500" x-text="t('newPass')"></label>
-                                <input type="password" x-model="newPassword" minlength="8" placeholder="••••••••" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
+                                <input type="password" x-model="newPassword" minlength="8" autocomplete="new-password" placeholder="••••••••" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-500">Şifreyi tekrar girin</label>
+                                <input type="password" x-model="newPasswordConfirm" minlength="8" autocomplete="new-password" placeholder="••••••••" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
                             </div>
                             <button @click="updatePassword()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('updatePassBtn')"></button>
                         </div>
@@ -545,9 +564,11 @@
                 customers: [],
                 loadingWorkspace: false,
                 newPassword: '',
+                newPasswordConfirm: '',
                 tab: 'dashboard',
                 darkMode: false,
                 language: 'tr',
+                focusedOfferId: null,
                 userRole: 'admin',
                 activeClient: null,
                 showOfferModal: false,
@@ -641,6 +662,7 @@
                         firmSettingsTitle: "Firma Genel Ayarları",
                         firmNameLabel: "Firma Ünvanı",
                         defaultCurrency: "Varsayılan Para Birimi",
+                        appearanceTitle: "Görünüm ve Dil", languageLabel: "Uygulama dili", themeLabel: "Görünüm", lightTheme: "Açık tema", darkTheme: "Koyu tema",
                         securityTitle: "Güvenlik & Şifre Değiştir",
                         currentPass: "Mevcut Şifre",
                         newPass: "Yeni Şifre",
@@ -753,6 +775,7 @@
                         firmSettingsTitle: "Firm General Settings",
                         firmNameLabel: "Company Name",
                         defaultCurrency: "Default Currency",
+                        appearanceTitle: "Appearance & Language", languageLabel: "App language", themeLabel: "Appearance", lightTheme: "Light theme", darkTheme: "Dark theme",
                         securityTitle: "Security & Password Change",
                         currentPass: "Current Password",
                         newPass: "New Password",
@@ -789,7 +812,26 @@
                 t(key) {
                     return this.labels[this.language][key] || key;
                 },
+                loadUiPreferences() {
+                    try {
+                        const savedLanguage = window.localStorage.getItem('logisstant-language');
+                        const savedTheme = window.localStorage.getItem('logisstant-dark-mode');
+                        if (savedLanguage === 'tr' || savedLanguage === 'en') this.language = savedLanguage;
+                        this.darkMode = savedTheme === 'true';
+                    } catch (_) {}
+                },
+                saveUiPreferences() {
+                    try {
+                        window.localStorage.setItem('logisstant-language', this.language);
+                        window.localStorage.setItem('logisstant-dark-mode', String(this.darkMode));
+                    } catch (_) {}
+                },
+                toggleDarkMode() {
+                    this.darkMode = !this.darkMode;
+                    this.saveUiPreferences();
+                },
                 async init() {
+                    this.loadUiPreferences();
                     if (!window.supabase || !window.LOGISSTANT_SUPABASE_CONFIG) {
                         this.authMessage = this.language === 'tr' ? 'Giriş hizmeti yüklenemedi. Sayfayı yenileyin.' : 'The sign-in service did not load. Refresh the page.';
                         return;
