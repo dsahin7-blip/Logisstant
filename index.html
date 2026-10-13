@@ -246,7 +246,7 @@
                                         }" class="text-xs px-2.5 py-1 rounded-full font-medium" x-text="offer.status"></span>
                                     </td>
                                     <td class="px-6 py-4 text-right space-x-2">
-                                        <button @click="downloadPDF(offer)" class="text-blue-600 dark:text-blue-400 hover:underline font-medium">📄 PDF</button>
+                                        <button @click="downloadPDF(offer)" class="text-blue-600 dark:text-blue-400 hover:underline font-medium">📄 PDF</button><button x-show="canManageOffers() && offer.status === 'Beklemede' && !offer.converted" @click="editOffer(offer)" class="text-blue-600 dark:text-blue-400 hover:underline font-medium text-xs" x-text="t('editOffer')"></button>
                                         <button x-show="canManageOffers() && offer.status === 'Beklemede'" @click="approveOffer(offer)" class="bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-3 py-1 rounded hover:bg-emerald-100 font-medium text-xs" x-text="t('approveOffer')"></button>
                                         <button x-show="canManageOffers() && offer.status === 'Beklemede'" @click="rejectOffer(offer)" class="bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-300 px-3 py-1 rounded hover:bg-rose-100 font-medium text-xs" x-text="t('rejectOffer')"></button>
                                         <button x-show="canManageOffers() && offer.status === 'Onaylandı' && !offer.converted" @click="convertToShipment(offer)" class="bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-3 py-1 rounded hover:bg-blue-100 font-medium text-xs" x-text="t('btnConvertToShipment')"></button>
@@ -420,7 +420,7 @@
     <!-- MODAL: YENİ TEKLİF -->
     <div x-show="showOfferModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" x-cloak>
         <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
-            <h3 class="text-lg font-bold text-slate-900 dark:text-white" x-text="t('modalOfferTitle')"></h3>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white" x-text="editingOfferId ? t('editOffer') : t('modalOfferTitle')"></h3>
             <select x-model="newOffer.mode" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
                 <option value="Karayolu">Karayolu</option>
                 <option value="Denizyolu">Denizyolu</option>
@@ -439,8 +439,8 @@
             <label class="block text-xs text-slate-500"><span x-text="t('offerValidUntil')"></span><input x-model="newOffer.validUntil" type="date" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"></label>
             <textarea x-model.trim="newOffer.notes" rows="2" :placeholder="t('offerNotes')" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"></textarea>
             <div class="flex justify-end space-x-2 pt-2">
-                <button @click="showOfferModal = false" class="px-4 py-2 text-slate-600 text-sm" x-text="t('cancelBtn')"></button>
-                <button @click="addOffer()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium" x-text="t('saveBtn')"></button>
+                <button @click="showOfferModal = false; editingOfferId = null; newOffer = { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', cargo: '', amount: '', currency: 'EUR', validUntil: '', notes: '' }" class="px-4 py-2 text-slate-600 text-sm" x-text="t('cancelBtn')"></button>
+                <button @click="addOffer()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium" x-text="editingOfferId ? t('saveChanges') : t('saveBtn')"></button>
             </div>
         </div>
     </div>
@@ -605,7 +605,7 @@
                         allOfferStatuses: "Tüm teklif durumları", offerPending: "Beklemede", offerApproved: "Onaylandı", offerRejected: "Reddedildi",
                         allShipmentStatuses: "Tüm sevkiyat durumları", shipmentPending: "Yükleme bekliyor", shipmentInProgress: "Devam ediyor", shipmentDelivered: "Teslim edildi",
                         noShipmentsFound: "Aramanızla eşleşen sevkiyat bulunamadı.", noOffersFound: "Aramanızla eşleşen teklif bulunamadı.",
-                        viewShipmentDetails: "Sevkiyat detaylarını gör", shipmentDetailsTitle: "Sevkiyat detayları", editShipment: "Sevkiyatı düzenle", saveChanges: "Değişiklikleri kaydet", cancelEdit: "Vazgeç", editIncoterm: "Teslim şekli", shipmentRouteRequired: "Güzergah gerekli.", shipmentSaved: "Sevkiyat bilgileri güncellendi.", shipmentSaveDenied: "Bu sevkiyat güncellenemedi. Yetkinizi kontrol edin.", detailMode: "Taşıma modu", detailCargo: "Yük bilgisi", detailIncome: "Navlun geliri", statusHistory: "Sevkiyat hareketleri", historyShipmentCreated: "Sevkiyat oluşturuldu", historyActor: "İşlemi yapan", historyUnknown: "Kullanıcı", historyEarlierRecords: "Önceki kayıtlar", historyLoading: "Hareketler yükleniyor…",
+                        viewShipmentDetails: "Sevkiyat detaylarını gör", shipmentDetailsTitle: "Sevkiyat detayları", editOffer: "Teklifi düzenle", offerUpdated: "Teklif güncellendi.", editShipment: "Sevkiyatı düzenle", saveChanges: "Değişiklikleri kaydet", cancelEdit: "Vazgeç", editIncoterm: "Teslim şekli", shipmentRouteRequired: "Güzergah gerekli.", shipmentSaved: "Sevkiyat bilgileri güncellendi.", shipmentSaveDenied: "Bu sevkiyat güncellenemedi. Yetkinizi kontrol edin.", detailMode: "Taşıma modu", detailCargo: "Yük bilgisi", detailIncome: "Navlun geliri", statusHistory: "Sevkiyat hareketleri", historyShipmentCreated: "Sevkiyat oluşturuldu", historyActor: "İşlemi yapan", historyUnknown: "Kullanıcı", historyEarlierRecords: "Önceki kayıtlar", historyLoading: "Hareketler yükleniyor…",
                         liveReportNotice: "Raporlar sevkiyat kayıtlarınızdan hesaplanır.", noReportData: "Henüz rapor oluşturacak sevkiyat kaydı yok.", modeRoad: "Karayolu", modeSea: "Denizyolu", modeAir: "Havayolu",
                         dashSubFirm: "Teklifleri, sevkiyatları ve operasyon durumunu tek ekrandan takip edin.",
                         dashSubClient: "Tekliflerinizi ve sevkiyat durumunuzu buradan takip edin.",
@@ -717,7 +717,7 @@
                         allOfferStatuses: "All offer statuses", offerPending: "Pending", offerApproved: "Approved", offerRejected: "Rejected",
                         allShipmentStatuses: "All shipment statuses", shipmentPending: "Awaiting loading", shipmentInProgress: "In progress", shipmentDelivered: "Delivered",
                         noShipmentsFound: "No shipments match your search.", noOffersFound: "No offers match your search.",
-                        viewShipmentDetails: "View shipment details", shipmentDetailsTitle: "Shipment details", editShipment: "Edit shipment", saveChanges: "Save changes", cancelEdit: "Cancel", editIncoterm: "Incoterm", shipmentRouteRequired: "Route is required.", shipmentSaved: "Shipment details updated.", shipmentSaveDenied: "This shipment could not be updated. Check your permissions.", detailMode: "Transport mode", detailCargo: "Cargo", detailIncome: "Freight income", statusHistory: "Shipment activity", historyShipmentCreated: "Shipment created", historyActor: "Changed by", historyUnknown: "User", historyEarlierRecords: "Earlier records", historyLoading: "Loading activity…",
+                        viewShipmentDetails: "View shipment details", shipmentDetailsTitle: "Shipment details", editOffer: "Edit offer", offerUpdated: "Offer updated.", editShipment: "Edit shipment", saveChanges: "Save changes", cancelEdit: "Cancel", editIncoterm: "Incoterm", shipmentRouteRequired: "Route is required.", shipmentSaved: "Shipment details updated.", shipmentSaveDenied: "This shipment could not be updated. Check your permissions.", detailMode: "Transport mode", detailCargo: "Cargo", detailIncome: "Freight income", statusHistory: "Shipment activity", historyShipmentCreated: "Shipment created", historyActor: "Changed by", historyUnknown: "User", historyEarlierRecords: "Earlier records", historyLoading: "Loading activity…",
                         liveReportNotice: "Reports are calculated from your shipment records.", noReportData: "There are no shipment records to report yet.", modeRoad: "Road", modeSea: "Sea", modeAir: "Air",
                         dashSubFirm: "Track offers, shipments, and operations from one place.",
                         dashSubClient: "Track your offers and shipment status here.",
@@ -1121,13 +1121,23 @@
                 activeShipmentCount() { return this.visibleShipments().filter(s => s.status !== 'Teslim Edildi').length; },
                 inTransitCount() { return this.visibleShipments().filter(s => !['Teslim Edildi', 'Yükleme Bekliyor'].includes(s.status)).length; },
                 pendingOfferCount() { return this.visibleOffers().filter(offer => offer.status === 'Beklemede').length; },
+                editOffer(offer) {
+                    if (!this.canManageOffers() || offer.status !== 'Beklemede' || offer.converted) return;
+                    this.editingOfferId = offer.id;
+                    this.newOffer = {
+                        mode: offer.mode || 'Karayolu', client: offer.client || '', route: offer.route || '',
+                        incoterm: offer.incoterm || 'EXW', cargo: offer.cargo || '', amount: String(offer.amount || ''),
+                        currency: offer.currency || 'EUR', validUntil: offer.validUntil || '', notes: offer.notes || ''
+                    };
+                    this.showOfferModal = true;
+                },
                 openOfferModal() {
                     if (!this.canManageOffers()) return;
-                    if (!this.newOffer.validUntil) {
-                        const expiry = new Date();
-                        expiry.setDate(expiry.getDate() + 7);
-                        this.newOffer.validUntil = expiry.toISOString().slice(0, 10);
-                    }
+                    this.editingOfferId = null;
+                    this.newOffer = { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', cargo: '', amount: '', currency: 'EUR', validUntil: '', notes: '' };
+                    const expiry = new Date();
+                    expiry.setDate(expiry.getDate() + 7);
+                    this.newOffer.validUntil = expiry.toISOString().slice(0, 10);
                     this.showOfferModal = true;
                 },
                 formatDate(value) {
@@ -1429,25 +1439,40 @@
                 async addOffer() {
                     if (!this.canManageOffers()) return;
                     const amount = Number(this.newOffer.amount);
-                    if (!this.newOffer.client || !this.newOffer.route || !this.newOffer.cargo || !this.newOffer.validUntil || !Number.isFinite(amount) || amount <= 0) {
+                    if (!this.newOffer.client.trim() || !this.newOffer.route.trim() || !this.newOffer.cargo.trim() || !this.newOffer.validUntil || !Number.isFinite(amount) || amount <= 0) {
                         alert(!this.newOffer.validUntil ? this.t('offerExpiryRequired') : this.t('offerFieldsRequired')); return;
                     }
                     if (this.newOffer.validUntil < new Date().toISOString().slice(0, 10)) { alert(this.t('offerExpiryPast')); return; }
                     try {
                         const customer = await this.ensureCustomer(this.newOffer.client);
                         const payload = {
-                            organization_id: this.activeOrganization.id, customer_id: customer.id, created_by: this.currentUser.id,
-                            mode: this.newOffer.mode, route: this.newOffer.route.trim(), incoterm: this.newOffer.incoterm,
-                            cargo: this.newOffer.cargo.trim(), amount, currency: this.newOffer.currency, status: 'Beklemede',
-                            valid_until: this.newOffer.validUntil, notes: this.newOffer.notes || ''
+                            customer_id: customer.id, mode: this.newOffer.mode, route: this.newOffer.route.trim(),
+                            incoterm: this.newOffer.incoterm, cargo: this.newOffer.cargo.trim(), amount,
+                            currency: this.newOffer.currency, valid_until: this.newOffer.validUntil, notes: this.newOffer.notes || ''
                         };
-                        const { data, error } = await this.supabase.from('offers').insert(payload).select('*, customers(name)').single();
-                        if (error) throw error;
-                        this.offers.unshift({ id: data.id, customerId: customer.id, mode: data.mode, client: customer.name, route: data.route,
-                            incoterm: data.incoterm, cargo: data.cargo, amount: Number(data.amount), currency: data.currency,
-                            status: data.status, converted: false, validUntil: data.valid_until, notes: data.notes || '', createdAt: data.created_at.slice(0, 10) });
-                        this.addNotification('notifOfferCreated', customer.name + ' · ' + data.route);
+                        if (this.editingOfferId) {
+                            const { data, error } = await this.supabase.from('offers').update(payload)
+                                .eq('id', this.editingOfferId).eq('organization_id', this.activeOrganization.id)
+                                .eq('status', 'Beklemede').is('converted_shipment_id', null).select('*, customers(name)').single();
+                            if (error) throw error;
+                            const existing = this.offers.find(item => item.id === this.editingOfferId);
+                            if (existing) Object.assign(existing, {
+                                customerId: customer.id, client: data.customers?.name || customer.name, mode: data.mode,
+                                route: data.route, incoterm: data.incoterm, cargo: data.cargo, amount: Number(data.amount),
+                                currency: data.currency, validUntil: data.valid_until, notes: data.notes || ''
+                            });
+                            alert(this.t('offerUpdated'));
+                        } else {
+                            const insertPayload = { ...payload, organization_id: this.activeOrganization.id, created_by: this.currentUser.id, status: 'Beklemede' };
+                            const { data, error } = await this.supabase.from('offers').insert(insertPayload).select('*, customers(name)').single();
+                            if (error) throw error;
+                            this.offers.unshift({ id: data.id, customerId: customer.id, mode: data.mode, client: customer.name, route: data.route,
+                                incoterm: data.incoterm, cargo: data.cargo, amount: Number(data.amount), currency: data.currency,
+                                status: data.status, converted: false, validUntil: data.valid_until, notes: data.notes || '', createdAt: data.created_at.slice(0, 10) });
+                            this.addNotification('notifOfferCreated', customer.name + ' · ' + data.route);
+                        }
                         this.newOffer = { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', cargo: '', amount: '', currency: 'EUR', validUntil: '', notes: '' };
+                        this.editingOfferId = null;
                         this.showOfferModal = false;
                     } catch (error) { this.showDataError(error); }
                 },
@@ -1540,6 +1565,7 @@
                     }
                 },
                 newOffer: { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', cargo: '', amount: '', currency: 'EUR', validUntil: '', notes: '' },
+                editingOfferId: null,
                 newShipment: { mode: 'Karayolu', client: '', route: '', plate: '', driver: '', phone: '', vessel: '', containerNo: '', containerType: '', blNumber: '', flightNo: '', awbNumber: '', volWeight: '', eta: '', cargo: '', income: '' }
             }
         }
