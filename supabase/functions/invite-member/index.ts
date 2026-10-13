@@ -20,7 +20,7 @@ Deno.serve(async (req: Request) => {
   }
 
   const authorization = req.headers.get("Authorization") || "";
-  const token = authorization.replace(/^Bearer\\s+/i, "");
+  const token = authorization.toLowerCase().startsWith("bearer ") ? authorization.slice(7).trim() : authorization.trim();
   const url = Deno.env.get("SUPABASE_URL");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!token || !url || !serviceKey) return respond({ error: "Invitation service is not configured." }, 500);
@@ -37,7 +37,8 @@ Deno.serve(async (req: Request) => {
   const email = (body.email || "").trim().toLowerCase();
   const role = body.role;
   const customerId = body.customer_id || null;
-  if (!organizationId || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || !["operations", "finance", "client"].includes(role || "")) {
+  const emailParts = email.split("@");
+  if (!organizationId || emailParts.length !== 2 || !emailParts[0] || !emailParts[1]?.includes(".") || email.includes(" ") || !["operations", "finance", "client"].includes(role || "")) {
     return respond({ error: "Check the email, role, and organization." }, 400);
   }
   if (email === (user.email || "").toLowerCase()) return respond({ error: "You cannot invite your own email address." }, 400);
