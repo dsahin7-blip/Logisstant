@@ -1524,12 +1524,16 @@
                     if (!this.canManageOffers()) return;
                     if (offer.validUntil && offer.validUntil < new Date().toISOString().slice(0, 10)) { alert(this.t('offerExpiryPast')); return; }
                     try {
-                        const shipment = await this.createShipmentRecord({ ...offer, eta: '' }, offer);
-                        const { error } = await this.supabase.from('offers').update({ converted_shipment_id: shipment.id }).eq('id', offer.id).eq('organization_id', this.activeOrganization.id);
+                        const { data: shipmentId, error } = await this.supabase.rpc('convert_offer_to_shipment', { p_offer_id: offer.id });
                         if (error) throw error;
-                        offer.converted = true; this.shipments.unshift(shipment);
-                        this.addNotification('notifShipmentCreated', shipment.code);
-                        this.selectedShipment = shipment; this.tab = 'shipments';
+                        offer.converted = true;
+                        await this.loadWorkspaceData();
+                        const shipment = this.shipments.find(item => item.id === shipmentId);
+                        if (shipment) {
+                            this.addNotification('notifShipmentCreated', shipment.code);
+                            this.selectedShipment = shipment;
+                            this.tab = 'shipments';
+                        }
                     } catch (error) { this.showDataError(error); }
                 },
                 simulateOCR() {
