@@ -42,16 +42,23 @@
                 </div>
                 <div>
                     <label class="text-xs font-semibold text-slate-600 dark:text-slate-400" x-text="t('passLabel')"></label>
-                    <input type="password" x-model="loginPassword" :autocomplete="authMode === 'signup' ? 'new-password' : 'current-password'" minlength="8" required class="w-full mt-1 p-3 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                    <div class="flex gap-2 mt-1">
+                        <input :type="showAuthPassword ? 'text' : 'password'" x-model="loginPassword" :autocomplete="authMode === 'signup' ? 'new-password' : 'current-password'" minlength="8" required class="min-w-0 flex-1 p-3 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                        <button type="button" @click="showAuthPassword = !showAuthPassword" class="px-3 rounded-xl border border-slate-300 dark:border-slate-700 text-xs" x-text="showAuthPassword ? t('hidePassword') : t('showPassword')"></button>
+                    </div>
+                </div>
+                <div x-show="authMode === 'signup'" x-cloak>
+                    <label class="text-xs font-semibold text-slate-600 dark:text-slate-400" x-text="t('confirmPassword')"></label>
+                    <input :type="showAuthPassword ? 'text' : 'password'" x-model="confirmPassword" autocomplete="new-password" minlength="8" :required="authMode === 'signup'" :disabled="authMode !== 'signup'" class="w-full mt-1 p-3 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
                 </div>
                 <div class="flex justify-end text-xs" x-show="authMode === 'login'">
-                    <a href="#" @click.prevent="resetPassword()" class="text-blue-600 dark:text-blue-400 hover:underline" x-text="t('forgotPass')"></a>
+                    <button type="button" @click="resetPassword()" :disabled="resetBusy" class="text-blue-600 dark:text-blue-400 hover:underline disabled:opacity-50" x-text="resetBusy ? t('resetSending') : t('forgotPass')"></button>
                 </div>
-                <button type="submit" :disabled="authBusy" class="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition" x-text="authBusy ? t('pleaseWait') : authMode === 'signup' ? t('createAccount') : t('firmBtn')"></button>
+                <button type="submit" :disabled="authBusy" class="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition" x-text="authBusy ? t('pleaseWait') : authMode === 'signup' ? t('createAccount') : t('loginButton')"></button>
             </form>
             <p class="text-center text-xs text-slate-500">
                 <span x-text="authMode === 'signup' ? t('alreadyHaveAccount') : t('needAccount')"></span>
-                <button type="button" @click="authMode = authMode === 'signup' ? 'login' : 'signup'; authMessage = ''" class="text-blue-600 dark:text-blue-400 font-semibold hover:underline ml-1" x-text="authMode === 'signup' ? t('loginLink') : t('signupLink')"></button>
+                <button type="button" @click="authMode = authMode === 'signup' ? 'login' : 'signup'; authMessage = ''; loginPassword = ''; confirmPassword = ''" class="text-blue-600 dark:text-blue-400 font-semibold hover:underline ml-1" x-text="authMode === 'signup' ? t('loginLink') : t('signupLink')"></button>
             </p>
             <p class="text-[11px] text-center text-slate-400" x-text="t('authSecurityNote')"></p>
         </div>
@@ -88,11 +95,11 @@
                             </div>
                             <div class="space-y-2 max-h-60 overflow-y-auto">
                                 <template x-for="notif in notifications" :key="notif.id">
-                                    <div :class="notif.read ? 'bg-slate-50 dark:bg-slate-800/40 opacity-75' : 'bg-blue-50 dark:bg-blue-950/40 border-l-2 border-blue-600'" class="p-2.5 rounded text-xs space-y-1">
-                                        <p class="font-semibold text-slate-900 dark:text-white" x-text="notif.title"></p>
-                                        <p class="text-slate-600 dark:text-slate-400" x-text="notif.desc"></p>
-                                        <span class="text-[10px] text-slate-400" x-text="notif.time"></span>
-                                    </div>
+                                    <button type="button" @click="openNotification(notif)" :class="notif.read ? 'bg-slate-50 dark:bg-slate-800/40 opacity-75' : 'bg-blue-50 dark:bg-blue-950/40 border-l-2 border-blue-600'" class="w-full text-left p-2.5 rounded text-xs space-y-1 hover:ring-1 hover:ring-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <span class="block font-semibold text-slate-900 dark:text-white" x-text="notif.title"></span>
+                                        <span class="block text-slate-600 dark:text-slate-400" x-text="notif.desc"></span>
+                                        <span class="block text-[10px] text-slate-400" x-text="notif.time"></span>
+                                    </button>
                                 </template>
                                 <p x-show="notifications.length === 0" class="text-xs text-slate-500 text-center py-3" x-text="t('noNotifications')"></p>
                             </div>
@@ -100,7 +107,7 @@
                     </div>
 
                     <!-- Dark/Light Mode Switcher -->
-                    <button @click="darkMode = !darkMode" class="bg-blue-900 dark:bg-slate-800 hover:bg-blue-800 px-3 py-2 rounded-lg text-sm flex items-center space-x-2 transition">
+                    <button @click="toggleDarkMode()" class="bg-blue-900 dark:bg-slate-800 hover:bg-blue-800 px-3 py-2 rounded-lg text-sm flex items-center space-x-2 transition">
                         <span x-text="darkMode ? '☀️' : '🌙'"></span>
                     </button>
 
@@ -229,7 +236,7 @@
                         </thead>
                         <tbody class="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
                             <template x-for="offer in filteredOffers()" :key="offer.id">
-                                <tr>
+                                <tr :id="'offer-row-' + offer.id" :class="focusedOfferId === offer.id ? 'bg-amber-50 dark:bg-amber-950/30' : ''">
                                     <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">
                                         <span class="text-xs px-2 py-0.5 rounded mr-1 font-semibold" :class="{'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300': offer.mode === 'Denizyolu', 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300': offer.mode === 'Havayolu', 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300': offer.mode === 'Karayolu'}" x-text="offer.mode"></span>
                                         <div class="mt-1" x-text="offer.client"></div>
@@ -368,6 +375,21 @@
                             <button @click="saveProfile()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('saveBtn')"></button>
                         </div>
                     </div>
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
+                        <h3 class="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3" x-text="t('appearanceTitle')"></h3>
+                        <div class="space-y-3 text-sm">
+                            <div>
+                                <label class="text-xs text-slate-500" x-text="t('languageLabel')"></label>
+                                <select x-model="language" @change="saveUiPreferences()" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700">
+                                    <option value="tr">Türkçe</option><option value="en">English</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center justify-between gap-3">
+                                <span class="text-xs text-slate-500" x-text="t('themeLabel')"></span>
+                                <button type="button" @click="toggleDarkMode()" class="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs" x-text="darkMode ? t('darkTheme') : t('lightTheme')"></button>
+                            </div>
+                        </div>
+                    </div>
                     <!-- Firma Genel Ayarları -->
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
                         <h3 class="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3" x-text="t('firmSettingsTitle')"></h3>
@@ -405,7 +427,11 @@
                         <div class="space-y-3 text-sm">
                             <div>
                                 <label class="text-xs text-slate-500" x-text="t('newPass')"></label>
-                                <input type="password" x-model="newPassword" minlength="8" placeholder="••••••••" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
+                                <input type="password" x-model="newPassword" minlength="8" autocomplete="new-password" placeholder="••••••••" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-500" x-text="t('confirmPassword')"></label>
+                                <input type="password" x-model="newPasswordConfirm" minlength="8" autocomplete="new-password" placeholder="••••••••" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
                             </div>
                             <button @click="updatePassword()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('updatePassBtn')"></button>
                         </div>
@@ -528,6 +554,9 @@
                 loginType: 'firm',
                 loginEmail: '',
                 loginPassword: '',
+                confirmPassword: '',
+                showAuthPassword: false,
+                resetBusy: false,
                 fullName: '',
                 organizationName: '',
                 authMode: 'login',
@@ -545,9 +574,11 @@
                 customers: [],
                 loadingWorkspace: false,
                 newPassword: '',
+                newPasswordConfirm: '',
                 tab: 'dashboard',
                 darkMode: false,
                 language: 'tr',
+                focusedOfferId: null,
                 userRole: 'admin',
                 activeClient: null,
                 showOfferModal: false,
@@ -566,7 +597,13 @@
                         loginSubtitle: "Tekliften teslimata lojistik süreçlerinizi tek ekranda yönetin.",
                         demoNotice: "Demo sürümü: giriş gerçek bir hesaba bağlı değildir. Kayıtlar yalnızca bu tarayıcıda saklanır; sunucuya gönderilmez.",
                         connectedNotice: "Hesabınız ve kayıtlarınız sunucuda, erişim kurallarıyla saklanır.",
-                        createAccount: "Firma hesabı oluştur", needAccount: "Yeni misiniz?", alreadyHaveAccount: "Zaten hesabınız var mı?", signupLink: "Kayıt ol", loginLink: "Giriş yap", pleaseWait: "Lütfen bekleyin…", authSecurityNote: "Parolanız Supabase Auth tarafından korunur. Kayıtlarınıza yalnızca yetkili hesabınız erişebilir.",
+                        createAccount: "Firma hesabı oluştur", needAccount: "Yeni misiniz?", alreadyHaveAccount: "Zaten hesabınız var mı?", signupLink: "Kayıt ol", loginLink: "Giriş yap", pleaseWait: "Lütfen bekleyin…", authSecurityNote: "Firma ve müşteri kullanıcıları aynı ekrandan giriş yapar; hesabınıza uygun panel açılır. Şifreniz güvenli şekilde korunur.",
+                        loginButton: "Giriş Yap", authEmailAlreadyUsed: "Bu e-posta adresiyle zaten bir hesap var.", authWeakPassword: "Daha güçlü bir şifre seçin. En az 8 karakter kullanın.",
+                        showPassword: "Göster", hidePassword: "Gizle", confirmPassword: "Şifreyi tekrar girin", passwordMismatch: "Şifreler eşleşmiyor.",
+                        resetSending: "Gönderiliyor…", resetEmailRequired: "Önce e-posta adresinizi yazın.", resetPasswordSent: "Bu adres kayıtlıysa parola sıfırlama yönergeleri e-posta adresinize gönderilecektir.",
+                        authInvalidCredentials: "E-posta adresi veya şifre hatalı.", authEmailNotConfirmed: "Giriş yapmadan önce e-posta adresinizi doğrulayın.",
+                        authRequestFailed: "İşlem tamamlanamadı. Bilgilerinizi ve bağlantınızı kontrol edip tekrar deneyin.",
+                        notificationTargetMissing: "İlgili kayıt artık görünmüyor veya erişiminiz yok.",
                         demoResetNotice: "Demo sürümünde şifre sıfırlama e-postası gönderilmiyor.",
                         demoSettingsNotice: "Demo sürümünde ayarlar kaydedilmiyor.",
                         demoPasswordNotice: "Demo sürümünde parola değiştirilmiyor.",
@@ -641,6 +678,7 @@
                         firmSettingsTitle: "Firma Genel Ayarları",
                         firmNameLabel: "Firma Ünvanı",
                         defaultCurrency: "Varsayılan Para Birimi",
+                        appearanceTitle: "Görünüm ve Dil", languageLabel: "Uygulama dili", themeLabel: "Görünüm", lightTheme: "Açık tema", darkTheme: "Koyu tema",
                         securityTitle: "Güvenlik & Şifre Değiştir",
                         currentPass: "Mevcut Şifre",
                         newPass: "Yeni Şifre",
@@ -678,7 +716,13 @@
                         loginSubtitle: "Manage logistics from quote to delivery in one place.",
                         demoNotice: "Demo version: sign-in is not connected to a real account. Records are stored only in this browser and are not sent to a server.",
                         connectedNotice: "Your account and records are stored on the server with access controls.",
-                        createAccount: "Create firm account", needAccount: "New here?", alreadyHaveAccount: "Already have an account?", signupLink: "Sign up", loginLink: "Log in", pleaseWait: "Please wait…", authSecurityNote: "Your password is protected by Supabase Auth. Only authorized accounts can access your records.",
+                        createAccount: "Create firm account", needAccount: "New here?", alreadyHaveAccount: "Already have an account?", signupLink: "Sign up", loginLink: "Log in", pleaseWait: "Please wait…", authSecurityNote: "Company and customer users sign in here; your account opens the correct workspace. Your password is protected securely.",
+                        loginButton: "Sign in", authEmailAlreadyUsed: "An account already exists with this email address.", authWeakPassword: "Choose a stronger password with at least 8 characters.",
+                        showPassword: "Show", hidePassword: "Hide", confirmPassword: "Confirm password", passwordMismatch: "The passwords do not match.",
+                        resetSending: "Sending…", resetEmailRequired: "Enter your email address first.", resetPasswordSent: "If an account uses this address, password reset instructions will be sent.",
+                        authInvalidCredentials: "The email address or password is incorrect.", authEmailNotConfirmed: "Confirm your email address before signing in.",
+                        authRequestFailed: "The request could not be completed. Check your details and connection, then try again.",
+                        notificationTargetMissing: "The related record is no longer available or you do not have access.",
                         demoResetNotice: "Password reset email is not sent in the demo.",
                         demoSettingsNotice: "Settings are not saved in the demo.",
                         demoPasswordNotice: "Password is not changed in the demo.",
@@ -753,6 +797,7 @@
                         firmSettingsTitle: "Firm General Settings",
                         firmNameLabel: "Company Name",
                         defaultCurrency: "Default Currency",
+                        appearanceTitle: "Appearance & Language", languageLabel: "App language", themeLabel: "Appearance", lightTheme: "Light theme", darkTheme: "Dark theme",
                         securityTitle: "Security & Password Change",
                         currentPass: "Current Password",
                         newPass: "New Password",
@@ -789,7 +834,26 @@
                 t(key) {
                     return this.labels[this.language][key] || key;
                 },
+                loadUiPreferences() {
+                    try {
+                        const savedLanguage = window.localStorage.getItem('logisstant-language');
+                        const savedTheme = window.localStorage.getItem('logisstant-dark-mode');
+                        if (savedLanguage === 'tr' || savedLanguage === 'en') this.language = savedLanguage;
+                        this.darkMode = savedTheme === 'true';
+                    } catch (_) {}
+                },
+                saveUiPreferences() {
+                    try {
+                        window.localStorage.setItem('logisstant-language', this.language);
+                        window.localStorage.setItem('logisstant-dark-mode', String(this.darkMode));
+                    } catch (_) {}
+                },
+                toggleDarkMode() {
+                    this.darkMode = !this.darkMode;
+                    this.saveUiPreferences();
+                },
                 async init() {
+                    this.loadUiPreferences();
                     if (!window.supabase || !window.LOGISSTANT_SUPABASE_CONFIG) {
                         this.authMessage = this.language === 'tr' ? 'Giriş hizmeti yüklenemedi. Sayfayı yenileyin.' : 'The sign-in service did not load. Refresh the page.';
                         return;
@@ -806,6 +870,10 @@
                 },
                 async submitAuth() {
                     if (!this.supabase || this.authBusy) return;
+                    if (this.authMode === 'signup' && this.loginPassword !== this.confirmPassword) {
+                        this.authMessage = this.t('passwordMismatch');
+                        return;
+                    }
                     this.authBusy = true; this.authMessage = '';
                     try {
                         if (this.authMode === 'signup') {
@@ -820,6 +888,7 @@
                                     ? 'Hesabınız oluşturuldu. E-postanızdaki doğrulama bağlantısına tıklayıp giriş yapın.'
                                     : 'Your account was created. Confirm your email using the link we sent, then log in.';
                                 this.authMode = 'login';
+                                this.loginPassword = ''; this.confirmPassword = '';
                             }
                         } else {
                             const { data, error } = await this.supabase.auth.signInWithPassword({ email: this.loginEmail, password: this.loginPassword });
@@ -928,7 +997,15 @@
                     if (error) throw error;
                     this.customers.push(data); return data;
                 },
-                showAuthError(error) { this.authMessage = error?.message || String(error); },
+                showAuthError(error) {
+                    const code = error?.code || '';
+                    const message = (error?.message || '').toLowerCase();
+                    if (code === 'invalid_credentials' || message.includes('invalid login credentials')) this.authMessage = this.t('authInvalidCredentials');
+                    else if (code === 'email_not_confirmed' || message.includes('email not confirmed')) this.authMessage = this.t('authEmailNotConfirmed');
+                    else if (['user_already_exists', 'email_exists'].includes(code)) this.authMessage = this.t('authEmailAlreadyUsed');
+                    else if (code === 'weak_password') this.authMessage = this.t('authWeakPassword');
+                    else this.authMessage = error?.message || this.t('authRequestFailed');
+                },
                 showDataError(error) { alert(error?.message || String(error)); },
                 clearSession() {
                     if (this.notificationChannel && this.supabase) this.supabase.removeChannel(this.notificationChannel);
@@ -939,12 +1016,16 @@
                     this.customers = []; this.offers = []; this.shipments = [];
                 },
                 async resetPassword() {
-                    if (!this.supabase || !this.loginEmail) {
-                        this.authMessage = this.language === 'tr' ? 'Önce e-posta adresinizi yazın.' : 'Enter your email address first.';
-                        return;
-                    }
-                    const { error } = await this.supabase.auth.resetPasswordForEmail(this.loginEmail, { redirectTo: window.location.origin });
-                    this.authMessage = error ? error.message : (this.language === 'tr' ? 'Parola sıfırlama bağlantısı e-posta adresinize gönderildi.' : 'A password reset link has been sent to your email.');
+                    if (!this.supabase) { this.authMessage = this.t('authRequestFailed'); return; }
+                    if (!this.loginEmail.trim()) { this.authMessage = this.t('resetEmailRequired'); return; }
+                    if (this.resetBusy) return;
+                    this.resetBusy = true; this.authMessage = '';
+                    try {
+                        const { error } = await this.supabase.auth.resetPasswordForEmail(this.loginEmail.trim(), { redirectTo: window.location.origin });
+                        if (error) throw error;
+                        this.authMessage = this.t('resetPasswordSent');
+                    } catch (error) { this.showAuthError(error); }
+                    finally { this.resetBusy = false; }
                 },
                 canManageTeam() { return this.userRole === 'admin'; },
                 canManageOffers() { return ['admin', 'operation'].includes(this.userRole); },
@@ -1019,6 +1100,11 @@
                     alert(this.language === 'tr' ? 'Profil kaydedildi.' : 'Profile saved.');
                 },
                 async updatePassword() {
+                    if (this.newPassword !== this.newPasswordConfirm) {
+                        alert(this.t('passwordMismatch'));
+                        return;
+                    }
+                    
                     if (!this.newPassword || this.newPassword.length < 8) {
                         alert(this.language === 'tr' ? 'Yeni parola en az 8 karakter olmalı.' : 'The new password must be at least 8 characters.');
                         return;
@@ -1026,6 +1112,7 @@
                     const { error } = await this.supabase.auth.updateUser({ password: this.newPassword });
                     if (error) { this.showDataError(error); return; }
                     this.newPassword = '';
+                    this.newPasswordConfirm = '';
                     alert(this.language === 'tr' ? 'Parolanız güncellendi.' : 'Your password was updated.');
                 },
                 notificationChannel: null,
@@ -1033,45 +1120,33 @@
                 async loadNotifications() {
                     if (!this.currentUser || !this.activeOrganization) return;
                     const { data, error } = await this.supabase.from('user_notifications')
-                        .select('id, title_key, description, is_read, created_at')
-                        .eq('user_id', this.currentUser.id)
-                        .eq('organization_id', this.activeOrganization.id)
-                        .order('created_at', { ascending: false })
-                        .limit(20);
+                        .select('id, title_key, description, entity_type, entity_id, is_read, created_at')
+                        .eq('user_id', this.currentUser.id).eq('organization_id', this.activeOrganization.id)
+                        .order('created_at', { ascending: false }).limit(20);
                     if (error) throw error;
                     this.notifications = (data || []).map(row => ({
-                        id: row.id,
-                        title: this.t(row.title_key),
-                        desc: row.description || '',
-                        time: new Date(row.created_at).toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US'),
-                        read: row.is_read
+                        id: row.id, titleKey: row.title_key, title: this.t(row.title_key),
+                        desc: row.description || '', entityType: row.entity_type || null, entityId: row.entity_id || null,
+                        time: new Date(row.created_at).toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US'), read: row.is_read
                     }));
                 },
                 subscribeToNotifications() {
                     if (!this.supabase || !this.currentUser || !this.activeOrganization) return;
                     if (this.notificationChannel) this.supabase.removeChannel(this.notificationChannel);
-                    const userId = this.currentUser.id;
-                    const organizationId = this.activeOrganization.id;
+                    const userId = this.currentUser.id, organizationId = this.activeOrganization.id;
                     this.notificationChannel = this.supabase.channel('notifications:' + userId)
                         .on('postgres_changes', {
-                            event: 'INSERT',
-                            schema: 'public',
-                            table: 'user_notifications',
-                            filter: 'user_id=eq.' + userId
+                            event: 'INSERT', schema: 'public', table: 'user_notifications', filter: 'user_id=eq.' + userId
                         }, payload => {
                             const row = payload.new;
                             if (!row || row.organization_id !== organizationId) return;
                             const notification = {
-                                id: row.id,
-                                title: this.t(row.title_key),
-                                desc: row.description || '',
-                                time: new Date(row.created_at).toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US'),
-                                read: row.is_read
+                                id: row.id, titleKey: row.title_key, title: this.t(row.title_key),
+                                desc: row.description || '', entityType: row.entity_type || null, entityId: row.entity_id || null,
+                                time: new Date(row.created_at).toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US'), read: row.is_read
                             };
                             const pending = this.notifications.find(item =>
-                                String(item.id).startsWith('pending-') &&
-                                item.title === notification.title &&
-                                item.desc === notification.desc
+                                String(item.id).startsWith('pending-') && item.title === notification.title && item.desc === notification.desc
                             );
                             if (pending) Object.assign(pending, notification);
                             else if (!this.notifications.some(item => item.id === notification.id)) this.notifications.unshift(notification);
@@ -1091,11 +1166,43 @@
                 async markAllAsRead() {
                     if (!this.currentUser || !this.activeOrganization) return;
                     const { error } = await this.supabase.from('user_notifications').update({ is_read: true })
-                        .eq('user_id', this.currentUser.id)
-                        .eq('organization_id', this.activeOrganization.id)
-                        .eq('is_read', false);
+                        .eq('user_id', this.currentUser.id).eq('organization_id', this.activeOrganization.id).eq('is_read', false);
                     if (error) { this.showDataError(error); return; }
                     this.notifications.forEach(n => n.read = true);
+                },
+                async openNotification(notification) {
+                    this.showNotifDropdown = false;
+                    if (!notification.read) {
+                        if (this.currentUser && this.activeOrganization && !String(notification.id).startsWith('pending-')) {
+                            const { error } = await this.supabase.from('user_notifications').update({ is_read: true })
+                                .eq('id', notification.id).eq('user_id', this.currentUser.id).eq('organization_id', this.activeOrganization.id);
+                            if (error) this.showDataError(error);
+                        }
+                        notification.read = true;
+                    }
+                    const entityType = notification.entityType || null, entityId = notification.entityId || null;
+                    if (entityType === 'shipment') {
+                        this.tab = 'shipments';
+                        this.selectedShipment = this.shipments.find(item => item.id === entityId) || null;
+                        if (!this.selectedShipment) alert(this.t('notificationTargetMissing'));
+                        return;
+                    }
+                    if (entityType === 'offer') {
+                        this.tab = 'offers'; this.offerStatusFilter = 'all'; this.offerSearch = ''; this.focusedOfferId = entityId;
+                        this.$nextTick(() => document.getElementById('offer-row-' + entityId)?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+                        if (!this.offers.some(item => item.id === entityId)) alert(this.t('notificationTargetMissing'));
+                        return;
+                    }
+                    const isShipment = (notification.titleKey || '').includes('Shipment') || (notification.titleKey || '').includes('Documents');
+                    this.tab = isShipment ? 'shipments' : 'offers';
+                    if (isShipment) this.selectedShipment = this.shipments.find(item => item.code === notification.desc) || null;
+                    else {
+                        const offer = this.offers.find(item => notification.desc === item.client + ' · ' + item.route);
+                        if (offer) {
+                            this.offerStatusFilter = 'all'; this.offerSearch = ''; this.focusedOfferId = offer.id;
+                            this.$nextTick(() => document.getElementById('offer-row-' + offer.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+                        }
+                    }
                 },
                 visibleOffers() {
                     return this.userRole === 'client' ? this.offers.filter(offer => offer.client === this.activeClient) : this.offers;
@@ -1255,24 +1362,20 @@
                     if (error) { this.showDataError(error); return; }
                     shipment.documents = documents;
                     const required = this.documentChecklist(shipment).filter(document => document.required || document.applicability === 'required');
-                    if (required.length && required.every(document => document.done)) this.addNotification('notifDocumentsComplete', shipment.code);
+                    if (required.length && required.every(document => document.done)) this.addNotification('notifDocumentsComplete', shipment.code, 'shipment', shipment.id);
                 },
-                addNotification(titleKey, description) {
+                addNotification(titleKey, description, entityType = null, entityId = null) {
                     const notification = {
-                        id: 'pending-' + crypto.randomUUID(),
-                        title: this.t(titleKey),
-                        desc: description || '',
-                        time: new Date().toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US'),
-                        read: false
+                        id: 'pending-' + crypto.randomUUID(), title: this.t(titleKey), titleKey,
+                        desc: description || '', entityType, entityId,
+                        time: new Date().toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US'), read: false
                     };
                     this.notifications.unshift(notification);
                     this.notifications = this.notifications.slice(0, 20);
                     if (!this.supabase || !this.currentUser || !this.activeOrganization) return;
                     this.supabase.from('user_notifications').insert({
-                        user_id: this.currentUser.id,
-                        organization_id: this.activeOrganization.id,
-                        title_key: titleKey,
-                        description: description || ''
+                        user_id: this.currentUser.id, organization_id: this.activeOrganization.id,
+                        title_key: titleKey, description: description || '', entity_type: entityType, entity_id: entityId
                     }).select('id, created_at').single().then(({ data, error }) => {
                         if (error) { this.showDataError(error); return; }
                         const pending = this.notifications.find(item => item.id === notification.id);
@@ -1427,14 +1530,14 @@
                     if (offer.status !== 'Beklemede') return;
                     const { error } = await this.supabase.from('offers').update({ status: 'Onaylandı' }).eq('id', offer.id).eq('organization_id', this.activeOrganization.id);
                     if (error) { this.showDataError(error); return; }
-                    offer.status = 'Onaylandı'; this.addNotification('notifOfferApproved', offer.client + ' · ' + offer.route);
+                    offer.status = 'Onaylandı'; this.addNotification('notifOfferApproved', offer.client + ' · ' + offer.route, 'offer', offer.id);
                 },
                 async rejectOffer(offer) {
                     if (!this.canManageOffers()) return;
                     if (offer.status !== 'Beklemede') return;
                     const { error } = await this.supabase.from('offers').update({ status: 'Reddedildi' }).eq('id', offer.id).eq('organization_id', this.activeOrganization.id);
                     if (error) { this.showDataError(error); return; }
-                    offer.status = 'Reddedildi'; this.addNotification('notifOfferRejected', offer.client + ' · ' + offer.route);
+                    offer.status = 'Reddedildi'; this.addNotification('notifOfferRejected', offer.client + ' · ' + offer.route, 'offer', offer.id);
                 },
                 async addOffer() {
                     if (!this.canManageOffers() || this.savingOffer) return;
@@ -1470,7 +1573,7 @@
                             this.offers.unshift({ id: data.id, customerId: customer.id, mode: data.mode, client: customer.name, route: data.route,
                                 incoterm: data.incoterm, cargo: data.cargo, amount: Number(data.amount), currency: data.currency,
                                 status: data.status, converted: false, validUntil: data.valid_until, notes: data.notes || '', createdAt: data.created_at.slice(0, 10) });
-                            this.addNotification('notifOfferCreated', customer.name + ' · ' + data.route);
+                            this.addNotification('notifOfferCreated', customer.name + ' · ' + data.route, 'offer', data.id);
                         }
                         this.newOffer = { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', cargo: '', amount: '', currency: 'EUR', validUntil: '', notes: '' };
                         this.editingOfferId = null;
@@ -1520,7 +1623,7 @@
                         const shipment = await this.createShipmentRecord(this.newShipment);
                         this.shipments.unshift(shipment);
                         this.newShipment = { mode: 'Karayolu', client: '', route: '', plate: '', driver: '', phone: '', vessel: '', containerNo: '', containerType: '', blNumber: '', flightNo: '', awbNumber: '', volWeight: '', eta: '', cargo: '', income: '' };
-                        this.showShipmentModal = false; this.addNotification('notifShipmentCreated', shipment.code);
+                        this.showShipmentModal = false; this.addNotification('notifShipmentCreated', shipment.code, 'shipment', shipment.id);
                     } catch (error) { this.showDataError(error); }
                     finally { this.savingShipment = false; }
                 },
@@ -1534,7 +1637,7 @@
                         await this.loadWorkspaceData();
                         const shipment = this.shipments.find(item => item.id === shipmentId);
                         if (shipment) {
-                            this.addNotification('notifShipmentCreated', shipment.code);
+                            this.addNotification('notifShipmentCreated', shipment.code, 'shipment', shipment.id);
                             this.selectedShipment = shipment;
                             this.tab = 'shipments';
                         }
