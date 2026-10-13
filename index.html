@@ -882,6 +882,7 @@
                             flightNo: internal.flightNo || '', awbNumber: internal.awbNumber || '', volWeight: internal.volWeight || ''
                         };
                     });
+                    await this.loadNotifications();
                 },
                 async ensureCustomer(name) {
                     const normalized = (name || '').trim();
@@ -956,6 +957,23 @@
                     alert(this.language === 'tr' ? 'Parolanız güncellendi.' : 'Your password was updated.');
                 },
                 notifications: [],
+                async loadNotifications() {
+                    if (!this.currentUser || !this.activeOrganization) return;
+                    const { data, error } = await this.supabase.from('user_notifications')
+                        .select('id, title_key, description, is_read, created_at')
+                        .eq('user_id', this.currentUser.id)
+                        .eq('organization_id', this.activeOrganization.id)
+                        .order('created_at', { ascending: false })
+                        .limit(20);
+                    if (error) throw error;
+                    this.notifications = (data || []).map(row => ({
+                        id: row.id,
+                        title: this.t(row.title_key),
+                        desc: row.description || '',
+                        time: new Date(row.created_at).toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US'),
+                        read: row.is_read
+                    }));
+                },
                 offers: [],
                 shipments: [],
                 async logout() {
@@ -965,7 +983,13 @@
                 unreadCount() {
                     return this.notifications.filter(n => !n.read).length;
                 },
-                markAllAsRead() {
+                async markAllAsRead() {
+                    if (!this.currentUser || !this.activeOrganization) return;
+                    const { error } = await this.supabase.from('user_notifications').update({ is_read: true })
+                        .eq('user_id', this.currentUser.id)
+                        .eq('organization_id', this.activeOrganization.id)
+                        .eq('is_read', false);
+                    if (error) { this.showDataError(error); return; }
                     this.notifications.forEach(n => n.read = true);
                 },
                 visibleOffers() {
@@ -1100,14 +1124,24 @@
                     if (required.length && required.every(document => document.done)) this.addNotification('notifDocumentsComplete', shipment.code);
                 },
                 addNotification(titleKey, description) {
-                    this.notifications.unshift({
-                        id: Date.now() + Math.random(),
+                    const notification = {
+                        id: 'pending-' + crypto.randomUUID(),
                         title: this.t(titleKey),
-                        desc: description,
+                        desc: description || '',
                         time: new Date().toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US'),
                         read: false
-                    });
+                    };
+                    this.notifications.unshift(notification);
                     this.notifications = this.notifications.slice(0, 20);
+                    if (!this.supabase || !this.currentUser || !this.activeOrganization) return;
+                    this.supabase.from('user_notifications').insert({
+                        user_id: this.currentUser.id,
+                        organization_id: this.activeOrganization.id,
+                        title_key: titleKey,
+                        description: description || ''
+                    }).then(({ error }) => {
+                        if (error) this.showDataError(error);
+                    }).catch(error => this.showDataError(error));
                 },
                 reportShipments() {
                     return this.visibleShipments().filter(shipment => {
@@ -1172,7 +1206,8 @@
                         .eq('id', shipment.id).eq('organization_id', this.activeOrganization.id);
                     if (error) { this.showDataError(error); return; }
                     shipment.status = status; shipment.history = history;
-                    this.addNotification('notifShipmentUpdate', shipment.code + ' · ' + status);
+                    try { await this.loadNotifications(); }
+                    catch (notificationError) { this.showDataError(notificationError); }
                 },
                 shipmentStages(shipment) {
                     const stage2 = shipment.mode === 'Denizyolu' ? 'Denizde' : shipment.mode === 'Havayolu' ? 'Uçuşta' : 'Yola Çıktı';
