@@ -966,8 +966,9 @@
     <div id="pdf-template" class="hidden p-8 bg-white text-slate-900">
         <div class="border-b-2 border-blue-900 pb-4 mb-6 flex justify-between items-center">
             <div>
-                <h1 class="text-2xl font-bold text-blue-950">LOGISSTANT</h1>
-                <p class="text-xs text-slate-500">Uluslararası taşımacılık demo teklifi</p>
+                <h1 id="pdf-firm-name" class="text-2xl font-bold text-blue-950">LOGISSTANT</h1>
+                <p class="text-xs text-slate-500">Uluslararası taşımacılık teklifi</p>
+                <p id="pdf-firm-contact" class="mt-2 max-w-md text-xs text-slate-500 hidden"></p>
             </div>
             <div class="text-right">
                 <h2 class="text-xl font-bold text-slate-700">NAVLUN TEKLİFİ</h2>
@@ -997,7 +998,7 @@
                 </tr>
             </tbody>
         </table>
-        <p class="text-xs text-slate-500 border-t pt-4">Bu belge Logisstant demo uygulamasında oluşturulmuştur ve gerçek ticari teklif değildir.</p>
+        <p class="text-xs text-slate-500 border-t pt-4">Bu teklif, yukarıda belirtilen müşteri ve güzergâh bilgileri için hazırlanmıştır.</p>
     </div>
 
     <!-- SCRIPT LOGIC -->
@@ -2398,6 +2399,18 @@
                         alert(this.t('pdfUnavailable'));
                         return;
                     }
+                    const firm = this.activeOrganization || {};
+                    const firmName = firm.name || this.organizationSettings?.name || this.organizationName || 'LOGISSTANT';
+                    document.getElementById('pdf-firm-name').innerText = firmName;
+                    const contactDetails = [
+                        firm.contact_email || this.organizationSettings?.contact_email,
+                        firm.phone || this.organizationSettings?.phone,
+                        firm.website || this.organizationSettings?.website,
+                        firm.address || this.organizationSettings?.address
+                    ].map(value => (value || '').trim()).filter(Boolean);
+                    const firmContactNode = document.getElementById('pdf-firm-contact');
+                    firmContactNode.innerText = contactDetails.join(' · ');
+                    firmContactNode.classList.toggle('hidden', contactDetails.length === 0);
                     document.getElementById('pdf-client').innerText = offer.client;
                     document.getElementById('pdf-mode').innerText = offer.mode;
                     document.getElementById('pdf-route').innerText = offer.route;
