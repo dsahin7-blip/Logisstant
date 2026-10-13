@@ -809,15 +809,34 @@
                         </div>
                     </div>
                     <!-- Firma Genel Ayarları -->
-                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
-                        <h3 class="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3" x-text="t('firmSettingsTitle')"></h3>
-                        <div class="space-y-3 text-sm">
-                            <div>
-                                <label class="text-xs text-slate-500" x-text="t('firmNameLabel')"></label>
-                                <input type="text" x-model="organizationName" disabled class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
-                            </div>
-
+                    <div x-show="userRole === 'admin'" x-cloak class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
+                        <div>
+                            <h3 class="font-bold text-slate-900 dark:text-white" x-text="t('firmSettingsTitle')"></h3>
+                            <p class="text-xs text-slate-500 mt-1" x-text="t('firmSettingsDescription')"></p>
                         </div>
+                        <form @submit.prevent="saveOrganizationSettings()" class="space-y-3 text-sm">
+                            <label class="block text-xs text-slate-500"><span x-text="t('firmNameLabel')"></span>
+                                <input type="text" x-model.trim="organizationSettings.name" required maxlength="160" autocomplete="organization" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
+                            </label>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <label class="block text-xs text-slate-500"><span x-text="t('firmContactEmail')"></span>
+                                    <input type="email" x-model.trim="organizationSettings.contact_email" maxlength="254" autocomplete="email" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
+                                </label>
+                                <label class="block text-xs text-slate-500"><span x-text="t('firmPhone')"></span>
+                                    <input type="tel" x-model.trim="organizationSettings.phone" maxlength="40" autocomplete="tel" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
+                                </label>
+                                <label class="block text-xs text-slate-500 sm:col-span-2"><span x-text="t('firmWebsite')"></span>
+                                    <input type="url" x-model.trim="organizationSettings.website" maxlength="255" placeholder="https://" autocomplete="url" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
+                                </label>
+                                <label class="block text-xs text-slate-500 sm:col-span-2"><span x-text="t('firmAddress')"></span>
+                                    <textarea x-model.trim="organizationSettings.address" maxlength="500" rows="2" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm"></textarea>
+                                </label>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <button type="submit" :disabled="organizationSettingsBusy" class="bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="organizationSettingsBusy ? t('pleaseWait') : t('firmSettingsSave')"></button>
+                                <p role="status" aria-live="polite" x-show="organizationSettingsMessage" x-text="organizationSettingsMessage" class="text-xs text-slate-600 dark:text-slate-300"></p>
+                            </div>
+                        </form>
                     </div>
                     <div x-show="canManageTeam()" class="md:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
                         <div><h3 class="font-bold text-slate-900 dark:text-white" x-text="t('teamTitle')"></h3><p class="text-xs text-slate-500 mt-1" x-text="t('teamDescription')"></p></div>
@@ -995,6 +1014,9 @@
                 resetBusy: false,
                 fullName: '',
                 organizationName: '',
+                organizationSettings: { name: '', contact_email: '', phone: '', website: '', address: '' },
+                organizationSettingsBusy: false,
+                organizationSettingsMessage: '',
                 authMode: 'login',
                 loginAudience: 'firm',
                 authMessage: '',
@@ -1120,6 +1142,14 @@
                         profileTitle: "Profil Bilgilerim",
                         firmSettingsTitle: "Firma Genel Ayarları",
                         firmNameLabel: "Firma Ünvanı",
+                        firmSettingsDescription: "Firmanızın iletişim bilgilerini yönetin.",
+                        firmContactEmail: "İrtibat e-postası",
+                        firmPhone: "Telefon",
+                        firmWebsite: "Web sitesi",
+                        firmAddress: "Adres",
+                        firmSettingsSave: "Firma bilgilerini kaydet",
+                        firmSettingsSaved: "Firma bilgileri kaydedildi.",
+                        firmSettingsSaveFailed: "Firma bilgileri kaydedilemedi.",
                         defaultCurrency: "Varsayılan Para Birimi",
                         appearanceTitle: "Görünüm ve Dil", languageLabel: "Uygulama dili", themeLabel: "Görünüm", lightTheme: "Açık tema", darkTheme: "Koyu tema",
                         installTitle: "Uygulamayı yükle", installHelp: "Bilgisayarda Chrome veya Edge menüsünden Yükle'yi seçin. Android'de tarayıcı menüsünden Uygulamayı yükle'ye dokunun. iPhone'da Safari paylaş menüsünden Ana Ekrana Ekle'yi seçin.", installButton: "Yükleme seçeneklerini aç", installedLabel: "Uygulama yüklü", installAccepted: "Logisstant yükleme isteği açıldı.",
@@ -1241,6 +1271,14 @@
                         profileTitle: "My Profile",
                         firmSettingsTitle: "Firm General Settings",
                         firmNameLabel: "Company Name",
+                        firmSettingsDescription: "Manage your firm's contact details.",
+                        firmContactEmail: "Contact email",
+                        firmPhone: "Phone",
+                        firmWebsite: "Website",
+                        firmAddress: "Address",
+                        firmSettingsSave: "Save company details",
+                        firmSettingsSaved: "Company details saved.",
+                        firmSettingsSaveFailed: "Could not save company details.",
                         defaultCurrency: "Default Currency",
                         appearanceTitle: "Appearance & Language", languageLabel: "App language", themeLabel: "Appearance", lightTheme: "Light theme", darkTheme: "Dark theme",
                         installTitle: "Install the app", installHelp: "On a computer, choose Install from the Chrome or Edge menu. On Android, choose Install app from the browser menu. On iPhone, use Safari's Share menu and choose Add to Home Screen.", installButton: "Show install options", installedLabel: "App installed", installAccepted: "Logisstant installation prompt opened.",
@@ -1440,7 +1478,7 @@
                             const companyName = (user.user_metadata?.company_name || '').trim();
                             if (!companyName) throw new Error(this.language === 'tr' ? 'Bu hesap bir firmaya bağlı değil. Firma yöneticinizden davet isteyin.' : 'This account is not linked to a firm. Ask your firm administrator for an invitation.');
                             const { data: organization, error: organizationError } = await this.supabase.from('organizations')
-                                .insert({ name: companyName, created_by: user.id }).select('id, name').single();
+                                .insert({ name: companyName, created_by: user.id }).select('id, name, contact_email, phone, website, address').single();
                             if (organizationError) throw organizationError;
                             const { data: membership, error: ownerError } = await this.supabase.from('organization_members')
                                 .insert({ organization_id: organization.id, user_id: user.id, role: 'owner' }).select('organization_id, role, customer_id').single();
@@ -1450,7 +1488,7 @@
                         const membership = memberships[0];
                         if (!this.activeOrganization || this.activeOrganization.id !== membership.organization_id) {
                             const { data: organization, error: organizationError } = await this.supabase.from('organizations')
-                                .select('id, name').eq('id', membership.organization_id).single();
+                                .select('id, name, contact_email, phone, website, address').eq('id', membership.organization_id).single();
                             if (organizationError) throw organizationError;
                             this.activeOrganization = organization;
                         }
@@ -1463,10 +1501,47 @@
                         await this.loadWorkspaceData();
                         this.loginEmail = user.email || this.loginEmail;
                         this.fullName = user.user_metadata?.full_name || this.fullName || '';
-                        this.organizationName = this.activeOrganization.name || '';
+                        this.organizationSettings = {
+                            name: this.activeOrganization.name || '',
+                            contact_email: this.activeOrganization.contact_email || '',
+                            phone: this.activeOrganization.phone || '',
+                            website: this.activeOrganization.website || '',
+                            address: this.activeOrganization.address || ''
+                        };
+                        this.organizationName = this.organizationSettings.name;
+                        this.organizationSettingsMessage = '';
                         this.loginPassword = ''; this.isLoggedIn = true; this.authMessage = '';
                     } catch (error) { this.isLoggedIn = false; this.showAuthError(error); }
                     finally { this.loadingWorkspace = false; }
+                },
+                async saveOrganizationSettings() {
+                    if (this.userRole !== 'admin' || !this.activeOrganization || this.organizationSettingsBusy) return;
+                    const payload = {
+                        name: (this.organizationSettings.name || '').trim(),
+                        contact_email: (this.organizationSettings.contact_email || '').trim(),
+                        phone: (this.organizationSettings.phone || '').trim(),
+                        website: (this.organizationSettings.website || '').trim(),
+                        address: (this.organizationSettings.address || '').trim()
+                    };
+                    this.organizationSettingsMessage = '';
+                    if (!payload.name) { this.organizationSettingsMessage = this.t('firmSettingsSaveFailed'); return; }
+                    this.organizationSettingsBusy = true;
+                    try {
+                        const { data, error } = await this.supabase.from('organizations')
+                            .update(payload).eq('id', this.activeOrganization.id)
+                            .select('id, name, contact_email, phone, website, address').single();
+                        if (error) throw error;
+                        this.activeOrganization = data;
+                        this.organizationSettings = {
+                            name: data.name || '', contact_email: data.contact_email || '',
+                            phone: data.phone || '', website: data.website || '', address: data.address || ''
+                        };
+                        this.organizationName = this.organizationSettings.name;
+                        this.organizationSettingsMessage = this.t('firmSettingsSaved');
+                    } catch (error) {
+                        this.organizationSettingsMessage = this.t('firmSettingsSaveFailed');
+                        this.showDataError(error);
+                    } finally { this.organizationSettingsBusy = false; }
                 },
                 async loadWorkspaceData() {
                     const organizationId = this.activeOrganization?.id;
@@ -1579,6 +1654,9 @@
                     this.notificationChannel = null;
                     this.notifications = [];
                     this.emailDeliveryAlerts = false; this.emailPreferenceMessage = '';
+                    this.organizationName = '';
+                    this.organizationSettings = { name: '', contact_email: '', phone: '', website: '', address: '' };
+                    this.organizationSettingsMessage = '';
                     this.isLoggedIn = false; this.currentUser = null; this.activeOrganization = null; this.activeClient = null;
                     this.customers = []; this.offers = []; this.shipments = []; this.selectedCustomerId = null; this.customerEditForm = null;
                 },
