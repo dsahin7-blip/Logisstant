@@ -63,7 +63,134 @@
             main { padding-bottom: 1.5rem !important; }
             .mobile-quick-nav { display: none !important; }
         }
-    </style>
+    
+        /* Unified responsive application styling */
+        .app-shell {
+            --ui-border: #e2e8f0;
+            --ui-muted: #64748b;
+            width: 100%;
+            color: #172033;
+        }
+        .dark .app-shell { --ui-border: #263449; --ui-muted: #94a3b8; color: #e2e8f0; }
+        .app-shell > header {
+            position: relative;
+            z-index: 30;
+            background: linear-gradient(112deg, #102653 0%, #0b1f45 58%, #15366b 100%) !important;
+            box-shadow: 0 8px 26px rgba(15, 23, 42, .12);
+        }
+        .app-shell > header > div { min-height: 72px; }
+        .app-shell > nav {
+            position: relative;
+            z-index: 20;
+            background: #fff;
+            border-color: var(--ui-border);
+            box-shadow: 0 3px 12px rgba(15, 23, 42, .035);
+        }
+        .dark .app-shell > nav { background: #0f172a; }
+        .app-shell > nav > div { max-width: 84rem; gap: .25rem !important; }
+        .app-shell > nav button {
+            min-height: 50px;
+            padding-inline: .9rem !important;
+            border-radius: .7rem .7rem 0 0;
+        }
+        .app-shell > nav button:hover { background: #f1f5f9; }
+        .dark .app-shell > nav button:hover { background: #1e293b; }
+        .app-shell > main {
+            max-width: 84rem;
+            padding: 2rem 1.5rem !important;
+        }
+        .app-shell main h2 { letter-spacing: -.025em; }
+        .app-shell main .stats-grid > div {
+            min-height: 132px;
+            border-color: var(--ui-border);
+            border-radius: 1.2rem;
+            box-shadow: 0 5px 18px rgba(15, 23, 42, .045);
+            transition: transform .18s ease, box-shadow .18s ease;
+        }
+        .app-shell main .stats-grid > div:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, .08);
+        }
+        .app-shell main .stats-grid > div p:last-child {
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -.035em;
+        }
+        .app-shell main [class~="shadow-sm"][class~="rounded-2xl"] {
+            border-color: var(--ui-border);
+            border-radius: 1.2rem;
+            box-shadow: 0 5px 20px rgba(15, 23, 42, .045);
+        }
+        .app-shell main input:not([type="checkbox"]):not([type="radio"]),
+        .app-shell main select,
+        .app-shell main textarea {
+            border-color: #d5deea;
+            border-radius: .75rem;
+            transition: border-color .15s ease, box-shadow .15s ease;
+        }
+        .dark .app-shell main input:not([type="checkbox"]):not([type="radio"]),
+        .dark .app-shell main select,
+        .dark .app-shell main textarea { border-color: #334155; }
+        .app-shell main input:not([type="checkbox"]):not([type="radio"]):focus,
+        .app-shell main select:focus,
+        .app-shell main textarea:focus {
+            border-color: #3974d8;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, .15);
+        }
+        .app-shell button { transition: color .16s ease, background-color .16s ease, box-shadow .16s ease, transform .16s ease; }
+        .app-shell button:focus-visible {
+            outline: 3px solid rgba(96, 165, 250, .8);
+            outline-offset: 2px;
+        }
+        .app-shell main button[class~="bg-blue-600"],
+        .app-shell main button[class~="bg-rose-600"] {
+            box-shadow: 0 4px 12px rgba(37, 99, 235, .16);
+        }
+        .app-shell main button[class~="bg-blue-600"]:hover,
+        .app-shell main button[class~="bg-rose-600"]:hover { transform: translateY(-1px); }
+        .app-shell main table thead { background: #f8fafc; }
+        .dark .app-shell main table thead { background: #111c30; }
+        .app-shell main table th {
+            letter-spacing: .045em;
+            white-space: nowrap;
+        }
+        .app-shell main table tbody tr { transition: background-color .15s ease; }
+        .app-shell main table tbody tr:hover { background-color: #f8fafc; }
+        .dark .app-shell main table tbody tr:hover { background-color: #162235; }
+        @media (max-width: 640px) {
+            .app-shell > header > div { min-height: 62px; padding: .6rem .75rem !important; }
+            .app-shell > header > div > div:first-child { gap: .55rem; }
+            .app-shell > header .text-2xl { font-size: 1.2rem !important; line-height: 1.5rem !important; }
+            .app-shell > nav > div { gap: .15rem !important; }
+            .app-shell > nav button {
+                min-height: 44px;
+                padding-inline: .65rem !important;
+                font-size: .72rem !important;
+            }
+            .app-shell > main { padding: 1rem .75rem 1.5rem !important; }
+            .app-shell main .stats-grid { gap: .65rem !important; }
+            .app-shell main .stats-grid > div { min-height: 108px; padding: 1rem !important; }
+            .app-shell main .stats-grid > div p:first-child { font-size: .65rem; line-height: 1.05rem; }
+            .app-shell main .stats-grid > div p:last-child { font-size: 1.8rem; line-height: 2.1rem; }
+            .app-shell main > div[x-show="tab === 'dashboard'"] > div:first-child {
+                align-items: stretch;
+                padding: 1.25rem !important;
+                border-radius: 1.25rem;
+            }
+            .app-shell main > div[x-show="tab === 'dashboard'"] > div:first-child h2 {
+                font-size: 1.35rem !important;
+                line-height: 1.75rem !important;
+            }
+            .app-shell main > div[x-show="tab === 'dashboard'"] > div:first-child > div:last-child {
+                width: 100%;
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: .6rem;
+            }
+            .app-shell main > div[x-show="tab === 'dashboard'"] > div:first-child > div:last-child button { width: 100%; }
+            .app-shell main [class~="shadow-sm"][class~="rounded-2xl"] { border-radius: 1rem; }
+        }
+</style>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -129,7 +256,7 @@
     </div>
 
         <!-- 2. ANA UYGULAMA -->
-    <div x-show="isLoggedIn" class="flex-grow flex flex-col" x-cloak>
+    <div x-show="isLoggedIn" class="app-shell flex-grow flex flex-col" x-cloak>
         <!-- Header / Navbar -->
         <header class="bg-blue-950 dark:bg-slate-900 text-white shadow-lg border-b border-blue-900/50">
             <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap gap-3 justify-between items-center">
