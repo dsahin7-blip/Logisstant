@@ -352,10 +352,6 @@
             <!-- TAB 7: SETTINGS & PROFILE (Zenginleştirilmiş Ayarlar) -->
             <div x-show="tab === 'settings'" class="space-y-6">
                 <h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('settingsTitle')"></h2>
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div><h3 class="font-semibold text-slate-900 dark:text-white" x-text="t('emailAlertsTitle')"></h3><p class="text-xs text-slate-500 mt-1" x-text="t('emailAlertsDescription')"></p><p role="status" aria-live="polite" class="text-xs text-blue-700 dark:text-blue-300 mt-2" x-show="emailPreferenceMessage" x-text="emailPreferenceMessage"></p></div>
-                    <div class="flex flex-col sm:items-end gap-2"><label class="inline-flex items-center gap-3 text-sm font-medium"><span x-text="t('emailAlertsToggle')"></span><input type="checkbox" x-model="emailDeliveryAlerts" @change="saveEmailPreferences()" :disabled="emailPreferenceBusy" class="h-5 w-5 rounded text-blue-600"><span class="sr-only" x-text="emailAlertsTitle"></span></label><button x-show="canManageTeam()" type="button" @click="sendTestDeliveryEmail()" :disabled="emailTestBusy" class="text-xs text-blue-700 dark:text-blue-300 underline disabled:opacity-50" x-text="emailTestBusy ? t('emailTestSending') : t('emailTestButton')"></button></div>
-                </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Profilim -->
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
@@ -545,10 +541,6 @@
                 teamMessage: '',
                 teamMembers: [],
                 teamLoading: false,
-                emailDeliveryAlerts: false,
-                emailPreferenceBusy: false,
-                emailPreferenceMessage: '',
-                emailTestBusy: false,
                 newInvite: { email: '', role: 'operations', customerId: '' },
                 customers: [],
                 loadingWorkspace: false,
@@ -922,7 +914,7 @@
                     });
                     await this.loadNotifications();
                     this.subscribeToNotifications();
-                    await this.loadEmailPreferences();
+
                     if (this.canManageTeam()) await this.loadTeamMembers();
                 },
                 async ensureCustomer(name) {
@@ -953,34 +945,6 @@
                     this.authMessage = error ? error.message : (this.language === 'tr' ? 'Parola sıfırlama bağlantısı e-posta adresinize gönderildi.' : 'A password reset link has been sent to your email.');
                 },
                 canManageTeam() { return this.userRole === 'admin'; },
-                async loadEmailPreferences() {
-                    if (!this.currentUser || !this.activeOrganization) return;
-                    const { data, error } = await this.supabase.from('notification_preferences').select('email_delivery_alerts').eq('organization_id', this.activeOrganization.id).eq('user_id', this.currentUser.id).maybeSingle();
-                    if (error) throw error;
-                    this.emailDeliveryAlerts = Boolean(data?.email_delivery_alerts);
-                },
-                async sendTestDeliveryEmail() {
-                    if (!this.canManageTeam() || this.emailTestBusy || !this.activeOrganization) return;
-                    this.emailTestBusy = true; this.emailPreferenceMessage = '';
-                    try {
-                        const { data, error } = await this.supabase.functions.invoke('send-delivery-email-alerts', { body: { action: 'test', organization_id: this.activeOrganization.id } });
-                        if (error) throw error; if (data?.error) throw new Error(data.error);
-                        this.emailPreferenceMessage = this.t('emailTestSuccess');
-                    } catch (error) { this.emailPreferenceMessage = error?.message || this.t('emailTestFailed'); }
-                    finally { this.emailTestBusy = false; }
-                },
-                async saveEmailPreferences() {
-                    if (!this.currentUser || !this.activeOrganization || this.emailPreferenceBusy) return;
-                    this.emailPreferenceBusy = true; this.emailPreferenceMessage = '';
-                    try {
-                        const { error } = await this.supabase.from('notification_preferences').upsert({ organization_id: this.activeOrganization.id, user_id: this.currentUser.id, email_delivery_alerts: this.emailDeliveryAlerts }, { onConflict: 'organization_id,user_id' });
-                        if (error) throw error;
-                        this.emailPreferenceMessage = this.t('emailAlertsSaved');
-                    } catch (error) {
-                        this.emailDeliveryAlerts = !this.emailDeliveryAlerts;
-                        this.emailPreferenceMessage = error?.message || this.t('emailAlertsFailed');
-                    } finally { this.emailPreferenceBusy = false; }
-                },
                 async loadTeamMembers() {
                     if (!this.canManageTeam() || !this.activeOrganization) return;
                     this.teamLoading = true;
