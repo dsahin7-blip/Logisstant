@@ -1650,6 +1650,233 @@
                     link.remove();
                     URL.revokeObjectURL(url);
                 },
+                routeProfitReport() {
+                    const routes = this.reportShipments().reduce((result, shipment) => {
+                        const profit = Number(shipment.income || 0) - Number(shipment.expense1 || 0) - Number(shipment.expense2 || 0);
+                        result[shipment.route] = (result[shipment.route] || 0) + profit;
+                        return result;
+                    }, {});
+                    const rows = Object.entries(routes).map(([route, profit]) => ({ route, profit }));
+                    const max = Math.max(1, ...rows.map(row => Math.max(0, row.profit)));
+                    return rows.sort((a, b) => b.profit - a.profit).slice(0, 5).map(row => ({ ...row, percent: Math.max(5, Math.round(Math.max(0, row.profit) / max * 100)) }));
+                },
+                modeDistribution() {
+                    const shipments = this.reportShipments();
+                    return [
+                        { mode: 'Karayolu', label: this.t('modeRoad') },
+                        { mode: 'Denizyolu', label: this.t('modeSea') },
+                        { mode: 'Havayolu', label: this.t('modeAir') }
+                    ].map(item => ({ ...item, percent: shipments.length ? Math.round(shipments.filter(shipment => shipment.mode === item.mode).length / shipments.length * 100) : 0 }));
+                },
+                async openShipmentDetails(shipment) {
+                    this.shipmentEditForm = null;
+                    this.selectedShipment = shipment;
+                    this.activityLoading = true;
+                    try { await this.loadShipmentEvents(shipment); }
+                    catch (error) { this.showDataError(error); }
+                    finally { this.activityLoading = false; }
+                },
+                canEditShipment() { return this.canManageShipments(); },
+                startShipmentEdit() {
+                    if (!this.canEditShipment() || !this.selectedShipment) return;
+                    this.shipmentEditForm = {
+                        route: this.selectedShipment.route || '',
+                        cargo: this.selectedShipment.cargo || '',
+                        incoterm: this.selectedShipment.incoterm || '',
+                        eta: this.selectedShipment.eta || ''
+                    };
+                },
+                cancelShipmentEdit() {
+                    if (!this.shipmentSaveBusy) this.shipmentEditForm = null;
+                },
+                async saveShipmentDetails() {
+                    const shipment = this.selectedShipment;
+                    if (!this.canEditShipment() || !shipment || !this.shipmentEditForm || this.shipmentSaveBusy) return;
+                    const route = this.shipmentEditForm.route.trim();
+                    if (!route) { alert(this.t('shipmentRouteRequired')); return; }
+                    const updated = {
+                        route,
+                        cargo: this.shipmentEditForm.cargo.trim(),
+                        incoterm: this.shipmentEditForm.incoterm.trim(),
+                        eta: this.shipmentEditForm.eta || null,
+                        updated_at: new Date().toISOString()
+                    };
+                    this.shipmentSaveBusy = true;
+                    try {
+                        const { data, error } = await this.supabase.from('shipments').update(updated)
+                            .eq('id', shipment.id).eq('organization_id', this.activeOrganization.id).select('id').maybeSingle();
+                        if (error) throw error;
+                        if (!data) throw new Error(this.t('shipmentSaveDenied'));
+                        Object.assign(shipment, { ...updated, eta: updated.eta || '' });
+                        this.shipmentEditForm = null;
+                        alert(this.t('shipmentSaved'));
+                    } catch (error) { this.showDataError(error); }
+                    finally { this.shipmentSaveBusy = false; }
+                },
+                async loadShipmentEvents(shipment) {
+                    const { data, error } = await this.supabase.from('shipment_events')
+                        .select('id, event_type, old_status, new_status, actor_name, created_at')
+                        .eq('shipment_id', shipment.id)
+                        .eq('organization_id', this.activeOrganization.id)
+                        .order('created_at', { ascending: false })
+                        .limit(100);
+                    if (error) throw error;
+                    shipment.events = data || [];
+                    if (this.selectedShipment?.id === shipment.id) this.selectedShipment.events = shipment.events;
+                },
+                formatHistoryTime(value) {
+                    const date = new Date(value);
+                    return Number.isNaN(date.getTime())
+                        ? value
+                        : date.toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US');
+                },
+                async updateShipmentStatus(shipment, status) {
+                    if (!this.canManageShipments()) return;
+                    if (shipment.status === status || this.userRole === 'client') return;
+                    const { error } = await this.supabase.from('shipments').update({ status, updated_at: new Date().toISOString() })
+                        .eq('id', shipment.id).eq('organization_id', this.activeOrganization.id);
+                    if (error) { this.showDataError(error); return; }
+                    shipment.status = status;
+                    if (this.selectedShipment?.id === shipment.id) {
+                        try { await this.loadShipmentEvents(shipment); }
+                        catch (activityError) { this.showDataError(activityError); }
+                    }
+                    try { await this.loadNotifications(); }
+                    catch (notificationError) { this.showDataError(notificationError); }
+                },
+                shipmentStages(shipment) {
+                    const stage2 = shipment.mode === 'Denizyolu' ? 'Denizde' : shipment.mode === 'Havayolu' ? 'Uçuşta' : 'Yola Çıktı';
+                    const order = ['Yükleme Bekliyor', stage2, 'Gümrükte', 'Teslim Edildi'];
+                    const labels = [this.t('m1'), shipment.mode === 'Denizyolu' ? this.t('m2Sea') : shipment.mode === 'Havayolu' ? this.t('m2Air') : this.t('m2Road'), this.t('m3'), this.t('m4')];
+                    const current = order.indexOf(shipment.status);
+                    return order.map((status, index) => ({ status, label: labels[index], complete: current >= index }));
+                },
+                async approveOffer(offer) {
+                    if (!this.canManageOffers()) return;
+                    if (offer.status === 'Beklemede' && offer.validUntil && offer.validUntil < new Date().toISOString().slice(0, 10)) { alert(this.t('offerExpiryPast')); return; }
+                    if (offer.status !== 'Beklemede') return;
+                    const { error } = await this.supabase.from('offers').update({ status: 'Onaylandı' }).eq('id', offer.id).eq('organization_id', this.activeOrganization.id);
+                    if (error) { this.showDataError(error); return; }
+                    offer.status = 'Onaylandı'; this.addNotification('notifOfferApproved', offer.client + ' · ' + offer.route, 'offer', offer.id);
+                },
+                async rejectOffer(offer) {
+                    if (!this.canManageOffers()) return;
+                    if (offer.status !== 'Beklemede') return;
+                    const { error } = await this.supabase.from('offers').update({ status: 'Reddedildi' }).eq('id', offer.id).eq('organization_id', this.activeOrganization.id);
+                    if (error) { this.showDataError(error); return; }
+                    offer.status = 'Reddedildi'; this.addNotification('notifOfferRejected', offer.client + ' · ' + offer.route, 'offer', offer.id);
+                },
+                async addOffer() {
+                    if (!this.canManageOffers() || this.savingOffer) return;
+                    const amount = Number(this.newOffer.amount);
+                    if (!this.newOffer.client.trim() || !this.newOffer.route.trim() || !this.newOffer.cargo.trim() || !this.newOffer.validUntil || !Number.isFinite(amount) || amount <= 0) {
+                        alert(!this.newOffer.validUntil ? this.t('offerExpiryRequired') : this.t('offerFieldsRequired')); return;
+                    }
+                    if (this.newOffer.validUntil < new Date().toISOString().slice(0, 10)) { alert(this.t('offerExpiryPast')); return; }
+                    this.savingOffer = true;
+                    try {
+                        const customer = await this.ensureCustomer(this.newOffer.client);
+                        const payload = {
+                            customer_id: customer.id, mode: this.newOffer.mode, route: this.newOffer.route.trim(),
+                            incoterm: this.newOffer.incoterm, cargo: this.newOffer.cargo.trim(), amount,
+                            currency: this.newOffer.currency, valid_until: this.newOffer.validUntil, notes: this.newOffer.notes || ''
+                        };
+                        if (this.editingOfferId) {
+                            const { data, error } = await this.supabase.from('offers').update(payload)
+                                .eq('id', this.editingOfferId).eq('organization_id', this.activeOrganization.id)
+                                .eq('status', 'Beklemede').is('converted_shipment_id', null).select('*, customers(name)').single();
+                            if (error) throw error;
+                            const existing = this.offers.find(item => item.id === this.editingOfferId);
+                            if (existing) Object.assign(existing, {
+                                customerId: customer.id, client: data.customers?.name || customer.name, mode: data.mode,
+                                route: data.route, incoterm: data.incoterm, cargo: data.cargo, amount: Number(data.amount),
+                                currency: data.currency, validUntil: data.valid_until, notes: data.notes || ''
+                            });
+                            alert(this.t('offerUpdated'));
+                        } else {
+                            const insertPayload = { ...payload, organization_id: this.activeOrganization.id, created_by: this.currentUser.id, status: 'Beklemede' };
+                            const { data, error } = await this.supabase.from('offers').insert(insertPayload).select('*, customers(name)').single();
+                            if (error) throw error;
+                            this.offers.unshift({ id: data.id, customerId: customer.id, mode: data.mode, client: customer.name, route: data.route,
+                                incoterm: data.incoterm, cargo: data.cargo, amount: Number(data.amount), currency: data.currency,
+                                status: data.status, converted: false, validUntil: data.valid_until, notes: data.notes || '', createdAt: data.created_at.slice(0, 10) });
+                            this.addNotification('notifOfferCreated', customer.name + ' · ' + data.route, 'offer', data.id);
+                        }
+                        this.newOffer = { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', cargo: '', amount: '', currency: 'EUR', validUntil: '', notes: '' };
+                        this.editingOfferId = null;
+                        this.showOfferModal = false;
+                    } catch (error) { this.showDataError(error); }
+                    finally { this.savingOffer = false; }
+                },
+                async createShipmentRecord(form) {
+                    const { data, error } = await this.supabase.rpc('create_shipment_atomic', {
+                        p_organization_id: this.activeOrganization.id,
+                        p_client_name: form.client,
+                        p_mode: form.mode,
+                        p_route: form.route,
+                        p_incoterm: form.incoterm || '',
+                        p_cargo: form.cargo || '',
+                        p_eta: form.eta || null,
+                        p_income: Number(form.income || 0),
+                        p_vehicle_data: {
+                            plate: form.plate || '', driver: form.driver || '', phone: form.phone || '',
+                            vessel: form.vessel || '', containerNo: form.containerNo || '',
+                            containerType: form.containerType || '', blNumber: form.blNumber || '',
+                            flightNo: form.flightNo || '', awbNumber: form.awbNumber || '', volWeight: form.volWeight || ''
+                        }
+                    });
+                    if (error) throw error;
+                    const row = Array.isArray(data) ? data[0] : data;
+                    if (!row?.id) throw new Error(this.language === 'tr' ? 'Gönderi oluşturulamadı.' : 'The shipment could not be created.');
+                    const customer = { id: row.customer_id, name: row.client_name };
+                    if (!this.customers.some(item => item.id === customer.id)) this.customers.push(customer);
+                    return {
+                        id: row.id, customerId: row.customer_id, mode: row.mode, code: row.code,
+                        client: row.client_name, route: row.route, incoterm: row.incoterm, status: row.status,
+                        createdAt: (row.created_at || '').slice(0, 10), eta: row.eta || '',
+                        documents: {}, documentApplicability: {}, history: [], events: [],
+                        cargo: row.cargo, docUploaded: false, income: Number(form.income || 0), expense1: 0, expense2: 0,
+                        plate: form.plate || '', driver: form.driver || '', phone: form.phone || '',
+                        vessel: form.vessel || '', containerNo: form.containerNo || '', containerType: form.containerType || '',
+                        blNumber: form.blNumber || '', flightNo: form.flightNo || '', awbNumber: form.awbNumber || '',
+                        volWeight: form.volWeight || ''
+                    };
+                },
+                async addShipment() {
+                    if (!this.canManageShipments() || this.savingShipment) return;
+                    const income = Number(this.newShipment.income);
+                    if (!this.newShipment.client || !this.newShipment.route || !Number.isFinite(income) || income <= 0) { alert(this.t('shipmentFieldsRequired')); return; }
+                    this.savingShipment = true;
+                    try {
+                        const shipment = await this.createShipmentRecord(this.newShipment);
+                        this.shipments.unshift(shipment);
+                        this.newShipment = { mode: 'Karayolu', client: '', route: '', plate: '', driver: '', phone: '', vessel: '', containerNo: '', containerType: '', blNumber: '', flightNo: '', awbNumber: '', volWeight: '', eta: '', cargo: '', income: '' };
+                        this.showShipmentModal = false; this.addNotification('notifShipmentCreated', shipment.code, 'shipment', shipment.id);
+                    } catch (error) { this.showDataError(error); }
+                    finally { this.savingShipment = false; }
+                },
+                async convertToShipment(offer) {
+                    if (!this.canManageOffers()) return;
+                    if (offer.validUntil && offer.validUntil < new Date().toISOString().slice(0, 10)) { alert(this.t('offerExpiryPast')); return; }
+                    try {
+                        const { data: shipmentId, error } = await this.supabase.rpc('convert_offer_to_shipment', { p_offer_id: offer.id });
+                        if (error) throw error;
+                        offer.converted = true;
+                        await this.loadWorkspaceData();
+                        const shipment = this.shipments.find(item => item.id === shipmentId);
+                        if (shipment) {
+                            this.addNotification('notifShipmentCreated', shipment.code, 'shipment', shipment.id);
+                            this.selectedShipment = shipment;
+                            this.tab = 'shipments';
+                        }
+                    } catch (error) { this.showDataError(error); }
+                },
+                simulateOCR() {
+                    alert(this.t('ocrDemoNotice'));
+                },
+                calculateTotalProfit() {
+                    return this.shipments.reduce((total, s) => total + (s.income - (s.expense1 + s.expense2)), 0);
+                },
                 async downloadPDF(offer) {
                     if (typeof html2pdf !== 'function') {
                         alert(this.t('pdfUnavailable'));
