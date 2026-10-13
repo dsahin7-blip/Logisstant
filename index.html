@@ -279,7 +279,7 @@
         .dashboard-hero h2 { max-width: 38rem; font-size: clamp(1.65rem,2.3vw,2rem) !important; line-height: 1.18 !important; letter-spacing: -.035em; }
         .dashboard-hero p { max-width: 42rem; font-size: .95rem; line-height: 1.55; }
         .dashboard-hero > div:last-child { display: flex; flex-wrap: wrap; gap: .7rem; }
-        .dashboard-hero > div:last-child button { min-height: 46px; padding: .7rem 1rem !important; }
+        .dashboard-hero > div:last-child button { min-height: 46px; margin-left: 0 !important; padding: .7rem 1rem !important; }
         @media (max-width: 1023px) {
             .auth-layout { max-width: 640px; min-height: 0; grid-template-columns: minmax(0, 1fr); }
             .auth-story { display: none !important; }
@@ -304,8 +304,14 @@
             }
             .app-shell main > div[x-show="tab === 'dashboard'"] > .dashboard-hero > div:last-child button {
                 width: auto;
-                flex: 1 1 130px;
-                min-height: 42px;
+                flex: 1 1 0;
+                min-width: 0;
+                height: 44px;
+                min-height: 44px;
+                margin-left: 0 !important;
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 padding: .6rem .55rem !important;
                 font-size: .76rem !important;
                 line-height: 1.1rem;
@@ -461,17 +467,18 @@
                         <span x-text="darkMode ? '☀️' : '🌙'"></span>
                     </button>
 
-                    <!-- Ayarlar Butonu (Çıkış Yap'ın Solunda) -->
-                    <button @click="tab = 'settings'" class="hidden sm:block bg-blue-900 dark:bg-slate-800 hover:bg-blue-800 text-white px-3 py-2 rounded-lg text-xs font-semibold transition" x-text="t('settings')"></button>
-
-                    <!-- Logout Button -->
-                    <button @click="logout()" class="hidden sm:block bg-rose-600 hover:bg-rose-500 text-white px-3 py-2 rounded-lg text-xs font-semibold transition" x-text="t('logout')"></button>
-                    <button type="button" @click="tab = 'settings'" aria-label="Ayarlar" title="Ayarlar" class="sm:hidden bg-blue-900 dark:bg-slate-800 hover:bg-blue-800 p-2.5 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    <!-- Ayarlar Butonu -->
+                    <button type="button" @click="tab = 'settings'" :aria-label="t('settings')" :title="t('settings')" class="bg-blue-900 dark:bg-slate-800 hover:bg-blue-800 text-white px-3 py-2 rounded-lg text-xs font-semibold transition inline-flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-300">
                         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 8.25a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5Z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" d="m19.4 15 .06.05a1.8 1.8 0 0 1-2.55 2.55l-.05-.06a1.8 1.8 0 0 0-3.06 1.27v.19a1.8 1.8 0 0 1-3.6 0v-.08a1.8 1.8 0 0 0-3.06-1.27l-.05.06a1.8 1.8 0 1 1-2.55-2.55l.06-.05a1.8 1.8 0 0 0-1.27-3.06h-.19a1.8 1.8 0 0 1 0-3.6h.08a1.8 1.8 0 0 0 1.27-3.06l-.06-.05a1.8 1.8 0 1 1 2.55-2.55l.05.06a1.8 1.8 0 0 0 3.06-1.27v-.19a1.8 1.8 0 0 1 3.6 0v.08a1.8 1.8 0 0 0 3.06 1.27l.05-.06a1.8 1.8 0 1 1 2.55 2.55l-.06.05a1.8 1.8 0 0 0 1.27 3.06h.19a1.8 1.8 0 0 1 0 3.6h-.08A1.8 1.8 0 0 0 19.4 15Z"/>
                         </svg>
+                        <span class="hidden sm:inline" x-text="t('settings')"></span>
                     </button>
+
+                    <!-- Logout Button -->
+                    <button @click="logout()" class="hidden sm:block bg-rose-600 hover:bg-rose-500 text-white px-3 py-2 rounded-lg text-xs font-semibold transition" x-text="t('logout')"></button>
+
                 </div>
             </div>
         </header>
