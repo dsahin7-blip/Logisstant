@@ -11,7 +11,57 @@
     <link rel="icon" type="image/svg+xml" href="/icon-192.svg">
     <link rel="apple-touch-icon" href="/icon-192.svg">
     <title>Logisstant</title>
-    <style>[x-cloak] { display: none !important; }</style>
+<style>
+        [x-cloak] { display: none !important; }
+        @media (max-width: 640px) {
+            body { min-height: 100dvh; }
+            .bg-gradient-to-br > .rounded-3xl { padding: 1.25rem !important; }
+            .fixed .p-6 { padding: 1rem !important; }
+            header > div {
+                padding: .65rem .75rem !important;
+                gap: .5rem !important;
+            }
+            header .text-2xl { font-size: 1.25rem !important; line-height: 1.6rem !important; }
+            header > div > div:last-child {
+                width: 100%;
+                justify-content: space-between;
+                gap: .375rem !important;
+            }
+            header button, header select {
+                min-height: 40px;
+                font-size: .75rem !important;
+            }
+            header .relative > div[x-show="showNotifDropdown"] {
+                width: min(20rem, calc(100vw - 1.5rem));
+                max-height: 70dvh;
+                overflow-y: auto;
+            }
+            nav > div {
+                gap: .9rem !important;
+                padding-inline: .75rem !important;
+            }
+            nav button {
+                padding-top: .65rem !important;
+                padding-bottom: .65rem !important;
+                font-size: .75rem !important;
+            }
+            main {
+                padding: 1rem .75rem 1.5rem !important;
+            }
+            main .p-6 { padding: 1rem !important; }
+            main .gap-6 { gap: .75rem !important; }
+            main .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem !important; }
+            main h2.text-2xl {
+                font-size: 1.35rem !important;
+                line-height: 1.75rem !important;
+            }
+            main .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            main .flex.space-x-3 { flex-wrap: wrap; }
+            .fixed.inset-0 { padding: .5rem !important; }
+            .fixed.inset-0 [class~="max-h-[90vh]"] { max-height: calc(100dvh - 1rem) !important; }
+            input, select, textarea { font-size: 16px !important; }
+        }
+    </style>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -77,7 +127,6 @@
 
         <!-- 2. ANA UYGULAMA -->
     <div x-show="isLoggedIn" class="flex-grow flex flex-col" x-cloak>
-        <p role="status" class="bg-amber-100 dark:bg-amber-950 px-4 py-2 text-center text-xs text-amber-900 dark:text-amber-100" x-text="t('connectedNotice')"></p>
         <!-- Header / Navbar -->
         <header class="bg-blue-950 dark:bg-slate-900 text-white shadow-lg border-b border-blue-900/50">
             <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap gap-3 justify-between items-center">
@@ -160,7 +209,7 @@
                 </div>
 
                 <!-- Stats Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="grid stats-grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider" x-text="t('statActive')"></p>
                         <p class="text-3xl font-bold text-slate-900 dark:text-white mt-2" x-text="activeShipmentCount()"></p>
@@ -619,7 +668,6 @@
                         brand: "Logisstant",
                         loginSubtitle: "Tekliften teslimata lojistik süreçlerinizi tek ekranda yönetin.",
                         demoNotice: "Demo sürümü: giriş gerçek bir hesaba bağlı değildir. Kayıtlar yalnızca bu tarayıcıda saklanır; sunucuya gönderilmez.",
-                        connectedNotice: "Hesabınız ve kayıtlarınız sunucuda, erişim kurallarıyla saklanır.",
                         createAccount: "Firma hesabı oluştur", needAccount: "Yeni misiniz?", alreadyHaveAccount: "Zaten hesabınız var mı?", signupLink: "Kayıt ol", loginLink: "Giriş yap", pleaseWait: "Lütfen bekleyin…", authSecurityNote: "Firma ve müşteri kullanıcıları aynı ekrandan giriş yapar; hesabınıza uygun panel açılır. Şifreniz güvenli şekilde korunur.",
                         loginButton: "Giriş Yap", authEmailAlreadyUsed: "Bu e-posta adresiyle zaten bir hesap var.", authWeakPassword: "Daha güçlü bir şifre seçin. En az 8 karakter kullanın.",
                         showPassword: "Göster", hidePassword: "Gizle", confirmPassword: "Şifreyi tekrar girin", passwordMismatch: "Şifreler eşleşmiyor.",
@@ -739,7 +787,6 @@
                         brand: "Logisstant",
                         loginSubtitle: "Manage logistics from quote to delivery in one place.",
                         demoNotice: "Demo version: sign-in is not connected to a real account. Records are stored only in this browser and are not sent to a server.",
-                        connectedNotice: "Your account and records are stored on the server with access controls.",
                         createAccount: "Create firm account", needAccount: "New here?", alreadyHaveAccount: "Already have an account?", signupLink: "Sign up", loginLink: "Log in", pleaseWait: "Please wait…", authSecurityNote: "Company and customer users sign in here; your account opens the correct workspace. Your password is protected securely.",
                         loginButton: "Sign in", authEmailAlreadyUsed: "An account already exists with this email address.", authWeakPassword: "Choose a stronger password with at least 8 characters.",
                         showPassword: "Show", hidePassword: "Hide", confirmPassword: "Confirm password", passwordMismatch: "The passwords do not match.",
