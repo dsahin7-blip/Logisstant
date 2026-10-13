@@ -581,6 +581,11 @@
                     <div class="flex items-center justify-between gap-2"><div><h3 class="font-bold text-slate-900 dark:text-white" x-text="t('documentExpiryTitle')"></h3><p class="text-xs text-slate-500 mt-1" x-text="t('documentExpirySubtitle')"></p></div><span class="rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 px-2.5 py-1 text-xs font-bold" x-text="documentExpiryAlerts().length"></span></div>
                     <template x-for="item in documentExpiryAlerts()" :key="item.file.id"><button type="button" @click="openShipmentDetails(item.shipment)" class="w-full flex justify-between items-center gap-3 rounded-lg bg-slate-50 dark:bg-slate-800 p-3 text-left text-xs"><span class="min-w-0"><strong class="block truncate text-slate-900 dark:text-white" x-text="item.shipment.code + ' · ' + item.file.file_name"></strong><span class="block text-slate-500 mt-1" x-text="item.shipment.client + ' · ' + formatDate(item.file.expires_on)"></span></span><span class="shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold" :class="item.days < 0 ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'" x-text="item.days < 0 ? t('documentExpired') : t('documentExpiresSoon')"></span></button></template>
                     <p x-show="documentExpiryAlerts().length === 0" class="text-xs text-slate-500 text-center py-2" x-text="t('noDocumentExpiryAlerts')"></p>
+                    <div class="border-t border-slate-100 dark:border-slate-800 pt-3 space-y-3">
+                        <div class="flex items-center justify-between gap-2"><div><h4 class="font-semibold text-sm text-slate-900 dark:text-white" x-text="t('missingRequiredDocumentsTitle')"></h4><p class="text-xs text-slate-500 mt-1" x-text="t('missingRequiredDocumentsSubtitle')"></p></div><span class="rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 px-2.5 py-1 text-xs font-bold" x-text="missingRequiredDocumentAlerts().length"></span></div>
+                        <template x-for="item in missingRequiredDocumentAlerts().slice(0, 6)" :key="item.shipment.id"><button type="button" @click="openShipmentDetails(item.shipment)" class="w-full rounded-lg bg-slate-50 dark:bg-slate-800 p-3 text-left hover:bg-slate-100 dark:hover:bg-slate-700 transition"><span class="flex items-center justify-between gap-3"><strong class="truncate text-xs text-slate-900 dark:text-white" x-text="item.shipment.code + ' · ' + item.shipment.client"></strong><span class="shrink-0 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 px-2 py-1 text-[10px] font-semibold" x-text="t('missingDocumentCount').replace('{count}', item.missing.length)"></span></span><span class="mt-1 block truncate text-xs text-slate-500" x-text="item.missing.join(' · ')"></span></button></template>
+                        <p x-show="missingRequiredDocumentAlerts().length === 0" class="text-xs text-slate-500 text-center py-2" x-text="t('noMissingRequiredDocuments')"></p>
+                    </div>
                 </div>
             </div>
 
@@ -1053,8 +1058,8 @@
                         estimatedDelivery: "Tahmini teslim tarihi", deliveryLate: "Tahmini tarih geçti",
                         deliveryAlertsTitle: "Teslimat uyarıları", deliveryAlertsSubtitle: "3 gün içinde teslim edilmesi gereken veya tarihi geçen sevkiyatlar.",
                         noDeliveryAlerts: "Yaklaşan veya geciken teslimat yok.", deliveryDueToday: "Bugün teslim", deliveryDueInDays: "{days} gün içinde", deliveryDaysLate: "{days} gün gecikti",
-                        offerValidUntil: "Teklif geçerlilik tarihi", offerNotes: "Teklife özel not (isteğe bağlı)", offerExpiryRequired: "Lütfen teklifin geçerlilik tarihini seçin.", offerExpiryPast: "Teklif geçerlilik tarihi bugünden önce olamaz.", notSet: "Belirtilmedi",
-                        trackingTitle: "Sevkiyat takibi", documentsTitle: "Evrak kontrol listesi", documentExpiryTitle: "Belge son tarihleri", documentExpirySubtitle: "Süresi dolmuş veya 30 gün içinde dolacak belgeler.", noDocumentExpiryAlerts: "Yaklaşan belge son tarihi yok.", documentExpired: "Süresi doldu", documentExpiresSoon: "Yaklaşıyor", documentExpiryDate: "Belge son kullanma tarihi (isteğe bağlı)", docExpiresOn: "Son tarih", docPreview: "Önizle", docDownload: "İndir", documentDemoNotice: "Taşıma belgesi seçili moda göre gelir. Diğer belgeleri gönderinin güzergâhı ve yüküne göre gerekli veya gereksiz olarak işaretleyin. Bu liste mevzuat danışmanlığı yerine geçmez.", documentUploadNotice: "PDF, JPG veya PNG dosyalarını özel alana yükleyin. En fazla 10 MB.", uploadDocument: "Dosya yükle", uploadingDocument: "Yükleniyor…", documentFileLimit: "PDF, JPG veya PNG · en fazla 10 MB", docOpenFile: "Görüntüle / indir", documentUploadError: "Dosya yüklenemedi. Dosya türünü, boyutunu ve bağlantınızı kontrol edin.",
+                        offerValidUntil: "Teklif geçerlilik tarihi", offerNotes: "Teklife özel not (isteğe bağlı)", offerExpiryRequired: "Lütfen teklifin geçerlilik tarihini seçin.", offerExpiryPast: "Teklif geçerlilik tarihi bugünden önce olamaz.", authAudienceMismatch: "Bu hesap seçilen giriş türüyle eşleşmiyor. Diğer giriş sekmesini deneyin.", notSet: "Belirtilmedi",
+                        trackingTitle: "Sevkiyat takibi", documentsTitle: "Evrak kontrol listesi", documentExpiryTitle: "Belge son tarihleri", documentExpirySubtitle: "Süresi dolmuş veya 30 gün içinde dolacak belgeler.", noDocumentExpiryAlerts: "Yaklaşan belge son tarihi yok.", missingRequiredDocumentsTitle: "Eksik zorunlu belgeler", missingRequiredDocumentsSubtitle: "Aktif sevkiyatlarda tamamlanması gereken belgeler.", noMissingRequiredDocuments: "Eksik zorunlu belge yok.", missingDocumentCount: "{count} belge eksik", documentExpired: "Süresi doldu", documentExpiresSoon: "Yaklaşıyor", documentExpiryDate: "Belge son kullanma tarihi (isteğe bağlı)", docExpiresOn: "Son tarih", docPreview: "Önizle", docDownload: "İndir", documentDemoNotice: "Taşıma belgesi seçili moda göre gelir. Diğer belgeleri gönderinin güzergâhı ve yüküne göre gerekli veya gereksiz olarak işaretleyin. Bu liste mevzuat danışmanlığı yerine geçmez.", documentUploadNotice: "PDF, JPG veya PNG dosyalarını özel alana yükleyin. En fazla 10 MB.", uploadDocument: "Dosya yükle", uploadingDocument: "Yükleniyor…", documentFileLimit: "PDF, JPG veya PNG · en fazla 10 MB", docOpenFile: "Görüntüle / indir", documentUploadError: "Dosya yüklenemedi. Dosya türünü, boyutunu ve bağlantınızı kontrol edin.",
                         docCMR: "CMR / e-CMR taşıma belgesi", docInvoice: "Ticari fatura", docBL: "Konşimento (B/L) / deniz taşıma senedi", docAWB: "Hava taşıma senedi (AWB)", docPackingList: "Çeki listesi (Packing List)", docCustoms: "Gümrük beyannamesi", docOrigin: "Menşe şahadetnamesi / menşe belgesi", docInsurance: "Yük sigorta belgesi", docDangerous: "Tehlikeli madde beyanı", docHealth: "Sağlık / bitki sağlığı sertifikası", docLicense: "İthalat / ihracat izni veya lisansı", docTIRATA: "TIR veya ATA Karnesi (uygunsa)", docRequired: "Taşıma türü", docConditional: "Duruma bağlı", docChoose: "Bu gönderi için durumu seçin", docNeeded: "Gerekli", docNotNeeded: "Gerekli değil", docDone: "Belge tamamlandı", docConditionalHint: "Uygulanıp uygulanmadığını gönderi koşullarına göre belirleyin.", documentsComplete: "gerekli belge tamamlandı",
                         noNotifications: "Henüz bildirim yok.", notifShipmentCreated: "Yeni sevkiyat oluşturuldu", notifOfferCreated: "Yeni teklif oluşturuldu", notifOfferApproved: "Teklif onaylandı", notifOfferRejected: "Teklif reddedildi", notifShipmentUpdate: "Sevkiyat durumu güncellendi", notifDocumentsComplete: "Evrak kontrol listesi tamamlandı",
                         searchOffers: "Müşteri, güzergah veya yük ara", searchShipments: "Sefer no, müşteri veya güzergah ara",
@@ -1174,8 +1179,8 @@
                         estimatedDelivery: "Estimated delivery", deliveryLate: "Past estimated date",
                         deliveryAlertsTitle: "Delivery alerts", deliveryAlertsSubtitle: "Shipments due within 3 days or past their estimated delivery date.",
                         noDeliveryAlerts: "No upcoming or overdue deliveries.", deliveryDueToday: "Due today", deliveryDueInDays: "Due in {days} days", deliveryDaysLate: "{days} days overdue",
-                        offerValidUntil: "Offer valid until", offerNotes: "Offer notes (optional)", offerExpiryRequired: "Please choose an offer expiry date.", offerExpiryPast: "The offer expiry date cannot be in the past.", notSet: "Not set",
-                        trackingTitle: "Shipment tracking", documentsTitle: "Document checklist", documentExpiryTitle: "Document expiry", documentExpirySubtitle: "Expired documents or documents expiring within 30 days.", noDocumentExpiryAlerts: "No upcoming document expiry dates.", documentExpired: "Expired", documentExpiresSoon: "Due soon", documentExpiryDate: "Document expiry date (optional)", docExpiresOn: "Expires", docPreview: "Preview", docDownload: "Download", documentDemoNotice: "The transport document follows the selected mode. Mark other documents as required or not required for the route and cargo. This checklist does not replace regulatory advice.", documentUploadNotice: "Upload PDF, JPG, or PNG files to private storage. Maximum 10 MB.", uploadDocument: "Upload file", uploadingDocument: "Uploading…", documentFileLimit: "PDF, JPG, or PNG · up to 10 MB", docOpenFile: "View / download", documentUploadError: "Upload failed. Check the file type, size, and your connection.",
+                        offerValidUntil: "Offer valid until", offerNotes: "Offer notes (optional)", offerExpiryRequired: "Please choose an offer expiry date.", offerExpiryPast: "The offer expiry date cannot be in the past.", authAudienceMismatch: "This account does not match the selected sign-in type. Try the other sign-in tab.", notSet: "Not set",
+                        trackingTitle: "Shipment tracking", documentsTitle: "Document checklist", documentExpiryTitle: "Document expiry", documentExpirySubtitle: "Expired documents or documents expiring within 30 days.", noDocumentExpiryAlerts: "No upcoming document expiry dates.", missingRequiredDocumentsTitle: "Missing required documents", missingRequiredDocumentsSubtitle: "Documents still needed for active shipments.", noMissingRequiredDocuments: "No required documents are missing.", missingDocumentCount: "{count} missing", documentExpired: "Expired", documentExpiresSoon: "Due soon", documentExpiryDate: "Document expiry date (optional)", docExpiresOn: "Expires", docPreview: "Preview", docDownload: "Download", documentDemoNotice: "The transport document follows the selected mode. Mark other documents as required or not required for the route and cargo. This checklist does not replace regulatory advice.", documentUploadNotice: "Upload PDF, JPG, or PNG files to private storage. Maximum 10 MB.", uploadDocument: "Upload file", uploadingDocument: "Uploading…", documentFileLimit: "PDF, JPG, or PNG · up to 10 MB", docOpenFile: "View / download", documentUploadError: "Upload failed. Check the file type, size, and your connection.",
                         docCMR: "CMR / e-CMR road transport document", docInvoice: "Commercial invoice", docBL: "Bill of lading (B/L) / sea waybill", docAWB: "Air waybill (AWB)", docPackingList: "Packing list", docCustoms: "Customs declaration", docOrigin: "Certificate of origin", docInsurance: "Cargo insurance certificate", docDangerous: "Dangerous goods declaration", docHealth: "Health / phytosanitary certificate", docLicense: "Import / export permit or license", docTIRATA: "TIR or ATA Carnet (where applicable)", docRequired: "Transport mode", docConditional: "Conditional", docChoose: "Choose for this shipment", docNeeded: "Required", docNotNeeded: "Not required", docDone: "Document complete", docConditionalHint: "Decide based on this shipment's route and cargo.", documentsComplete: "required documents complete",
                         noNotifications: "No notifications yet.", notifShipmentCreated: "New shipment created", notifOfferCreated: "New offer created", notifOfferApproved: "Offer approved", notifOfferRejected: "Offer rejected", notifShipmentUpdate: "Shipment status updated", notifDocumentsComplete: "Document checklist completed",
                         searchOffers: "Search client, route, or cargo", searchShipments: "Search shipment no., client, or route",
@@ -1349,7 +1354,7 @@
                         if (session?.user) await this.finishLogin(session.user);
                     } catch (error) { this.showAuthError(error); }
                     this.supabase.auth.onAuthStateChange((event, nextSession) => {
-                        if (nextSession?.user && !this.isLoggedIn) {
+                        if (nextSession?.user && !this.isLoggedIn && !this.authBusy) {
                             Promise.resolve().then(() => this.finishLogin(nextSession.user)).catch(error => this.showAuthError(error));
                         } else if (!nextSession && event === 'SIGNED_OUT') this.clearSession();
                     });
@@ -1379,10 +1384,28 @@
                         } else {
                             const { data, error } = await this.supabase.auth.signInWithPassword({ email: this.loginEmail, password: this.loginPassword });
                             if (error) throw error;
-                            if (data.user) await this.finishLogin(data.user);
+                            if (data.user) {
+                                const audienceMatches = await this.validateLoginAudience(data.user);
+                                if (audienceMatches) await this.finishLogin(data.user);
+                            }
                         }
                     } catch (error) { this.showAuthError(error); }
                     finally { this.authBusy = false; }
+                },
+                async validateLoginAudience(user) {
+                    const { data, error } = await this.supabase.from('organization_members')
+                        .select('role').eq('user_id', user.id).limit(1);
+                    if (error) throw error;
+                    const membership = data?.[0];
+                    const mayCreateFirm = !membership && this.loginAudience === 'firm' && user.user_metadata?.company_name?.trim();
+                    const accountIsCustomer = membership?.role === 'client';
+                    const audienceIsCustomer = this.loginAudience === 'customer';
+                    if (!mayCreateFirm && (!membership || accountIsCustomer !== audienceIsCustomer)) {
+                        await this.supabase.auth.signOut();
+                        this.authMessage = this.t('authAudienceMismatch');
+                        return false;
+                    }
+                    return true;
                 },
                 async finishLogin(user) {
                     if (!this.supabase || !user || this.loadingWorkspace) return;
@@ -1794,6 +1817,18 @@
                         .filter(item => item.days <= 30)
                     ).sort((a,b) => a.days - b.days).slice(0,8);
                 },
+                missingRequiredDocumentAlerts() {
+                    return this.visibleShipments()
+                        .filter(shipment => shipment.status !== 'Teslim Edildi')
+                        .map(shipment => ({
+                            shipment,
+                            missing: this.documentChecklist(shipment)
+                                .filter(document => (document.required || document.applicability === 'required') && !document.done)
+                                .map(document => document.label)
+                        }))
+                        .filter(item => item.missing.length > 0)
+                        .sort((a, b) => b.missing.length - a.missing.length);
+                },
                 documentChecklist(shipment) {
                     if (!shipment) return [];
                     const transport = shipment.mode === 'Denizyolu' ? ['bl', 'docBL'] : shipment.mode === 'Havayolu' ? ['awb', 'docAWB'] : ['cmr', 'docCMR'];
@@ -1826,9 +1861,10 @@
                     const applicability = { ...(shipment.documentApplicability || {}), [key]: value };
                     const documents = { ...(shipment.documents || {}) };
                     if (value !== 'required') documents[key] = false;
-                    const { error } = await this.supabase.from('shipments').update({ document_applicability: applicability, documents, updated_at: new Date().toISOString() })
-                        .eq('id', shipment.id).eq('organization_id', this.activeOrganization.id);
+                    const { data, error } = await this.supabase.from('shipments').update({ document_applicability: applicability, documents, updated_at: new Date().toISOString() })
+                        .eq('id', shipment.id).eq('organization_id', this.activeOrganization.id).select('id').maybeSingle();
                     if (error) { this.showDataError(error); return; }
+                    if (!data) { this.showDataError(new Error(this.t('shipmentSaveDenied'))); return; }
                     shipment.documentApplicability = applicability; shipment.documents = documents;
                 },
                 canUploadDocuments() { return ['admin', 'operation'].includes(this.userRole); },
@@ -1880,9 +1916,10 @@
                     if (!this.canManageShipments()) return;
                     if (this.userRole === 'client') return;
                     const documents = { ...(shipment.documents || {}), [key]: !shipment.documents?.[key] };
-                    const { error } = await this.supabase.from('shipments').update({ documents, updated_at: new Date().toISOString() })
-                        .eq('id', shipment.id).eq('organization_id', this.activeOrganization.id);
+                    const { data, error } = await this.supabase.from('shipments').update({ documents, updated_at: new Date().toISOString() })
+                        .eq('id', shipment.id).eq('organization_id', this.activeOrganization.id).select('id').maybeSingle();
                     if (error) { this.showDataError(error); return; }
+                    if (!data) { this.showDataError(new Error(this.t('shipmentSaveDenied'))); return; }
                     shipment.documents = documents;
                     const required = this.documentChecklist(shipment).filter(document => document.required || document.applicability === 'required');
                     if (required.length && required.every(document => document.done)) this.addNotification('notifDocumentsComplete', shipment.code, 'shipment', shipment.id);
@@ -2032,9 +2069,10 @@
                 async updateShipmentStatus(shipment, status) {
                     if (!this.canManageShipments()) return;
                     if (shipment.status === status || this.userRole === 'client') return;
-                    const { error } = await this.supabase.from('shipments').update({ status, updated_at: new Date().toISOString() })
-                        .eq('id', shipment.id).eq('organization_id', this.activeOrganization.id);
+                    const { data, error } = await this.supabase.from('shipments').update({ status, updated_at: new Date().toISOString() })
+                        .eq('id', shipment.id).eq('organization_id', this.activeOrganization.id).select('id').maybeSingle();
                     if (error) { this.showDataError(error); return; }
+                    if (!data) { this.showDataError(new Error(this.t('shipmentSaveDenied'))); return; }
                     shipment.status = status;
                     if (this.selectedShipment?.id === shipment.id) {
                         try { await this.loadShipmentEvents(shipment); }
