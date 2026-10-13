@@ -910,7 +910,7 @@
                 async inviteTeamMember() {
                     if (!this.canManageTeam() || this.inviteBusy) return;
                     const email = (this.newInvite.email || '').trim().toLowerCase();
-                    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) { this.teamMessage = this.t('inviteEmailError'); return; }
+                    if (!email || !email.includes('@')) { this.teamMessage = this.t('inviteEmailError'); return; }
                     if (this.newInvite.role === 'client' && !this.newInvite.customerId) { this.teamMessage = this.t('inviteCustomerError'); return; }
                     this.inviteBusy = true; this.teamMessage = '';
                     try {
