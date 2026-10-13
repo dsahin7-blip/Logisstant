@@ -883,6 +883,7 @@
                         };
                     });
                     await this.loadNotifications();
+                    this.subscribeToNotifications();
                 },
                 async ensureCustomer(name) {
                     const normalized = (name || '').trim();
@@ -896,6 +897,9 @@
                 showAuthError(error) { this.authMessage = error?.message || String(error); },
                 showDataError(error) { alert(error?.message || String(error)); },
                 clearSession() {
+                    if (this.notificationChannel && this.supabase) this.supabase.removeChannel(this.notificationChannel);
+                    this.notificationChannel = null;
+                    this.notifications = [];
                     this.isLoggedIn = false; this.currentUser = null; this.activeOrganization = null; this.activeClient = null;
                     this.customers = []; this.offers = []; this.shipments = [];
                 },
@@ -956,6 +960,7 @@
                     this.newPassword = '';
                     alert(this.language === 'tr' ? 'Parolanız güncellendi.' : 'Your password was updated.');
                 },
+                notificationChannel: null,
                 notifications: [],
                 async loadNotifications() {
                     if (!this.currentUser || !this.activeOrganization) return;
@@ -973,6 +978,38 @@
                         time: new Date(row.created_at).toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US'),
                         read: row.is_read
                     }));
+                },
+                subscribeToNotifications() {
+                    if (!this.supabase || !this.currentUser || !this.activeOrganization) return;
+                    if (this.notificationChannel) this.supabase.removeChannel(this.notificationChannel);
+                    const userId = this.currentUser.id;
+                    const organizationId = this.activeOrganization.id;
+                    this.notificationChannel = this.supabase.channel('notifications:' + userId)
+                        .on('postgres_changes', {
+                            event: 'INSERT',
+                            schema: 'public',
+                            table: 'user_notifications',
+                            filter: 'user_id=eq.' + userId
+                        }, payload => {
+                            const row = payload.new;
+                            if (!row || row.organization_id !== organizationId) return;
+                            const notification = {
+                                id: row.id,
+                                title: this.t(row.title_key),
+                                desc: row.description || '',
+                                time: new Date(row.created_at).toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US'),
+                                read: row.is_read
+                            };
+                            const pending = this.notifications.find(item =>
+                                String(item.id).startsWith('pending-') &&
+                                item.title === notification.title &&
+                                item.desc === notification.desc
+                            );
+                            if (pending) Object.assign(pending, notification);
+                            else if (!this.notifications.some(item => item.id === notification.id)) this.notifications.unshift(notification);
+                            this.notifications = this.notifications.slice(0, 20);
+                        })
+                        .subscribe();
                 },
                 offers: [],
                 shipments: [],
@@ -1139,8 +1176,13 @@
                         organization_id: this.activeOrganization.id,
                         title_key: titleKey,
                         description: description || ''
-                    }).then(({ error }) => {
-                        if (error) this.showDataError(error);
+                    }).select('id, created_at').single().then(({ data, error }) => {
+                        if (error) { this.showDataError(error); return; }
+                        const pending = this.notifications.find(item => item.id === notification.id);
+                        if (pending) {
+                            pending.id = data.id;
+                            pending.time = new Date(data.created_at).toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US');
+                        }
                     }).catch(error => this.showDataError(error));
                 },
                 reportShipments() {
