@@ -3,6 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b1f45">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" type="image/svg+xml" href="/icon-192.svg">
+    <link rel="apple-touch-icon" href="/icon-192.svg">
     <title>Logisstant</title>
     <style>[x-cloak] { display: none !important; }</style>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -390,6 +397,14 @@
                             </div>
                         </div>
                     </div>
+                            <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
+                        <h3 class="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3" x-text="t('installTitle')"></h3>
+                        <p class="text-sm text-slate-600 dark:text-slate-300" x-text="t('installHelp')"></p>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <button type="button" @click="installApp()" :disabled="appInstalled" class="bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="appInstalled ? t('installedLabel') : t('installButton')"></button>
+                            <p role="status" aria-live="polite" x-show="installMessage" x-text="installMessage" class="text-xs text-slate-600 dark:text-slate-300"></p>
+                        </div>
+                    </div>
                     <!-- Firma Genel Ayarları -->
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
                         <h3 class="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3" x-text="t('firmSettingsTitle')"></h3>
@@ -591,6 +606,9 @@
                 reportEnd: '',
                 offerSearch: '', offerStatusFilter: 'all', shipmentSearch: '', shipmentStatusFilter: 'all',
                 showNotifDropdown: false,
+                deferredInstallPrompt: null,
+                appInstalled: false,
+                installMessage: '',
                 labels: {
                     tr: {
                         brand: "Logisstant",
@@ -679,6 +697,7 @@
                         firmNameLabel: "Firma Ünvanı",
                         defaultCurrency: "Varsayılan Para Birimi",
                         appearanceTitle: "Görünüm ve Dil", languageLabel: "Uygulama dili", themeLabel: "Görünüm", lightTheme: "Açık tema", darkTheme: "Koyu tema",
+                        installTitle: "Uygulamayı yükle", installHelp: "Bilgisayarda Chrome veya Edge menüsünden Yükle'yi seçin. Android'de tarayıcı menüsünden Uygulamayı yükle'ye dokunun. iPhone'da Safari paylaş menüsünden Ana Ekrana Ekle'yi seçin.", installButton: "Yükleme seçeneklerini aç", installedLabel: "Uygulama yüklü", installAccepted: "Logisstant yükleme isteği açıldı.",
                         securityTitle: "Güvenlik & Şifre Değiştir",
                         currentPass: "Mevcut Şifre",
                         newPass: "Yeni Şifre",
@@ -798,6 +817,7 @@
                         firmNameLabel: "Company Name",
                         defaultCurrency: "Default Currency",
                         appearanceTitle: "Appearance & Language", languageLabel: "App language", themeLabel: "Appearance", lightTheme: "Light theme", darkTheme: "Dark theme",
+                        installTitle: "Install the app", installHelp: "On a computer, choose Install from the Chrome or Edge menu. On Android, choose Install app from the browser menu. On iPhone, use Safari's Share menu and choose Add to Home Screen.", installButton: "Show install options", installedLabel: "App installed", installAccepted: "Logisstant installation prompt opened.",
                         securityTitle: "Security & Password Change",
                         currentPass: "Current Password",
                         newPass: "New Password",
@@ -834,6 +854,35 @@
                 t(key) {
                     return this.labels[this.language][key] || key;
                 },
+                initInstallSupport() {
+                    this.appInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+                    window.addEventListener('beforeinstallprompt', event => {
+                        event.preventDefault();
+                        this.deferredInstallPrompt = event;
+                    });
+                    window.addEventListener('appinstalled', () => {
+                        this.appInstalled = true;
+                        this.deferredInstallPrompt = null;
+                    });
+                    if ('serviceWorker' in navigator && location.protocol === 'https:') {
+                        navigator.serviceWorker.register('/sw.js').catch(() => {});
+                    }
+                },
+                async installApp() {
+                    if (this.appInstalled) return;
+                    if (!this.deferredInstallPrompt) {
+                        this.installMessage = this.t('installHelp');
+                        return;
+                    }
+                    const promptEvent = this.deferredInstallPrompt;
+                    this.deferredInstallPrompt = null;
+                    await promptEvent.prompt();
+                    const result = await promptEvent.userChoice;
+                    if (result?.outcome === 'accepted') {
+                        this.installMessage = this.t('installAccepted');
+                        this.appInstalled = true;
+                    }
+                },
                 loadUiPreferences() {
                     try {
                         const savedLanguage = window.localStorage.getItem('logisstant-language');
@@ -853,6 +902,7 @@
                     this.saveUiPreferences();
                 },
                 async init() {
+                    this.initInstallSupport();
                     this.loadUiPreferences();
                     if (!window.supabase || !window.LOGISSTANT_SUPABASE_CONFIG) {
                         this.authMessage = this.language === 'tr' ? 'Giriş hizmeti yüklenemedi. Sayfayı yenileyin.' : 'The sign-in service did not load. Refresh the page.';
