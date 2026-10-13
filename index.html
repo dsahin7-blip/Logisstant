@@ -54,7 +54,7 @@
                 <div class="flex justify-end text-xs" x-show="authMode === 'login'">
                     <button type="button" @click="resetPassword()" :disabled="resetBusy" class="text-blue-600 dark:text-blue-400 hover:underline disabled:opacity-50" x-text="resetBusy ? t('resetSending') : t('forgotPass')"></button>
                 </div>
-                <button type="submit" :disabled="authBusy" class="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition" x-text="authBusy ? t('pleaseWait') : authMode === 'signup' ? t('createAccount') : t('firmBtn')"></button>
+                <button type="submit" :disabled="authBusy" class="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition" x-text="authBusy ? t('pleaseWait') : authMode === 'signup' ? t('createAccount') : t('loginButton')"></button>
             </form>
             <p class="text-center text-xs text-slate-500">
                 <span x-text="authMode === 'signup' ? t('alreadyHaveAccount') : t('needAccount')"></span>
@@ -597,9 +597,10 @@
                         loginSubtitle: "Tekliften teslimata lojistik süreçlerinizi tek ekranda yönetin.",
                         demoNotice: "Demo sürümü: giriş gerçek bir hesaba bağlı değildir. Kayıtlar yalnızca bu tarayıcıda saklanır; sunucuya gönderilmez.",
                         connectedNotice: "Hesabınız ve kayıtlarınız sunucuda, erişim kurallarıyla saklanır.",
-                        createAccount: "Firma hesabı oluştur", needAccount: "Yeni misiniz?", alreadyHaveAccount: "Zaten hesabınız var mı?", signupLink: "Kayıt ol", loginLink: "Giriş yap", pleaseWait: "Lütfen bekleyin…", authSecurityNote: "Parolanız Supabase Auth tarafından korunur. Kayıtlarınıza yalnızca yetkili hesabınız erişebilir.",
+                        createAccount: "Firma hesabı oluştur", needAccount: "Yeni misiniz?", alreadyHaveAccount: "Zaten hesabınız var mı?", signupLink: "Kayıt ol", loginLink: "Giriş yap", pleaseWait: "Lütfen bekleyin…", authSecurityNote: "Firma ve müşteri kullanıcıları aynı ekrandan giriş yapar; hesabınıza uygun panel açılır. Şifreniz güvenli şekilde korunur.",
+                        loginButton: "Giriş Yap", authEmailAlreadyUsed: "Bu e-posta adresiyle zaten bir hesap var.", authWeakPassword: "Daha güçlü bir şifre seçin. En az 8 karakter kullanın.",
                         showPassword: "Göster", hidePassword: "Gizle", confirmPassword: "Şifreyi tekrar girin", passwordMismatch: "Şifreler eşleşmiyor.",
-                        resetSending: "Gönderiliyor…", resetEmailRequired: "Önce e-posta adresinizi yazın.", resetPasswordSent: "Parola sıfırlama bağlantısı e-posta adresinize gönderildi.",
+                        resetSending: "Gönderiliyor…", resetEmailRequired: "Önce e-posta adresinizi yazın.", resetPasswordSent: "Bu adres kayıtlıysa parola sıfırlama yönergeleri e-posta adresinize gönderilecektir.",
                         authInvalidCredentials: "E-posta adresi veya şifre hatalı.", authEmailNotConfirmed: "Giriş yapmadan önce e-posta adresinizi doğrulayın.",
                         authRequestFailed: "İşlem tamamlanamadı. Bilgilerinizi ve bağlantınızı kontrol edip tekrar deneyin.",
                         notificationTargetMissing: "İlgili kayıt artık görünmüyor veya erişiminiz yok.",
@@ -715,9 +716,10 @@
                         loginSubtitle: "Manage logistics from quote to delivery in one place.",
                         demoNotice: "Demo version: sign-in is not connected to a real account. Records are stored only in this browser and are not sent to a server.",
                         connectedNotice: "Your account and records are stored on the server with access controls.",
-                        createAccount: "Create firm account", needAccount: "New here?", alreadyHaveAccount: "Already have an account?", signupLink: "Sign up", loginLink: "Log in", pleaseWait: "Please wait…", authSecurityNote: "Your password is protected by Supabase Auth. Only authorized accounts can access your records.",
+                        createAccount: "Create firm account", needAccount: "New here?", alreadyHaveAccount: "Already have an account?", signupLink: "Sign up", loginLink: "Log in", pleaseWait: "Please wait…", authSecurityNote: "Company and customer users sign in here; your account opens the correct workspace. Your password is protected securely.",
+                        loginButton: "Sign in", authEmailAlreadyUsed: "An account already exists with this email address.", authWeakPassword: "Choose a stronger password with at least 8 characters.",
                         showPassword: "Show", hidePassword: "Hide", confirmPassword: "Confirm password", passwordMismatch: "The passwords do not match.",
-                        resetSending: "Sending…", resetEmailRequired: "Enter your email address first.", resetPasswordSent: "A password reset link was sent to your email address.",
+                        resetSending: "Sending…", resetEmailRequired: "Enter your email address first.", resetPasswordSent: "If an account uses this address, password reset instructions will be sent.",
                         authInvalidCredentials: "The email address or password is incorrect.", authEmailNotConfirmed: "Confirm your email address before signing in.",
                         authRequestFailed: "The request could not be completed. Check your details and connection, then try again.",
                         notificationTargetMissing: "The related record is no longer available or you do not have access.",
@@ -1000,6 +1002,8 @@
                     const message = (error?.message || '').toLowerCase();
                     if (code === 'invalid_credentials' || message.includes('invalid login credentials')) this.authMessage = this.t('authInvalidCredentials');
                     else if (code === 'email_not_confirmed' || message.includes('email not confirmed')) this.authMessage = this.t('authEmailNotConfirmed');
+                    else if (['user_already_exists', 'email_exists'].includes(code)) this.authMessage = this.t('authEmailAlreadyUsed');
+                    else if (code === 'weak_password') this.authMessage = this.t('authWeakPassword');
                     else this.authMessage = error?.message || this.t('authRequestFailed');
                 },
                 showDataError(error) { alert(error?.message || String(error)); },
