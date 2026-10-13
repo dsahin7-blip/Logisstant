@@ -348,7 +348,7 @@
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                     <h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navShipments')"></h2>
                     <div class="flex flex-wrap gap-2"><button @click="exportCSV('shipments')" class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-3 py-2 rounded-xl text-xs font-semibold" x-text="t('exportCsv')"></button><button x-show="canManageShipments()" @click="showShipmentModal = true" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition" x-text="t('btnNewShipment')"></button></div>
-                </div><div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><input x-model.trim="shipmentSearch" type="search" :placeholder="t('searchShipments')" class="w-full p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 dark:text-white text-sm"><select x-model="shipmentStatusFilter" class="w-full p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 dark:text-white text-sm"><option value="all" x-text="t('allShipmentStatuses')"></option><option value="pending" x-text="t('shipmentPending')"></option><option value="progress" x-text="t('shipmentInProgress')"></option><option value="delivered" x-text="t('shipmentDelivered')"></option></select></div>
+                </div><div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><input x-model.trim="shipmentSearch" type="search" :placeholder="t('searchShipments')" class="w-full p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 dark:text-white text-sm"><select x-model="shipmentStatusFilter" class="w-full p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 dark:text-white text-sm"><option value="all" x-text="t('allShipmentStatuses')"></option><option value="pending" x-text="t('shipmentPending')"></option><option value="progress" x-text="t('shipmentInProgress')"></option><option value="delivered" x-text="t('shipmentDelivered')"></option></select><select x-model="shipmentSort" class="w-full p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 dark:text-white text-sm"><option value="eta" x-text="t('shipmentSortEta')"></option><option value="newest" x-text="t('shipmentSortNewest')"></option></select></div>
                 <div class="grid grid-cols-1 gap-6">
                     <template x-for="shipment in filteredShipments()" :key="shipment.id">
                         <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-6">
@@ -372,10 +372,9 @@
                             <div>
                                 <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3" x-text="t('milestoneTitle')"></p>
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
-                                    <button :disabled="!canManageShipments()" @click="updateShipmentStatus(shipment, 'Yükleme Bekliyor')" :class="shipment.status === 'Yükleme Bekliyor' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition" x-text="t('m1')"></button>
-                                    <button :disabled="!canManageShipments()" @click="updateShipmentStatus(shipment, shipment.mode === 'Denizyolu' ? 'Denizde' : shipment.mode === 'Havayolu' ? 'Uçuşta' : 'Yola Çıktı')" :class="shipment.status === 'Yola Çıktı' || shipment.status === 'Denizde' || shipment.status === 'Uçuşta' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition" x-text="shipment.mode === 'Denizyolu' ? t('m2Sea') : shipment.mode === 'Havayolu' ? t('m2Air') : t('m2Road')"></button>
-                                    <button :disabled="!canManageShipments()" @click="updateShipmentStatus(shipment, 'Gümrükte')" :class="shipment.status === 'Gümrükte' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition" x-text="t('m3')"></button>
-                                    <button :disabled="!canManageShipments()" @click="updateShipmentStatus(shipment, 'Teslim Edildi')" :class="shipment.status === 'Teslim Edildi' ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="py-2 rounded-xl text-xs font-semibold transition" x-text="t('m4')"></button>
+                                    <template x-for="(stage, index) in shipmentStages(shipment)" :key="stage.status">
+                                        <button :disabled="!canManageShipments()" @click="updateShipmentStatus(shipment, stage.status)" :class="stage.complete ? (index === 3 ? 'bg-emerald-600 text-white' : 'bg-blue-600 text-white') : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="min-h-10 py-2 px-2 rounded-xl text-xs font-semibold transition disabled:cursor-default" x-text="(stage.complete ? '✓ ' : (index + 1) + '. ') + stage.label"></button>
+                                    </template>
                                 </div>
                             </div><div class="flex justify-end border-t border-slate-200 dark:border-slate-800 pt-4"><button @click="openShipmentDetails(shipment)" class="w-full sm:w-auto bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-xl text-sm font-semibold" x-text="t('viewShipmentDetails')"></button></div>
                         </div>
@@ -413,7 +412,7 @@
 
             <!-- TAB 4: REPORTS & BI -->
             <div x-show="tab === 'reports' && userRole !== 'operation' && userRole !== 'client'" class="space-y-6">
-                <div><h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navReports')"></h2><p class="text-sm text-slate-500 mt-1" x-text="t('liveReportNotice')"></p></div>
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3"><div><h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navReports')"></h2><p class="text-sm text-slate-500 mt-1" x-text="t('liveReportNotice')"></p></div><button @click="exportCSV('report')" class="self-start bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-xl text-xs font-semibold" x-text="t('exportReport')"></button></div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><label class="text-xs text-slate-500"><span x-text="t('reportStart')"></span><input type="date" x-model="reportStart" class="mt-1 w-full p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 dark:text-white"></label><label class="text-xs text-slate-500"><span x-text="t('reportEnd')"></span><input type="date" x-model="reportEnd" class="mt-1 w-full p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 dark:text-white"></label></div>
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-3"><template x-for="metric in reportMetrics()" :key="metric.key"><div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800"><p class="text-xs text-slate-500" x-text="t(metric.label)"></p><p class="text-lg font-bold mt-1" x-text="metric.value.toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US') + (metric.key === 'count' ? '' : ' EUR')"></p></div></template></div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -421,6 +420,11 @@
                         <h3 class="font-bold text-slate-900 dark:text-white text-sm" x-text="t('reportRoutes')"></h3>
                         <template x-for="item in routeProfitReport()" :key="item.route"><div class="space-y-2 text-xs"><div class="flex justify-between gap-3 font-semibold"><span x-text="item.route" class="text-slate-700 dark:text-slate-300"></span><span class="text-emerald-600 whitespace-nowrap" x-text="item.profit.toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US') + ' EUR'"></span></div><div class="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden"><div class="bg-blue-600 h-full rounded-full" :style="'width:' + item.percent + '%'"></div></div></div></template>
                         <p x-show="routeProfitReport().length === 0" class="text-sm text-slate-500" x-text="t('noReportData')"></p>
+                    </div>
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
+                        <h3 class="font-bold text-slate-900 dark:text-white text-sm" x-text="t('reportCustomers')"></h3>
+                        <template x-for="item in customerPerformanceReport()" :key="item.name"><div class="flex justify-between items-center gap-3 border-t border-slate-100 dark:border-slate-800 pt-3 text-xs"><span class="min-w-0"><strong class="block truncate" x-text="item.name"></strong><span class="text-slate-500" x-text="item.count + ' ' + t('navShipments')"></span></span><span class="shrink-0 text-right"><strong class="block" x-text="item.profit.toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US') + ' EUR'"></strong><span class="text-slate-500" x-text="t('reportProfit')"></span></span></div></template>
+                        <p x-show="customerPerformanceReport().length === 0" class="text-sm text-slate-500" x-text="t('noReportData')"></p>
                     </div>
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
                         <h3 class="font-bold text-slate-900 dark:text-white text-sm" x-text="t('reportModes')"></h3>
@@ -704,7 +708,7 @@
                 documentExpiryDrafts: {},
                 reportStart: '',
                 reportEnd: '',
-                offerSearch: '', offerStatusFilter: 'all', shipmentSearch: '', shipmentStatusFilter: 'all',
+                offerSearch: '', offerStatusFilter: 'all', shipmentSearch: '', shipmentStatusFilter: 'all', shipmentSort: 'eta',
                 showNotifDropdown: false,
                 deferredInstallPrompt: null,
                 appInstalled: false,
@@ -757,7 +761,7 @@
                         noNotifications: "Henüz bildirim yok.", notifShipmentCreated: "Yeni sevkiyat oluşturuldu", notifOfferCreated: "Yeni teklif oluşturuldu", notifOfferApproved: "Teklif onaylandı", notifOfferRejected: "Teklif reddedildi", notifShipmentUpdate: "Sevkiyat durumu güncellendi", notifDocumentsComplete: "Evrak kontrol listesi tamamlandı",
                         searchOffers: "Müşteri, güzergah veya yük ara", searchShipments: "Sefer no, müşteri veya güzergah ara",
                         allOfferStatuses: "Tüm teklif durumları", offerPending: "Beklemede", offerApproved: "Onaylandı", offerRejected: "Reddedildi",
-                        allShipmentStatuses: "Tüm sevkiyat durumları", shipmentPending: "Yükleme bekliyor", shipmentInProgress: "Devam ediyor", shipmentDelivered: "Teslim edildi",
+                        allShipmentStatuses: "Tüm sevkiyat durumları", shipmentPending: "Yükleme bekliyor", shipmentInProgress: "Devam ediyor", shipmentDelivered: "Teslim edildi", shipmentSortEta: "Teslim tarihi yakında", shipmentSortNewest: "En yeni",
                         noShipmentsFound: "Aramanızla eşleşen sevkiyat bulunamadı.", noOffersFound: "Aramanızla eşleşen teklif bulunamadı.",
                         viewShipmentDetails: "Sevkiyat detaylarını gör", shipmentDetailsTitle: "Sevkiyat detayları", editOffer: "Teklifi düzenle", offerUpdated: "Teklif güncellendi.", editShipment: "Sevkiyatı düzenle", saveChanges: "Değişiklikleri kaydet", cancelEdit: "Vazgeç", editIncoterm: "Teslim şekli", shipmentRouteRequired: "Güzergah gerekli.", shipmentSaved: "Sevkiyat bilgileri güncellendi.", shipmentSaveDenied: "Bu sevkiyat güncellenemedi. Yetkinizi kontrol edin.", detailMode: "Taşıma modu", detailCargo: "Yük bilgisi", detailIncome: "Navlun geliri", statusHistory: "Sevkiyat hareketleri", historyShipmentCreated: "Sevkiyat oluşturuldu", historyActor: "İşlemi yapan", historyUnknown: "Kullanıcı", historyEarlierRecords: "Önceki kayıtlar", historyLoading: "Hareketler yükleniyor…",
                         liveReportNotice: "Raporlar sevkiyat kayıtlarınızdan hesaplanır.", noReportData: "Henüz rapor oluşturacak sevkiyat kaydı yok.", modeRoad: "Karayolu", modeSea: "Denizyolu", modeAir: "Havayolu",
@@ -877,7 +881,7 @@
                         noNotifications: "No notifications yet.", notifShipmentCreated: "New shipment created", notifOfferCreated: "New offer created", notifOfferApproved: "Offer approved", notifOfferRejected: "Offer rejected", notifShipmentUpdate: "Shipment status updated", notifDocumentsComplete: "Document checklist completed",
                         searchOffers: "Search client, route, or cargo", searchShipments: "Search shipment no., client, or route",
                         allOfferStatuses: "All offer statuses", offerPending: "Pending", offerApproved: "Approved", offerRejected: "Rejected",
-                        allShipmentStatuses: "All shipment statuses", shipmentPending: "Awaiting loading", shipmentInProgress: "In progress", shipmentDelivered: "Delivered",
+                        allShipmentStatuses: "All shipment statuses", shipmentPending: "Awaiting loading", shipmentInProgress: "In progress", shipmentDelivered: "Delivered", shipmentSortEta: "Upcoming delivery", shipmentSortNewest: "Newest",
                         noShipmentsFound: "No shipments match your search.", noOffersFound: "No offers match your search.",
                         viewShipmentDetails: "View shipment details", shipmentDetailsTitle: "Shipment details", editOffer: "Edit offer", offerUpdated: "Offer updated.", editShipment: "Edit shipment", saveChanges: "Save changes", cancelEdit: "Cancel", editIncoterm: "Incoterm", shipmentRouteRequired: "Route is required.", shipmentSaved: "Shipment details updated.", shipmentSaveDenied: "This shipment could not be updated. Check your permissions.", detailMode: "Transport mode", detailCargo: "Cargo", detailIncome: "Freight income", statusHistory: "Shipment activity", historyShipmentCreated: "Shipment created", historyActor: "Changed by", historyUnknown: "User", historyEarlierRecords: "Earlier records", historyLoading: "Loading activity…",
                         liveReportNotice: "Reports are calculated from your shipment records.", noReportData: "There are no shipment records to report yet.", modeRoad: "Road", modeSea: "Sea", modeAir: "Air",
@@ -1431,6 +1435,10 @@
                         const matchesQuery = !query || [shipment.code, shipment.client, shipment.route].some(value => (value || '').toLocaleLowerCase(this.language === 'tr' ? 'tr-TR' : 'en-US').includes(query));
                         const matchesStatus = this.shipmentStatusFilter === 'all' || (this.shipmentStatusFilter === 'pending' ? shipment.status === 'Yükleme Bekliyor' : this.shipmentStatusFilter === 'delivered' ? shipment.status === 'Teslim Edildi' : ['Yola Çıktı', 'Denizde', 'Uçuşta', 'Gümrükte'].includes(shipment.status));
                         return matchesQuery && matchesStatus;
+                    }).sort((a,b) => {
+                        if (this.shipmentSort === 'newest') return (b.createdAt || '').localeCompare(a.createdAt || '');
+                        if (!a.eta) return 1; if (!b.eta) return -1;
+                        return a.eta.localeCompare(b.eta);
                     });
                 },
                 activeShipmentCount() { return this.visibleShipments().filter(s => s.status !== 'Teslim Edildi').length; },
@@ -1619,14 +1627,17 @@
                     ];
                 },
                 exportCSV(type) {
-                    const isOffers = type === 'offers';
+                    const isOffers = type === 'offers', isReport = type === 'report';
                     const headers = isOffers
-                        ? (this.language === 'tr' ? ['Müşteri', 'Mod', 'Güzergâh', 'Yük', 'Incoterm', 'Tutar', 'Para birimi', 'Durum', 'Son geçerlilik', 'Notlar'] : ['Client', 'Mode', 'Route', 'Cargo', 'Incoterm', 'Amount', 'Currency', 'Status', 'Valid until', 'Notes'])
-                        : (this.language === 'tr' ? ['Sefer', 'Müşteri', 'Mod', 'Güzergâh', 'Yük', 'Durum', 'Oluşturma tarihi', 'Tahmini teslim', 'Gelir EUR', 'Gider 1 EUR', 'Gider 2 EUR'] : ['Shipment', 'Client', 'Mode', 'Route', 'Cargo', 'Status', 'Created', 'Estimated delivery', 'Income EUR', 'Expense 1 EUR', 'Expense 2 EUR']);
-                    const records = isOffers ? this.filteredOffers() : this.filteredShipments();
+                        ? (this.language === 'tr' ? ['Müşteri','Mod','Güzergâh','Yük','Incoterm','Tutar','Para birimi','Durum','Son geçerlilik','Notlar'] : ['Client','Mode','Route','Cargo','Incoterm','Amount','Currency','Status','Valid until','Notes'])
+                        : isReport
+                            ? (this.language === 'tr' ? ['Sefer','Müşteri','Mod','Güzergâh','Durum','Oluşturma tarihi','Tahmini teslim','Gelir EUR','Gider EUR','Net kâr EUR'] : ['Shipment','Client','Mode','Route','Status','Created','Estimated delivery','Income EUR','Expenses EUR','Net profit EUR'])
+                            : (this.language === 'tr' ? ['Sefer','Müşteri','Mod','Güzergâh','Yük','Durum','Oluşturma tarihi','Tahmini teslim','Gelir EUR','Gider 1 EUR','Gider 2 EUR'] : ['Shipment','Client','Mode','Route','Cargo','Status','Created','Estimated delivery','Income EUR','Expense 1 EUR','Expense 2 EUR']);
+                    const records = (isOffers ? this.filteredOffers() : isReport ? this.reportShipments() : this.filteredShipments()).map(record => ({ ...record }));
                     const fields = isOffers
-                        ? ['client', 'mode', 'route', 'cargo', 'incoterm', 'amount', 'currency', 'status', 'validUntil', 'notes']
-                        : ['code', 'client', 'mode', 'route', 'cargo', 'status', 'createdAt', 'eta', 'income', 'expense1', 'expense2'];
+                        ? ['client','mode','route','cargo','incoterm','amount','currency','status','validUntil','notes']
+                        : isReport ? ['code','client','mode','route','status','createdAt','eta','income','totalExpenses','netProfit'] : ['code','client','mode','route','cargo','status','createdAt','eta','income','expense1','expense2'];
+                    if (isReport) records.forEach(record => { record.totalExpenses = Number(record.expense1 || 0) + Number(record.expense2 || 0); record.netProfit = Number(record.income || 0) - record.totalExpenses; });
                     const quote = value => '"' + String(value ?? '').replace(/"/g, '""') + '"';
                     const csv = '\uFEFF' + [headers, ...records.map(record => fields.map(field => record[field]))].map(row => row.map(quote).join(',')).join('\r\n');
                     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
@@ -1637,234 +1648,7 @@
                     document.body.appendChild(link);
                     link.click();
                     link.remove();
-                    setTimeout(() => URL.revokeObjectURL(url), 1000);
-                },
-                routeProfitReport() {
-                    const routes = this.reportShipments().reduce((result, shipment) => {
-                        const profit = Number(shipment.income || 0) - Number(shipment.expense1 || 0) - Number(shipment.expense2 || 0);
-                        result[shipment.route] = (result[shipment.route] || 0) + profit;
-                        return result;
-                    }, {});
-                    const rows = Object.entries(routes).map(([route, profit]) => ({ route, profit }));
-                    const max = Math.max(1, ...rows.map(row => Math.max(0, row.profit)));
-                    return rows.sort((a, b) => b.profit - a.profit).slice(0, 5).map(row => ({ ...row, percent: Math.max(5, Math.round(Math.max(0, row.profit) / max * 100)) }));
-                },
-                modeDistribution() {
-                    const shipments = this.reportShipments();
-                    return [
-                        { mode: 'Karayolu', label: this.t('modeRoad') },
-                        { mode: 'Denizyolu', label: this.t('modeSea') },
-                        { mode: 'Havayolu', label: this.t('modeAir') }
-                    ].map(item => ({ ...item, percent: shipments.length ? Math.round(shipments.filter(shipment => shipment.mode === item.mode).length / shipments.length * 100) : 0 }));
-                },
-                async openShipmentDetails(shipment) {
-                    this.shipmentEditForm = null;
-                    this.selectedShipment = shipment;
-                    this.activityLoading = true;
-                    try { await this.loadShipmentEvents(shipment); }
-                    catch (error) { this.showDataError(error); }
-                    finally { this.activityLoading = false; }
-                },
-                canEditShipment() { return this.canManageShipments(); },
-                startShipmentEdit() {
-                    if (!this.canEditShipment() || !this.selectedShipment) return;
-                    this.shipmentEditForm = {
-                        route: this.selectedShipment.route || '',
-                        cargo: this.selectedShipment.cargo || '',
-                        incoterm: this.selectedShipment.incoterm || '',
-                        eta: this.selectedShipment.eta || ''
-                    };
-                },
-                cancelShipmentEdit() {
-                    if (!this.shipmentSaveBusy) this.shipmentEditForm = null;
-                },
-                async saveShipmentDetails() {
-                    const shipment = this.selectedShipment;
-                    if (!this.canEditShipment() || !shipment || !this.shipmentEditForm || this.shipmentSaveBusy) return;
-                    const route = this.shipmentEditForm.route.trim();
-                    if (!route) { alert(this.t('shipmentRouteRequired')); return; }
-                    const updated = {
-                        route,
-                        cargo: this.shipmentEditForm.cargo.trim(),
-                        incoterm: this.shipmentEditForm.incoterm.trim(),
-                        eta: this.shipmentEditForm.eta || null,
-                        updated_at: new Date().toISOString()
-                    };
-                    this.shipmentSaveBusy = true;
-                    try {
-                        const { data, error } = await this.supabase.from('shipments').update(updated)
-                            .eq('id', shipment.id).eq('organization_id', this.activeOrganization.id).select('id').maybeSingle();
-                        if (error) throw error;
-                        if (!data) throw new Error(this.t('shipmentSaveDenied'));
-                        Object.assign(shipment, { ...updated, eta: updated.eta || '' });
-                        this.shipmentEditForm = null;
-                        alert(this.t('shipmentSaved'));
-                    } catch (error) { this.showDataError(error); }
-                    finally { this.shipmentSaveBusy = false; }
-                },
-                async loadShipmentEvents(shipment) {
-                    const { data, error } = await this.supabase.from('shipment_events')
-                        .select('id, event_type, old_status, new_status, actor_name, created_at')
-                        .eq('shipment_id', shipment.id)
-                        .eq('organization_id', this.activeOrganization.id)
-                        .order('created_at', { ascending: false })
-                        .limit(100);
-                    if (error) throw error;
-                    shipment.events = data || [];
-                    if (this.selectedShipment?.id === shipment.id) this.selectedShipment.events = shipment.events;
-                },
-                formatHistoryTime(value) {
-                    const date = new Date(value);
-                    return Number.isNaN(date.getTime())
-                        ? value
-                        : date.toLocaleString(this.language === 'tr' ? 'tr-TR' : 'en-US');
-                },
-                async updateShipmentStatus(shipment, status) {
-                    if (!this.canManageShipments()) return;
-                    if (shipment.status === status || this.userRole === 'client') return;
-                    const { error } = await this.supabase.from('shipments').update({ status, updated_at: new Date().toISOString() })
-                        .eq('id', shipment.id).eq('organization_id', this.activeOrganization.id);
-                    if (error) { this.showDataError(error); return; }
-                    shipment.status = status;
-                    if (this.selectedShipment?.id === shipment.id) {
-                        try { await this.loadShipmentEvents(shipment); }
-                        catch (activityError) { this.showDataError(activityError); }
-                    }
-                    try { await this.loadNotifications(); }
-                    catch (notificationError) { this.showDataError(notificationError); }
-                },
-                shipmentStages(shipment) {
-                    const stage2 = shipment.mode === 'Denizyolu' ? 'Denizde' : shipment.mode === 'Havayolu' ? 'Uçuşta' : 'Yola Çıktı';
-                    const order = ['Yükleme Bekliyor', stage2, 'Gümrükte', 'Teslim Edildi'];
-                    const labels = [this.t('m1'), shipment.mode === 'Denizyolu' ? this.t('m2Sea') : shipment.mode === 'Havayolu' ? this.t('m2Air') : this.t('m2Road'), this.t('m3'), this.t('m4')];
-                    const current = order.indexOf(shipment.status);
-                    return order.map((status, index) => ({ status, label: labels[index], complete: current >= index }));
-                },
-                async approveOffer(offer) {
-                    if (!this.canManageOffers()) return;
-                    if (offer.status === 'Beklemede' && offer.validUntil && offer.validUntil < new Date().toISOString().slice(0, 10)) { alert(this.t('offerExpiryPast')); return; }
-                    if (offer.status !== 'Beklemede') return;
-                    const { error } = await this.supabase.from('offers').update({ status: 'Onaylandı' }).eq('id', offer.id).eq('organization_id', this.activeOrganization.id);
-                    if (error) { this.showDataError(error); return; }
-                    offer.status = 'Onaylandı'; this.addNotification('notifOfferApproved', offer.client + ' · ' + offer.route, 'offer', offer.id);
-                },
-                async rejectOffer(offer) {
-                    if (!this.canManageOffers()) return;
-                    if (offer.status !== 'Beklemede') return;
-                    const { error } = await this.supabase.from('offers').update({ status: 'Reddedildi' }).eq('id', offer.id).eq('organization_id', this.activeOrganization.id);
-                    if (error) { this.showDataError(error); return; }
-                    offer.status = 'Reddedildi'; this.addNotification('notifOfferRejected', offer.client + ' · ' + offer.route, 'offer', offer.id);
-                },
-                async addOffer() {
-                    if (!this.canManageOffers() || this.savingOffer) return;
-                    const amount = Number(this.newOffer.amount);
-                    if (!this.newOffer.client.trim() || !this.newOffer.route.trim() || !this.newOffer.cargo.trim() || !this.newOffer.validUntil || !Number.isFinite(amount) || amount <= 0) {
-                        alert(!this.newOffer.validUntil ? this.t('offerExpiryRequired') : this.t('offerFieldsRequired')); return;
-                    }
-                    if (this.newOffer.validUntil < new Date().toISOString().slice(0, 10)) { alert(this.t('offerExpiryPast')); return; }
-                    this.savingOffer = true;
-                    try {
-                        const customer = await this.ensureCustomer(this.newOffer.client);
-                        const payload = {
-                            customer_id: customer.id, mode: this.newOffer.mode, route: this.newOffer.route.trim(),
-                            incoterm: this.newOffer.incoterm, cargo: this.newOffer.cargo.trim(), amount,
-                            currency: this.newOffer.currency, valid_until: this.newOffer.validUntil, notes: this.newOffer.notes || ''
-                        };
-                        if (this.editingOfferId) {
-                            const { data, error } = await this.supabase.from('offers').update(payload)
-                                .eq('id', this.editingOfferId).eq('organization_id', this.activeOrganization.id)
-                                .eq('status', 'Beklemede').is('converted_shipment_id', null).select('*, customers(name)').single();
-                            if (error) throw error;
-                            const existing = this.offers.find(item => item.id === this.editingOfferId);
-                            if (existing) Object.assign(existing, {
-                                customerId: customer.id, client: data.customers?.name || customer.name, mode: data.mode,
-                                route: data.route, incoterm: data.incoterm, cargo: data.cargo, amount: Number(data.amount),
-                                currency: data.currency, validUntil: data.valid_until, notes: data.notes || ''
-                            });
-                            alert(this.t('offerUpdated'));
-                        } else {
-                            const insertPayload = { ...payload, organization_id: this.activeOrganization.id, created_by: this.currentUser.id, status: 'Beklemede' };
-                            const { data, error } = await this.supabase.from('offers').insert(insertPayload).select('*, customers(name)').single();
-                            if (error) throw error;
-                            this.offers.unshift({ id: data.id, customerId: customer.id, mode: data.mode, client: customer.name, route: data.route,
-                                incoterm: data.incoterm, cargo: data.cargo, amount: Number(data.amount), currency: data.currency,
-                                status: data.status, converted: false, validUntil: data.valid_until, notes: data.notes || '', createdAt: data.created_at.slice(0, 10) });
-                            this.addNotification('notifOfferCreated', customer.name + ' · ' + data.route, 'offer', data.id);
-                        }
-                        this.newOffer = { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', cargo: '', amount: '', currency: 'EUR', validUntil: '', notes: '' };
-                        this.editingOfferId = null;
-                        this.showOfferModal = false;
-                    } catch (error) { this.showDataError(error); }
-                    finally { this.savingOffer = false; }
-                },
-                async createShipmentRecord(form) {
-                    const { data, error } = await this.supabase.rpc('create_shipment_atomic', {
-                        p_organization_id: this.activeOrganization.id,
-                        p_client_name: form.client,
-                        p_mode: form.mode,
-                        p_route: form.route,
-                        p_incoterm: form.incoterm || '',
-                        p_cargo: form.cargo || '',
-                        p_eta: form.eta || null,
-                        p_income: Number(form.income || 0),
-                        p_vehicle_data: {
-                            plate: form.plate || '', driver: form.driver || '', phone: form.phone || '',
-                            vessel: form.vessel || '', containerNo: form.containerNo || '',
-                            containerType: form.containerType || '', blNumber: form.blNumber || '',
-                            flightNo: form.flightNo || '', awbNumber: form.awbNumber || '', volWeight: form.volWeight || ''
-                        }
-                    });
-                    if (error) throw error;
-                    const row = Array.isArray(data) ? data[0] : data;
-                    if (!row?.id) throw new Error(this.language === 'tr' ? 'Gönderi oluşturulamadı.' : 'The shipment could not be created.');
-                    const customer = { id: row.customer_id, name: row.client_name };
-                    if (!this.customers.some(item => item.id === customer.id)) this.customers.push(customer);
-                    return {
-                        id: row.id, customerId: row.customer_id, mode: row.mode, code: row.code,
-                        client: row.client_name, route: row.route, incoterm: row.incoterm, status: row.status,
-                        createdAt: (row.created_at || '').slice(0, 10), eta: row.eta || '',
-                        documents: {}, documentApplicability: {}, history: [], events: [],
-                        cargo: row.cargo, docUploaded: false, income: Number(form.income || 0), expense1: 0, expense2: 0,
-                        plate: form.plate || '', driver: form.driver || '', phone: form.phone || '',
-                        vessel: form.vessel || '', containerNo: form.containerNo || '', containerType: form.containerType || '',
-                        blNumber: form.blNumber || '', flightNo: form.flightNo || '', awbNumber: form.awbNumber || '',
-                        volWeight: form.volWeight || ''
-                    };
-                },
-                async addShipment() {
-                    if (!this.canManageShipments() || this.savingShipment) return;
-                    const income = Number(this.newShipment.income);
-                    if (!this.newShipment.client || !this.newShipment.route || !Number.isFinite(income) || income <= 0) { alert(this.t('shipmentFieldsRequired')); return; }
-                    this.savingShipment = true;
-                    try {
-                        const shipment = await this.createShipmentRecord(this.newShipment);
-                        this.shipments.unshift(shipment);
-                        this.newShipment = { mode: 'Karayolu', client: '', route: '', plate: '', driver: '', phone: '', vessel: '', containerNo: '', containerType: '', blNumber: '', flightNo: '', awbNumber: '', volWeight: '', eta: '', cargo: '', income: '' };
-                        this.showShipmentModal = false; this.addNotification('notifShipmentCreated', shipment.code, 'shipment', shipment.id);
-                    } catch (error) { this.showDataError(error); }
-                    finally { this.savingShipment = false; }
-                },
-                async convertToShipment(offer) {
-                    if (!this.canManageOffers()) return;
-                    if (offer.validUntil && offer.validUntil < new Date().toISOString().slice(0, 10)) { alert(this.t('offerExpiryPast')); return; }
-                    try {
-                        const { data: shipmentId, error } = await this.supabase.rpc('convert_offer_to_shipment', { p_offer_id: offer.id });
-                        if (error) throw error;
-                        offer.converted = true;
-                        await this.loadWorkspaceData();
-                        const shipment = this.shipments.find(item => item.id === shipmentId);
-                        if (shipment) {
-                            this.addNotification('notifShipmentCreated', shipment.code, 'shipment', shipment.id);
-                            this.selectedShipment = shipment;
-                            this.tab = 'shipments';
-                        }
-                    } catch (error) { this.showDataError(error); }
-                },
-                simulateOCR() {
-                    alert(this.t('ocrDemoNotice'));
-                },
-                calculateTotalProfit() {
-                    return this.shipments.reduce((total, s) => total + (s.income - (s.expense1 + s.expense2)), 0);
+                    URL.revokeObjectURL(url);
                 },
                 async downloadPDF(offer) {
                     if (typeof html2pdf !== 'function') {
