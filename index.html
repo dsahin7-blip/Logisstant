@@ -1581,38 +1581,39 @@
                     } catch (error) { this.showDataError(error); }
                     finally { this.savingOffer = false; }
                 },
-                async createShipmentRecord(form, offer) {
-                    const customer = await this.ensureCustomer(form.client);
-                    const modePrefix = form.mode === 'Denizyolu' ? 'SEA-' : form.mode === 'Havayolu' ? 'AIR-' : form.mode === 'Demiryolu' ? 'RAIL-' : 'TR-';
-                    const now = new Date().toISOString();
-                    const status = 'Yükleme Bekliyor';
-                    const code = modePrefix + crypto.randomUUID().slice(0, 8).toUpperCase();
-                    const payload = {
-                        organization_id: this.activeOrganization.id, customer_id: customer.id, created_by: this.currentUser.id,
-                        code, mode: form.mode, route: form.route.trim(), incoterm: form.incoterm || '', cargo: form.cargo || '',
-                        status, eta: form.eta || null, documents: {}, document_applicability: {}, history: [], updated_at: now
-                    };
-                    const { data, error } = await this.supabase.from('shipments').insert(payload).select('*, customers(name)').single();
+                async createShipmentRecord(form) {
+                    const { data, error } = await this.supabase.rpc('create_shipment_atomic', {
+                        p_organization_id: this.activeOrganization.id,
+                        p_client_name: form.client,
+                        p_mode: form.mode,
+                        p_route: form.route,
+                        p_incoterm: form.incoterm || '',
+                        p_cargo: form.cargo || '',
+                        p_eta: form.eta || null,
+                        p_income: Number(form.income || 0),
+                        p_vehicle_data: {
+                            plate: form.plate || '', driver: form.driver || '', phone: form.phone || '',
+                            vessel: form.vessel || '', containerNo: form.containerNo || '',
+                            containerType: form.containerType || '', blNumber: form.blNumber || '',
+                            flightNo: form.flightNo || '', awbNumber: form.awbNumber || '', volWeight: form.volWeight || ''
+                        }
+                    });
                     if (error) throw error;
-                    if (this.userRole !== 'client') {
-                        const internalData = offer ? { income: Number(offer.amount || 0), expense1: 0, expense2: 0 } : {
-                            income: Number(form.income || 0), expense1: 0, expense2: 0, plate: form.plate || '', driver: form.driver || '',
-                            phone: form.phone || '', vessel: form.vessel || '', containerNo: form.containerNo || '',
-                            containerType: form.containerType || '', blNumber: form.blNumber || '', flightNo: form.flightNo || '',
-                            awbNumber: form.awbNumber || '', volWeight: form.volWeight || ''
-                        };
-                        const { error: privateError } = await this.supabase.from('shipment_private')
-                            .insert({ shipment_id: data.id, organization_id: this.activeOrganization.id, internal_data: internalData });
-                        if (privateError) throw privateError;
-                    }
-                    const shipment = {
-                        id: data.id, customerId: customer.id, mode: data.mode, code: data.code, client: customer.name, route: data.route,
-                        incoterm: data.incoterm, status: data.status, createdAt: data.created_at.slice(0, 10), eta: data.eta || '',
-                        documents: data.documents || {}, documentApplicability: data.document_applicability || {}, history: data.history || [], events: [],
-                        cargo: data.cargo, docUploaded: false, income: Number(offer?.amount || form.income || 0), expense1: 0, expense2: 0,
-                        plate: form.plate || '', driver: form.driver || '', phone: form.phone || ''
+                    const row = Array.isArray(data) ? data[0] : data;
+                    if (!row?.id) throw new Error(this.language === 'tr' ? 'Gönderi oluşturulamadı.' : 'The shipment could not be created.');
+                    const customer = { id: row.customer_id, name: row.client_name };
+                    if (!this.customers.some(item => item.id === customer.id)) this.customers.push(customer);
+                    return {
+                        id: row.id, customerId: row.customer_id, mode: row.mode, code: row.code,
+                        client: row.client_name, route: row.route, incoterm: row.incoterm, status: row.status,
+                        createdAt: (row.created_at || '').slice(0, 10), eta: row.eta || '',
+                        documents: {}, documentApplicability: {}, history: [], events: [],
+                        cargo: row.cargo, docUploaded: false, income: Number(form.income || 0), expense1: 0, expense2: 0,
+                        plate: form.plate || '', driver: form.driver || '', phone: form.phone || '',
+                        vessel: form.vessel || '', containerNo: form.containerNo || '', containerType: form.containerType || '',
+                        blNumber: form.blNumber || '', flightNo: form.flightNo || '', awbNumber: form.awbNumber || '',
+                        volWeight: form.volWeight || ''
                     };
-                    return shipment;
                 },
                 async addShipment() {
                     if (!this.canManageShipments() || this.savingShipment) return;
