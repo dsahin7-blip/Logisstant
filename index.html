@@ -190,6 +190,132 @@
             .app-shell main > div[x-show="tab === 'dashboard'"] > div:first-child > div:last-child button { width: 100%; }
             .app-shell main [class~="shadow-sm"][class~="rounded-2xl"] { border-radius: 1rem; }
         }
+
+        .auth-screen {
+            min-height: 100dvh;
+            padding: 2rem !important;
+            background:
+                radial-gradient(circle at 14% 18%, rgba(56, 112, 207, .32), transparent 32%),
+                radial-gradient(circle at 88% 82%, rgba(21, 54, 107, .42), transparent 34%),
+                linear-gradient(135deg, #07152f, #0c2148 58%, #102c5b);
+        }
+        .auth-layout {
+            display: grid;
+            grid-template-columns: minmax(0, .92fr) minmax(420px, 1.08fr);
+            max-width: 1100px;
+            min-height: min(720px, calc(100dvh - 4rem));
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, .18);
+            border-radius: 1.75rem;
+            background: #fff;
+            box-shadow: 0 30px 90px rgba(2, 12, 32, .34);
+        }
+        .auth-story {
+            position: relative;
+            overflow: hidden;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: clamp(2rem, 4vw, 3.5rem);
+            color: #fff;
+            background: linear-gradient(145deg, #163b7a, #0b1f45 68%, #08162f);
+        }
+        .auth-story-brand { position: relative; z-index: 1; display: flex; align-items: center; gap: .85rem; font-size: 1.45rem; font-weight: 750; letter-spacing: -.03em; }
+        .auth-story-copy { position: relative; z-index: 1; max-width: 27rem; padding-block: 2.5rem; }
+        .auth-story-kicker { color: #9cc3ff; font-size: .68rem; font-weight: 750; letter-spacing: .18em; }
+        .auth-story-copy h2 { margin: 1rem 0 .8rem; font-size: clamp(2.2rem, 3.6vw, 3.25rem); font-weight: 750; line-height: 1.08; letter-spacing: -.045em; }
+        .auth-story-copy p { max-width: 24rem; color: #c7d7f2; font-size: 1rem; line-height: 1.75; }
+        .auth-story-foot { position: relative; z-index: 1; display: flex; align-items: center; gap: .65rem; color: #d6e2f6; font-size: .8rem; line-height: 1.5; }
+        .auth-live-dot { width: .55rem; height: .55rem; flex: 0 0 auto; border-radius: 50%; background: #40d5ae; box-shadow: 0 0 0 5px rgba(64, 213, 174, .14); }
+        .auth-route-art { position: absolute; right: -2rem; top: 27%; width: 16rem; height: 16rem; border: 1px solid rgba(255,255,255,.08); border-radius: 50%; }
+        .auth-route-art:before, .auth-route-art:after { position: absolute; content: ""; inset: 1.6rem; border: 1px solid rgba(255,255,255,.08); border-radius: 50%; }
+        .auth-route-art:after { inset: 3.3rem; }
+        .auth-route-art span { position: absolute; z-index: 1; width: .7rem; height: .7rem; border-radius: 50%; background: #42d8b0; box-shadow: 0 0 0 6px rgba(66,216,176,.12); }
+        .auth-route-art span:nth-child(1) { left: 1.9rem; top: 4rem; }
+        .auth-route-art span:nth-child(2) { right: 2.1rem; top: 6.8rem; background: #8bb8ff; }
+        .auth-route-art span:nth-child(3) { left: 6.4rem; bottom: 1.4rem; background: #fff; }
+        .auth-route-art i { position: absolute; left: 2.3rem; top: 4.5rem; width: 9.3rem; height: 4.5rem; border-top: 1px dashed rgba(199,215,242,.38); border-right: 1px dashed rgba(199,215,242,.38); transform: skewY(17deg); }
+        .auth-card { align-self: center; width: 100%; max-height: calc(100dvh - 4rem); overflow-y: auto; padding: clamp(1.75rem, 4vw, 3.5rem); background: #fff; color: #172033; }
+        .dark .auth-card { background: #0f172a; color: #e2e8f0; }
+        .auth-mobile-brand { display: flex; align-items: center; gap: .8rem; margin-bottom: 1.7rem; }
+        .auth-mobile-brand h1 { color: #102653; font-size: 1.2rem; font-weight: 750; letter-spacing: -.03em; }
+        .dark .auth-mobile-brand h1 { color: #f8fafc; }
+        .auth-mobile-brand p { margin-top: .15rem; color: #64748b; font-size: .72rem; line-height: 1.4; }
+        .auth-card-heading { margin-bottom: 1.35rem; }
+        .auth-eyebrow { color: #2563eb; font-size: .72rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+        .auth-card-heading h2 { margin-top: .45rem; color: #0f1f3d; font-size: 1.8rem; font-weight: 750; line-height: 1.2; letter-spacing: -.035em; }
+        .dark .auth-card-heading h2 { color: #f8fafc; }
+        .auth-card-heading p { margin-top: .5rem; color: #64748b; font-size: .88rem; line-height: 1.55; }
+        .dark .auth-card-heading p { color: #94a3b8; }
+        .auth-audience-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; padding: .35rem; margin-bottom: 1.2rem; border: 1px solid #e2e8f0; border-radius: .95rem; background: #f5f7fb; }
+        .dark .auth-audience-tabs { border-color: #263449; background: #111c30; }
+        .auth-audience-tabs button { min-width: 0; display: flex; align-items: center; justify-content: center; gap: .5rem; padding: .72rem .5rem; border: 1px solid transparent; border-radius: .7rem; color: #64748b; font-size: .82rem; font-weight: 650; }
+        .auth-audience-tabs button svg { width: 1.1rem; height: 1.1rem; flex: 0 0 auto; }
+        .auth-audience-tabs button.is-active { border-color: #dbe7fb; background: #fff; color: #1d4ed8; box-shadow: 0 2px 8px rgba(15,23,42,.07); }
+        .dark .auth-audience-tabs button.is-active { border-color: #334b70; background: #1e293b; color: #93c5fd; }
+        .auth-message { margin: 0 0 1rem; border: 1px solid #bfdbfe; border-radius: .75rem; background: #eff6ff; padding: .7rem .8rem; color: #1e40af; font-size: .78rem; line-height: 1.5; }
+        .dark .auth-message { border-color: #1e40af; background: rgba(30,64,175,.18); color: #bfdbfe; }
+        .auth-form { display: grid; gap: .9rem; }
+        .auth-form > div > label { display: block; margin-bottom: .35rem; color: #475569; font-size: .75rem; font-weight: 650; }
+        .dark .auth-form > div > label { color: #cbd5e1; }
+        .auth-form input:not([type="checkbox"]) { width: 100%; min-height: 46px; border: 1px solid #d8e0eb; border-radius: .72rem; background: #fff; padding: .7rem .8rem; color: #172033; font-size: .9rem; outline: none; transition: border-color .15s ease, box-shadow .15s ease; }
+        .dark .auth-form input:not([type="checkbox"]) { border-color: #334155; background: #111c30; color: #f1f5f9; }
+        .auth-form input:not([type="checkbox"]):focus { border-color: #3974d8; box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+        .auth-password-row { display: flex; align-items: stretch; gap: .5rem; }
+        .auth-password-row input { min-width: 0; flex: 1; }
+        .auth-show-password { flex: 0 0 auto; padding-inline: .8rem; border: 1px solid #d8e0eb; border-radius: .72rem; color: #475569; font-size: .72rem; font-weight: 600; }
+        .dark .auth-show-password { border-color: #334155; color: #cbd5e1; }
+        .auth-form-options { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .65rem; margin-top: .1rem; }
+        .auth-remember { display: inline-flex !important; align-items: center; gap: .45rem; margin: 0 !important; color: #64748b !important; font-weight: 500 !important; cursor: pointer; }
+        .auth-remember input { width: 1rem; height: 1rem; accent-color: #2563eb; }
+        .auth-form-options > button, .auth-signup-switch button { color: #2563eb; font-size: .76rem; font-weight: 650; }
+        .auth-submit { width: 100%; min-height: 48px; margin-top: .15rem; border-radius: .75rem; background: linear-gradient(110deg,#2563eb,#1d4ed8); color: #fff; font-size: .9rem; font-weight: 700; box-shadow: 0 8px 18px rgba(37,99,235,.22); }
+        .auth-submit:hover { filter: brightness(1.04); transform: translateY(-1px); }
+        .auth-submit:disabled { cursor: wait; opacity: .65; transform: none; }
+        .auth-signup-switch { display: flex; flex-wrap: wrap; justify-content: center; gap: .3rem; margin-top: 1.1rem; color: #64748b; font-size: .76rem; text-align: center; }
+        .auth-invite-note { margin-top: 1.1rem; border-radius: .75rem; background: #f1f5f9; padding: .75rem; color: #64748b; font-size: .76rem; line-height: 1.5; text-align: center; }
+        .dark .auth-invite-note { background: #111c30; color: #cbd5e1; }
+        .auth-security-note { margin-top: 1rem; color: #94a3b8; font-size: .68rem; line-height: 1.5; text-align: center; }
+        .dashboard-hero { min-height: 190px; padding: 2rem 2.25rem; border-radius: 1.4rem; }
+        .dashboard-hero h2 { max-width: 38rem; font-size: clamp(1.65rem,2.3vw,2rem) !important; line-height: 1.18 !important; letter-spacing: -.035em; }
+        .dashboard-hero p { max-width: 42rem; font-size: .95rem; line-height: 1.55; }
+        .dashboard-hero > div:last-child { display: flex; flex-wrap: wrap; gap: .7rem; }
+        .dashboard-hero > div:last-child button { min-height: 46px; padding: .7rem 1rem !important; }
+        @media (max-width: 1023px) {
+            .auth-layout { max-width: 640px; min-height: 0; grid-template-columns: minmax(0, 1fr); }
+            .auth-story { display: none !important; }
+            .auth-card { max-height: none; }
+        }
+        @media (max-width: 640px) {
+            .auth-screen { align-items: flex-start; padding: .75rem !important; }
+            .auth-layout { border-radius: 1.35rem; }
+            .auth-card { padding: 1.2rem; }
+            .auth-card-heading { margin-bottom: 1rem; }
+            .auth-card-heading h2 { font-size: 1.55rem; }
+            .auth-audience-tabs button { gap: .35rem; padding: .68rem .35rem; font-size: .75rem; }
+            .auth-form { gap: .78rem; }
+            .dashboard-hero { min-height: 0; align-items: stretch; gap: .75rem !important; padding: 1.15rem !important; border-radius: 1.1rem; }
+            .dashboard-hero h2 { font-size: 1.28rem !important; line-height: 1.55rem !important; }
+            .dashboard-hero p { font-size: .82rem; line-height: 1.4; }
+            .app-shell main > div[x-show="tab === 'dashboard'"] > .dashboard-hero > div:last-child {
+                width: 100%;
+                display: flex;
+                flex-wrap: wrap;
+                gap: .55rem;
+            }
+            .app-shell main > div[x-show="tab === 'dashboard'"] > .dashboard-hero > div:last-child button {
+                width: auto;
+                flex: 1 1 130px;
+                min-height: 42px;
+                padding: .6rem .55rem !important;
+                font-size: .76rem !important;
+                line-height: 1.1rem;
+            }
+        }
+        @media (max-width: 360px) {
+            .auth-card { padding: 1rem; }
+            .auth-audience-tabs button { font-size: .7rem; }
+            .app-shell main > div[x-show="tab === 'dashboard'"] > .dashboard-hero > div:last-child { display: grid; grid-template-columns: 1fr; }
+        }
 </style>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -206,52 +332,85 @@
 <body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans antialiased min-h-screen flex flex-col transition-colors duration-200">
 
     <!-- 1. GİRİŞ (LOGIN) EKRANI -->
-    <div x-show="!isLoggedIn" class="flex-grow flex items-center justify-center p-4 bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900" x-cloak>
-        <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 max-w-md w-full shadow-2xl border border-blue-900/20 space-y-6">
-            <div class="text-center space-y-2">
-                <img src="/icon-192.svg?v=route-20261013" alt="" aria-hidden="true" class="mx-auto h-14 w-14 rounded-2xl shadow-md">
-                <h1 class="text-2xl font-bold tracking-tight text-blue-950 dark:text-white" x-text="t('brand')"></h1>
-                <p class="text-xs text-slate-500" x-text="t('loginSubtitle')"></p>
-                <p role="status" aria-live="polite" class="rounded-lg bg-blue-50 dark:bg-blue-950/40 px-3 py-2 text-xs text-blue-800 dark:text-blue-200" x-show="authMessage" x-text="authMessage"></p>
-            </div>
-            <form class="space-y-4" @submit.prevent="submitAuth()">
-                <div x-show="authMode === 'signup'">
-                    <label class="text-xs font-semibold text-slate-600 dark:text-slate-400" x-text="t('nameLabel')"></label>
-                    <input type="text" x-model.trim="fullName" autocomplete="name" :required="authMode === 'signup'" :disabled="authMode !== 'signup'" class="w-full mt-1 p-3 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
+    <div x-show="!isLoggedIn" class="auth-screen flex-grow flex items-center justify-center p-4 sm:p-6" x-cloak>
+        <div class="auth-layout w-full">
+            <aside class="auth-story hidden lg:flex">
+                <div class="auth-story-brand">
+                    <img src="/icon-192.svg?v=route-20261013" alt="" aria-hidden="true" class="h-12 w-12 rounded-2xl shadow-lg">
+                    <span x-text="t('brand')"></span>
                 </div>
-                <div x-show="authMode === 'signup'">
-                    <label class="text-xs font-semibold text-slate-600 dark:text-slate-400" x-text="t('firmNameLabel')"></label>
-                    <input type="text" x-model.trim="organizationName" autocomplete="organization" :required="authMode === 'signup'" :disabled="authMode !== 'signup'" class="w-full mt-1 p-3 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                <div class="auth-story-copy">
+                    <span class="auth-story-kicker">LOGISTICS WORKSPACE</span>
+                    <h2 x-text="t('authPanelTitle')"></h2>
+                    <p x-text="t('authPanelDescription')"></p>
                 </div>
-                <div>
-                    <label class="text-xs font-semibold text-slate-600 dark:text-slate-400" x-text="t('emailLabel')"></label>
-                    <input type="email" x-model.trim="loginEmail" autocomplete="email" required class="w-full mt-1 p-3 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                <div class="auth-story-foot">
+                    <span class="auth-live-dot"></span>
+                    <span x-text="t('loginSubtitle')"></span>
                 </div>
-                <div>
-                    <label class="text-xs font-semibold text-slate-600 dark:text-slate-400" x-text="t('passLabel')"></label>
-                    <div class="flex gap-2 mt-1">
-                        <input :type="showAuthPassword ? 'text' : 'password'" x-model="loginPassword" :autocomplete="authMode === 'signup' ? 'new-password' : 'current-password'" minlength="8" required class="min-w-0 flex-1 p-3 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
-                        <button type="button" @click="showAuthPassword = !showAuthPassword" class="px-3 rounded-xl border border-slate-300 dark:border-slate-700 text-xs" x-text="showAuthPassword ? t('hidePassword') : t('showPassword')"></button>
+                <div class="auth-route-art" aria-hidden="true"><span></span><span></span><span></span><i></i></div>
+            </aside>
+            <section class="auth-card">
+                <div class="auth-mobile-brand lg:hidden">
+                    <img src="/icon-192.svg?v=route-20261013" alt="" aria-hidden="true" class="h-11 w-11 rounded-xl shadow-sm">
+                    <div>
+                        <h1 x-text="t('brand')"></h1>
+                        <p x-text="t('loginSubtitle')"></p>
                     </div>
                 </div>
-                <div x-show="authMode === 'signup'" x-cloak>
-                    <label class="text-xs font-semibold text-slate-600 dark:text-slate-400" x-text="t('confirmPassword')"></label>
-                    <input :type="showAuthPassword ? 'text' : 'password'" x-model="confirmPassword" autocomplete="new-password" minlength="8" :required="authMode === 'signup'" :disabled="authMode !== 'signup'" class="w-full mt-1 p-3 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                <div class="auth-card-heading">
+                    <span class="auth-eyebrow" x-text="loginAudience === 'firm' ? t('firmLoginTab') : t('customerLoginTab')"></span>
+                    <h2 x-text="loginAudience === 'firm' ? (authMode === 'signup' ? t('createAccount') : t('firmLoginTab')) : t('customerLoginTab')"></h2>
+                    <p x-text="loginAudience === 'firm' ? t('loginSubtitle') : t('customerLoginSubtitle')"></p>
                 </div>
-                <div x-show="authMode === 'login'" class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
-                    <input id="remember-me" type="checkbox" :checked="rememberMe" @change="setRememberMe($event.target.checked)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-600">
-                    <label for="remember-me" class="cursor-pointer select-none" x-text="t('rememberMe')"></label>
+                <div class="auth-audience-tabs" role="tablist" :aria-label="t('loginAudienceLabel')">
+                    <button type="button" role="tab" :aria-selected="loginAudience === 'firm'" @click="loginAudience = 'firm'; authMode = 'login'; authMessage = ''; loginPassword = ''; confirmPassword = ''" :class="loginAudience === 'firm' ? 'is-active' : ''">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 20.25h16.5M5.25 20.25V7.5l6.75-3.75 6.75 3.75v12.75M8.25 9.75h.008v.008H8.25V9.75Zm0 3h.008v.008H8.25v-.008Zm0 3h.008v.008H8.25v-.008Zm7.5-6h.008v.008h-.008V9.75Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z"/></svg>
+                        <span x-text="t('firmLoginTab')"></span>
+                    </button>
+                    <button type="button" role="tab" :aria-selected="loginAudience === 'customer'" @click="loginAudience = 'customer'; authMode = 'login'; authMessage = ''; loginPassword = ''; confirmPassword = ''" :class="loginAudience === 'customer' ? 'is-active' : ''">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 20.25h4.125v-1.5a3.375 3.375 0 0 0-5.4-2.7m-3.6 4.2H3.375v-1.5a5.625 5.625 0 0 1 11.25 0v1.5Zm0-11.25a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm6.75.375a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/></svg>
+                        <span x-text="t('customerLoginTab')"></span>
+                    </button>
                 </div>
-                <div class="flex justify-end text-xs" x-show="authMode === 'login'">
-                    <button type="button" @click="resetPassword()" :disabled="resetBusy" class="text-blue-600 dark:text-blue-400 hover:underline disabled:opacity-50" x-text="resetBusy ? t('resetSending') : t('forgotPass')"></button>
+                <p role="status" aria-live="polite" class="auth-message" x-show="authMessage" x-text="authMessage"></p>
+                <form class="auth-form" @submit.prevent="submitAuth()">
+                    <div x-show="loginAudience === 'firm' && authMode === 'signup'">
+                        <label x-text="t('nameLabel')"></label>
+                        <input type="text" x-model.trim="fullName" autocomplete="name" :required="authMode === 'signup'" :disabled="authMode !== 'signup'">
+                    </div>
+                    <div x-show="loginAudience === 'firm' && authMode === 'signup'">
+                        <label x-text="t('firmNameLabel')"></label>
+                        <input type="text" x-model.trim="organizationName" autocomplete="organization" :required="authMode === 'signup'" :disabled="authMode !== 'signup'">
+                    </div>
+                    <div>
+                        <label x-text="t('emailLabel')"></label>
+                        <input type="email" x-model.trim="loginEmail" autocomplete="email" required>
+                    </div>
+                    <div>
+                        <label x-text="t('passLabel')"></label>
+                        <div class="auth-password-row">
+                            <input :type="showAuthPassword ? 'text' : 'password'" x-model="loginPassword" :autocomplete="authMode === 'signup' ? 'new-password' : 'current-password'" minlength="8" required>
+                            <button type="button" class="auth-show-password" @click="showAuthPassword = !showAuthPassword" x-text="showAuthPassword ? t('hidePassword') : t('showPassword')"></button>
+                        </div>
+                    </div>
+                    <div x-show="loginAudience === 'firm' && authMode === 'signup'" x-cloak>
+                        <label x-text="t('confirmPassword')"></label>
+                        <input :type="showAuthPassword ? 'text' : 'password'" x-model="confirmPassword" autocomplete="new-password" minlength="8" :required="authMode === 'signup'" :disabled="authMode !== 'signup'">
+                    </div>
+                    <div x-show="authMode === 'login'" class="auth-form-options">
+                        <label class="auth-remember"><input id="remember-me" type="checkbox" :checked="rememberMe" @change="setRememberMe($event.target.checked)"><span x-text="t('rememberMe')"></span></label>
+                        <button type="button" @click="resetPassword()" :disabled="resetBusy" x-text="resetBusy ? t('resetSending') : t('forgotPass')"></button>
+                    </div>
+                    <button type="submit" class="auth-submit" :disabled="authBusy" x-text="authBusy ? t('pleaseWait') : authMode === 'signup' ? t('createAccount') : t('loginButton')"></button>
+                </form>
+                <div x-show="loginAudience === 'firm'" class="auth-signup-switch">
+                    <span x-text="authMode === 'signup' ? t('alreadyHaveAccount') : t('needAccount')"></span>
+                    <button type="button" @click="authMode = authMode === 'signup' ? 'login' : 'signup'; authMessage = ''; loginPassword = ''; confirmPassword = ''" x-text="authMode === 'signup' ? t('loginLink') : t('signupLink')"></button>
                 </div>
-                <button type="submit" :disabled="authBusy" class="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition" x-text="authBusy ? t('pleaseWait') : authMode === 'signup' ? t('createAccount') : t('loginButton')"></button>
-            </form>
-            <p class="text-center text-xs text-slate-500">
-                <span x-text="authMode === 'signup' ? t('alreadyHaveAccount') : t('needAccount')"></span>
-                <button type="button" @click="authMode = authMode === 'signup' ? 'login' : 'signup'; authMessage = ''; loginPassword = ''; confirmPassword = ''" class="text-blue-600 dark:text-blue-400 font-semibold hover:underline ml-1" x-text="authMode === 'signup' ? t('loginLink') : t('signupLink')"></button>
-            </p>
-            <p class="text-[11px] text-center text-slate-400" x-text="t('authSecurityNote')"></p>
+                <p x-show="loginAudience === 'customer'" class="auth-invite-note" x-text="t('customerInviteNote')"></p>
+                <p class="auth-security-note" x-text="t('authSecurityNote')"></p>
+            </section>
         </div>
     </div>
 
@@ -336,7 +495,7 @@
             
             <!-- TAB 1: DASHBOARD -->
             <div x-show="tab === 'dashboard'" class="space-y-6">
-                <div class="bg-gradient-to-r from-blue-900 to-blue-950 rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                <div class="dashboard-hero bg-gradient-to-r from-blue-900 to-blue-950 rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
                     <div>
                         <h2 class="text-2xl font-bold" x-text="userRole === 'client' ? t('dashWelcomeClient') : t('dashWelcomeFirm')"></h2>
                         <p class="text-blue-200 text-sm mt-1" x-text="userRole === 'client' ? t('dashSubClient') : t('dashSubFirm')"></p>
@@ -808,6 +967,7 @@
                 fullName: '',
                 organizationName: '',
                 authMode: 'login',
+                loginAudience: 'firm',
                 authMessage: '',
                 authBusy: false,
                 supabase: null,
@@ -847,8 +1007,9 @@
                     tr: {
                         brand: "Logisstant",
                         loginSubtitle: "Tekliften teslimata lojistik süreçlerinizi tek ekranda yönetin.",
+                        loginAudienceLabel: "Giriş türü", firmLoginTab: "Firma girişi", customerLoginTab: "Müşteri girişi", customerLoginSubtitle: "Firmanızın davet ettiği müşteri hesabıyla giriş yapın.", customerInviteNote: "Müşteri hesabınız yoksa çalıştığınız firma yöneticisinden davet isteyin.", authPanelTitle: "Lojistiğinizi tek yerden yönetin.", authPanelDescription: "Teklifleri, sevkiyatları ve müşteri kayıtlarını sade bir çalışma alanında takip edin.",
                         demoNotice: "Demo sürümü: giriş gerçek bir hesaba bağlı değildir. Kayıtlar yalnızca bu tarayıcıda saklanır; sunucuya gönderilmez.",
-                        createAccount: "Firma hesabı oluştur", needAccount: "Yeni misiniz?", alreadyHaveAccount: "Zaten hesabınız var mı?", signupLink: "Kayıt ol", loginLink: "Giriş yap", pleaseWait: "Lütfen bekleyin…", authSecurityNote: "Firma ve müşteri kullanıcıları aynı ekrandan giriş yapar; hesabınıza uygun panel açılır. Şifreniz güvenli şekilde korunur.",
+                        createAccount: "Firma hesabı oluştur", needAccount: "Yeni misiniz?", alreadyHaveAccount: "Zaten hesabınız var mı?", signupLink: "Kayıt ol", loginLink: "Giriş yap", pleaseWait: "Lütfen bekleyin…", authSecurityNote: "Hesabınızın erişim yetkisine uygun çalışma alanı açılır.",
                         loginButton: "Giriş Yap", authEmailAlreadyUsed: "Bu e-posta adresiyle zaten bir hesap var.", authWeakPassword: "Daha güçlü bir şifre seçin. En az 8 karakter kullanın.",
                         showPassword: "Göster", hidePassword: "Gizle", confirmPassword: "Şifreyi tekrar girin", passwordMismatch: "Şifreler eşleşmiyor.",
                         resetSending: "Gönderiliyor…", resetEmailRequired: "Önce e-posta adresinizi yazın.", resetPasswordSent: "Bu adres kayıtlıysa parola sıfırlama yönergeleri e-posta adresinize gönderilecektir.",
@@ -967,8 +1128,9 @@
                     en: {
                         brand: "Logisstant",
                         loginSubtitle: "Manage logistics from quote to delivery in one place.",
+                        loginAudienceLabel: "Sign-in type", firmLoginTab: "Firm login", customerLoginTab: "Customer login", customerLoginSubtitle: "Sign in with the customer account invited by your company.", customerInviteNote: "If you do not have a customer account, ask your company contact for an invitation.", authPanelTitle: "Manage logistics from one place.", authPanelDescription: "Keep offers, shipments and customer records together in one clear workspace.",
                         demoNotice: "Demo version: sign-in is not connected to a real account. Records are stored only in this browser and are not sent to a server.",
-                        createAccount: "Create firm account", needAccount: "New here?", alreadyHaveAccount: "Already have an account?", signupLink: "Sign up", loginLink: "Log in", pleaseWait: "Please wait…", authSecurityNote: "Company and customer users sign in here; your account opens the correct workspace. Your password is protected securely.",
+                        createAccount: "Create firm account", needAccount: "New here?", alreadyHaveAccount: "Already have an account?", signupLink: "Sign up", loginLink: "Log in", pleaseWait: "Please wait…", authSecurityNote: "Your account opens the workspace that matches its access.",
                         loginButton: "Sign in", authEmailAlreadyUsed: "An account already exists with this email address.", authWeakPassword: "Choose a stronger password with at least 8 characters.",
                         showPassword: "Show", hidePassword: "Hide", confirmPassword: "Confirm password", passwordMismatch: "The passwords do not match.",
                         resetSending: "Sending…", resetEmailRequired: "Enter your email address first.", resetPasswordSent: "If an account uses this address, password reset instructions will be sent.",
