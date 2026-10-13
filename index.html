@@ -440,7 +440,7 @@
             <textarea x-model.trim="newOffer.notes" rows="2" :placeholder="t('offerNotes')" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"></textarea>
             <div class="flex justify-end space-x-2 pt-2">
                 <button @click="showOfferModal = false; editingOfferId = null; newOffer = { mode: 'Karayolu', client: '', route: '', incoterm: 'EXW', cargo: '', amount: '', currency: 'EUR', validUntil: '', notes: '' }" class="px-4 py-2 text-slate-600 text-sm" x-text="t('cancelBtn')"></button>
-                <button @click="addOffer()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium" x-text="editingOfferId ? t('saveChanges') : t('saveBtn')"></button>
+                <button @click="addOffer()" :disabled="savingOffer" :class="{ 'opacity-50 cursor-not-allowed': savingOffer }" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium" x-text="editingOfferId ? t('saveChanges') : t('saveBtn')"></button>
             </div>
         </div>
     </div>
@@ -477,7 +477,7 @@
             <input x-model="newShipment.income" type="number" min="0.01" step="0.01" placeholder="Navlun Geliri (EUR)" class="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm">
             <div class="flex justify-end space-x-2 pt-2">
                 <button @click="showShipmentModal = false" class="px-4 py-2 text-slate-600 text-sm" x-text="t('cancelBtn')"></button>
-                <button @click="addShipment()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium" x-text="t('startBtn')"></button>
+                <button @click="addShipment()" :disabled="savingShipment" :class="{ 'opacity-50 cursor-not-allowed': savingShipment }" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium" x-text="t('startBtn')"></button>
             </div>
         </div>
     </div>
@@ -1437,12 +1437,13 @@
                     offer.status = 'Reddedildi'; this.addNotification('notifOfferRejected', offer.client + ' · ' + offer.route);
                 },
                 async addOffer() {
-                    if (!this.canManageOffers()) return;
+                    if (!this.canManageOffers() || this.savingOffer) return;
                     const amount = Number(this.newOffer.amount);
                     if (!this.newOffer.client.trim() || !this.newOffer.route.trim() || !this.newOffer.cargo.trim() || !this.newOffer.validUntil || !Number.isFinite(amount) || amount <= 0) {
                         alert(!this.newOffer.validUntil ? this.t('offerExpiryRequired') : this.t('offerFieldsRequired')); return;
                     }
                     if (this.newOffer.validUntil < new Date().toISOString().slice(0, 10)) { alert(this.t('offerExpiryPast')); return; }
+                    this.savingOffer = true;
                     try {
                         const customer = await this.ensureCustomer(this.newOffer.client);
                         const payload = {
@@ -1475,6 +1476,7 @@
                         this.editingOfferId = null;
                         this.showOfferModal = false;
                     } catch (error) { this.showDataError(error); }
+                    finally { this.savingOffer = false; }
                 },
                 async createShipmentRecord(form, offer) {
                     const customer = await this.ensureCustomer(form.client);
@@ -1510,15 +1512,17 @@
                     return shipment;
                 },
                 async addShipment() {
-                    if (!this.canManageShipments()) return;
+                    if (!this.canManageShipments() || this.savingShipment) return;
                     const income = Number(this.newShipment.income);
                     if (!this.newShipment.client || !this.newShipment.route || !Number.isFinite(income) || income <= 0) { alert(this.t('shipmentFieldsRequired')); return; }
+                    this.savingShipment = true;
                     try {
                         const shipment = await this.createShipmentRecord(this.newShipment);
                         this.shipments.unshift(shipment);
                         this.newShipment = { mode: 'Karayolu', client: '', route: '', plate: '', driver: '', phone: '', vessel: '', containerNo: '', containerType: '', blNumber: '', flightNo: '', awbNumber: '', volWeight: '', eta: '', cargo: '', income: '' };
                         this.showShipmentModal = false; this.addNotification('notifShipmentCreated', shipment.code);
                     } catch (error) { this.showDataError(error); }
+                    finally { this.savingShipment = false; }
                 },
                 async convertToShipment(offer) {
                     if (!this.canManageOffers()) return;
