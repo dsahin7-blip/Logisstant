@@ -15,6 +15,8 @@
         [x-cloak] { display: none !important; }
         @media (max-width: 640px) {
             body { min-height: 100dvh; }
+            .bg-gradient-to-br > .rounded-3xl { padding: 1.25rem !important; }
+            .fixed .p-6 { padding: 1rem !important; }
             header > div {
                 padding: .65rem .75rem !important;
                 gap: .5rem !important;
@@ -56,7 +58,7 @@
             main .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             main .flex.space-x-3 { flex-wrap: wrap; }
             .fixed.inset-0 { padding: .5rem !important; }
-            .fixed.inset-0 .max-h-\\[90vh\\] { max-height: calc(100dvh - 1rem) !important; }
+            .fixed.inset-0 [class~="max-h-[90vh]"] { max-height: calc(100dvh - 1rem) !important; }
             input, select, textarea { font-size: 16px !important; }
         }
     </style>
