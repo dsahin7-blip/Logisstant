@@ -60,6 +60,8 @@
             .fixed.inset-0 { padding: .5rem !important; }
             .fixed.inset-0 [class~="max-h-[90vh]"] { max-height: calc(100dvh - 1rem) !important; }
             input, select, textarea { font-size: 16px !important; }
+            main { padding-bottom: 6.25rem !important; }
+            .mobile-quick-nav { padding-bottom: max(.5rem, env(safe-area-inset-bottom)); }
         }
     </style>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -188,12 +190,20 @@
                 <button @click="tab = 'dashboard'" :class="tab === 'dashboard' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition" x-text="t('navDashboard')"></button>
                 <button @click="tab = 'offers'" :class="tab === 'offers' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition" x-text="t('navOffers')"></button>
                 <button @click="tab = 'shipments'" :class="tab === 'shipments' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition" x-text="t('navShipments')"></button>
+                <button x-show="userRole !== 'client'" @click="tab = 'customers'" :class="tab === 'customers' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition" x-text="t('navCustomers')"></button>
                 <button x-show="userRole !== 'operation' && userRole !== 'client'" @click="tab = 'reports'" :class="tab === 'reports' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition" x-text="t('navReports')"></button>
                 <button x-show="userRole !== 'operation' && userRole !== 'client'" @click="tab = 'finances'" :class="tab === 'finances' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition" x-text="t('navFinances')"></button>
                 
             </div>
         </nav>
 
+        <nav class="mobile-quick-nav sm:hidden fixed bottom-0 inset-x-0 z-40 grid grid-cols-5 border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur shadow-lg" aria-label="Quick navigation">
+            <button @click="tab = 'dashboard'" :class="tab === 'dashboard' ? 'text-blue-700 dark:text-blue-300' : 'text-slate-500'" class="min-h-14 flex flex-col items-center justify-center text-[10px] font-semibold"><span aria-hidden="true" class="text-lg">⌂</span><span x-text="t('navDashboard')"></span></button>
+            <button @click="tab = 'offers'" :class="tab === 'offers' ? 'text-blue-700 dark:text-blue-300' : 'text-slate-500'" class="min-h-14 flex flex-col items-center justify-center text-[10px] font-semibold"><span aria-hidden="true" class="text-lg">▤</span><span x-text="t('navOffers')"></span></button>
+            <button @click="tab = 'shipments'" :class="tab === 'shipments' ? 'text-blue-700 dark:text-blue-300' : 'text-slate-500'" class="min-h-14 flex flex-col items-center justify-center text-[10px] font-semibold"><span aria-hidden="true" class="text-lg">⇢</span><span x-text="t('navShipments')"></span></button>
+            <button x-show="userRole !== 'client'" @click="tab = 'customers'" :class="tab === 'customers' ? 'text-blue-700 dark:text-blue-300' : 'text-slate-500'" class="min-h-14 flex flex-col items-center justify-center text-[10px] font-semibold"><span aria-hidden="true" class="text-lg">♙</span><span x-text="t('navCustomers')"></span></button>
+            <button x-show="userRole !== 'operation' && userRole !== 'client'" @click="tab = 'reports'" :class="tab === 'reports' ? 'text-blue-700 dark:text-blue-300' : 'text-slate-500'" class="min-h-14 flex flex-col items-center justify-center text-[10px] font-semibold"><span aria-hidden="true" class="text-lg">▥</span><span x-text="t('navReportsShort')"></span></button>
+        </nav>
         <!-- Main Content Area -->
         <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full space-y-6">
             
@@ -366,6 +376,34 @@
                         </div>
                     </template><p x-show="filteredShipments().length === 0" class="text-sm text-slate-500 text-center py-8" x-text="t('noShipmentsFound')"></p>
                 </div>
+            </div>
+
+            <!-- TAB 4: CUSTOMERS -->
+            <div x-show="tab === 'customers' && userRole !== 'client'" class="space-y-5">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3"><div><h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navCustomers')"></h2><p class="text-sm text-slate-500 mt-1" x-text="t('customerDirectorySubtitle')"></p></div><input x-model.trim="customerSearch" type="search" :placeholder="t('customerSearch')" class="w-full sm:max-w-sm p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 text-sm"></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                    <template x-for="customer in filteredCustomers()" :key="customer.id">
+                        <button type="button" @click="selectedCustomerId = customer.id" class="w-full text-left bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                            <strong class="block text-slate-900 dark:text-white" x-text="customer.name"></strong>
+                            <span class="block text-xs text-slate-500 mt-2" x-text="customer.contact_name || t('customerNoContact')"></span>
+                            <span class="block text-xs text-slate-500 mt-1" x-text="customer.email || customer.phone || t('customerAddContact')"></span>
+                            <span class="block text-[10px] text-slate-400 mt-2" x-text="customerShipments(customer).length + ' ' + t('navShipments') + ' · ' + customerOffers(customer).length + ' ' + t('navOffers')"></span>
+                        </button>
+                    </template>
+                    <p x-show="filteredCustomers().length === 0" class="col-span-full text-center text-sm text-slate-500 py-8" x-text="t('customerEmpty')"></p>
+                </div>
+                <section x-show="selectedCustomer()" class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4" x-cloak>
+                    <div class="flex justify-between items-start gap-3"><div><h3 class="text-lg font-bold" x-text="selectedCustomer()?.name"></h3><p class="text-xs text-slate-500 mt-1" x-text="selectedCustomer()?.email || t('customerAddContact')"></p></div><button x-show="canManageShipments() && !customerEditForm" type="button" @click="startCustomerEdit()" class="rounded-lg bg-blue-50 dark:bg-blue-950 px-3 py-2 text-xs font-semibold text-blue-700" x-text="t('customerEditContact')"></button></div>
+                    <form x-show="customerEditForm" @submit.prevent="saveCustomerContact()" class="grid grid-cols-1 sm:grid-cols-2 gap-3" x-cloak>
+                        <label class="text-xs text-slate-500"><span x-text="t('customerContactName')"></span><input x-model.trim="customerEditForm.contact_name" maxlength="120" class="mt-1 w-full p-2.5 border rounded-lg dark:bg-slate-900"></label>
+                        <label class="text-xs text-slate-500"><span x-text="t('emailLabel')"></span><input x-model.trim="customerEditForm.email" type="email" maxlength="254" class="mt-1 w-full p-2.5 border rounded-lg dark:bg-slate-900"></label>
+                        <label class="text-xs text-slate-500"><span x-text="t('customerPhone')"></span><input x-model.trim="customerEditForm.phone" type="tel" maxlength="40" class="mt-1 w-full p-2.5 border rounded-lg dark:bg-slate-900"></label>
+                        <label class="text-xs text-slate-500 sm:col-span-2"><span x-text="t('customerNotes')"></span><textarea x-model.trim="customerEditForm.notes" rows="2" maxlength="1000" class="mt-1 w-full p-2.5 border rounded-lg dark:bg-slate-900"></textarea></label>
+                        <div class="sm:col-span-2 flex justify-end gap-2"><button type="button" @click="customerEditForm = null" class="rounded-lg border px-3 py-2 text-xs" x-text="t('cancelEdit')"></button><button type="submit" :disabled="customerSaveBusy" class="rounded-lg bg-blue-600 px-3 py-2 text-xs text-white" x-text="customerSaveBusy ? t('pleaseWait') : t('saveChanges')"></button></div>
+                    </form>
+                    <div x-show="!customerEditForm" class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm"><div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-3"><span class="block text-xs text-slate-500" x-text="t('customerContactName')"></span><strong x-text="selectedCustomer()?.contact_name || '—'"></strong></div><div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-3"><span class="block text-xs text-slate-500" x-text="t('customerPhone')"></span><a x-show="selectedCustomer()?.phone" :href="'tel:' + selectedCustomer()?.phone" x-text="selectedCustomer()?.phone"></a><span x-show="!selectedCustomer()?.phone">—</span></div><div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-3"><span class="block text-xs text-slate-500" x-text="t('customerNotes')"></span><span x-text="selectedCustomer()?.notes || '—'"></span></div></div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4"><div><h4 class="font-semibold text-sm mb-2" x-text="t('customerRecentShipments')"></h4><template x-for="shipment in customerShipments(selectedCustomer()).slice(0,5)" :key="shipment.id"><button @click="openShipmentDetails(shipment)" class="w-full text-left flex justify-between gap-2 border-t border-slate-100 dark:border-slate-800 py-2 text-xs"><span x-text="shipment.code + ' · ' + shipment.route"></span><span class="text-slate-500" x-text="shipment.status"></span></button></template></div><div><h4 class="font-semibold text-sm mb-2" x-text="t('customerRecentOffers')"></h4><template x-for="offer in customerOffers(selectedCustomer()).slice(0,5)" :key="offer.id"><div class="flex justify-between gap-2 border-t border-slate-100 dark:border-slate-800 py-2 text-xs"><span x-text="offer.route + ' · ' + offer.cargo"></span><span class="text-slate-500" x-text="offer.status"></span></div></template></div></div>
+                </section>
             </div>
 
             <!-- TAB 4: REPORTS & BI -->
@@ -642,7 +680,7 @@
                 teamMembers: [],
                 teamLoading: false,
                 newInvite: { email: '', role: 'operations', customerId: '' },
-                customers: [],
+                customers: [], customerSearch: '', selectedCustomerId: null, customerEditForm: null, customerSaveBusy: false,
                 loadingWorkspace: false,
                 newPassword: '',
                 newPasswordConfirm: '',
@@ -728,6 +766,7 @@
                         navDashboard: "Ana Panel",
                         navOffers: "Teklif Yönetimi",
                         navShipments: "Sevkiyatlar",
+                        navCustomers: "Müşteriler", customerDirectorySubtitle: "Müşteri iletişim bilgilerini ve geçmiş kayıtları tek yerde görün.", customerSearch: "Müşteri ara", customerNoContact: "İletişim kişisi eklenmedi", customerAddContact: "İletişim bilgisi eklenmedi", customerEmpty: "Eşleşen müşteri bulunamadı.", customerEditContact: "İletişim bilgilerini düzenle", customerContactName: "İletişim kişisi", customerPhone: "Telefon", customerNotes: "Müşteri notları", customerRecentShipments: "Son sevkiyatlar", customerRecentOffers: "Teklif geçmişi", customerSaveFailed: "Müşteri bilgileri kaydedilemedi.", navReportsShort: "Rapor",
                         navReports: "Raporlar & BI",
                         navFinances: "Masraf & Kârlılık",
                         navInvoices: "Ön Muhasebe",
@@ -847,6 +886,7 @@
                         navDashboard: "Dashboard",
                         navOffers: "Offers",
                         navShipments: "Shipments",
+                        navCustomers: "Clients", customerDirectorySubtitle: "View client contacts and recent records in one place.", customerSearch: "Search clients", customerNoContact: "No contact person added", customerAddContact: "No contact details added", customerEmpty: "No matching clients found.", customerEditContact: "Edit contact details", customerContactName: "Contact person", customerPhone: "Phone", customerNotes: "Client notes", customerRecentShipments: "Recent shipments", customerRecentOffers: "Offer history", customerSaveFailed: "Could not save client details.", navReportsShort: "Reports",
                         navReports: "Reports & BI",
                         navFinances: "Expenses & Profit",
                         navInvoices: "Pre-Accounting",
@@ -1066,9 +1106,9 @@
                         }
                         this.userRole = membership.role === 'client' ? 'client' : membership.role === 'finance' ? 'finance' : membership.role === 'operations' ? 'operation' : 'admin';
                         const { data: customerRows, error: customerError } = await this.supabase.from('customers')
-                            .select('id, name').eq('organization_id', membership.organization_id);
+                            .select(this.userRole === 'client' ? 'id, name' : 'id, name, contact_name, email, phone, notes').eq('organization_id', membership.organization_id);
                         if (customerError) throw customerError;
-                        this.customers = customerRows || [];
+                        this.customers = customerRows || []; this.selectedCustomerId = this.customers[0]?.id || null;
                         this.activeClient = membership.customer_id ? (this.customers.find(customer => customer.id === membership.customer_id)?.name || null) : null;
                         await this.loadWorkspaceData();
                         this.loginEmail = user.email || this.loginEmail;
@@ -1150,7 +1190,7 @@
                     this.notifications = [];
                     this.emailDeliveryAlerts = false; this.emailPreferenceMessage = '';
                     this.isLoggedIn = false; this.currentUser = null; this.activeOrganization = null; this.activeClient = null;
-                    this.customers = []; this.offers = []; this.shipments = [];
+                    this.customers = []; this.offers = []; this.shipments = []; this.selectedCustomerId = null; this.customerEditForm = null;
                 },
                 async resetPassword() {
                     if (!this.supabase) { this.authMessage = this.t('authRequestFailed'); return; }
@@ -1251,6 +1291,31 @@
                     this.newPassword = '';
                     this.newPasswordConfirm = '';
                     alert(this.language === 'tr' ? 'Parolanız güncellendi.' : 'Your password was updated.');
+                },
+                filteredCustomers() {
+                    const query = (this.customerSearch || '').toLocaleLowerCase(this.language === 'tr' ? 'tr-TR' : 'en-US');
+                    return this.customers.filter(customer => [customer.name, customer.contact_name, customer.email, customer.phone].some(value => (value || '').toLocaleLowerCase(this.language === 'tr' ? 'tr-TR' : 'en-US').includes(query)));
+                },
+                selectedCustomer() { return this.customers.find(customer => customer.id === this.selectedCustomerId) || null; },
+                customerShipments(customer) { return customer ? this.visibleShipments().filter(item => item.customerId === customer.id) : []; },
+                customerOffers(customer) { return customer ? this.visibleOffers().filter(item => item.customerId === customer.id) : []; },
+                startCustomerEdit() {
+                    const customer = this.selectedCustomer();
+                    if (!this.canManageShipments() || !customer) return;
+                    this.customerEditForm = { contact_name: customer.contact_name || '', email: customer.email || '', phone: customer.phone || '', notes: customer.notes || '' };
+                },
+                async saveCustomerContact() {
+                    const customer = this.selectedCustomer();
+                    if (!this.canManageShipments() || !customer || !this.customerEditForm || this.customerSaveBusy) return;
+                    this.customerSaveBusy = true;
+                    const updates = { contact_name: this.customerEditForm.contact_name.trim(), email: this.customerEditForm.email.trim(), phone: this.customerEditForm.phone.trim(), notes: this.customerEditForm.notes.trim() };
+                    try {
+                        const { data, error } = await this.supabase.from('customers').update(updates).eq('id', customer.id).eq('organization_id', this.activeOrganization.id).select('id').maybeSingle();
+                        if (error) throw error;
+                        if (!data) throw new Error(this.t('customerSaveFailed'));
+                        Object.assign(customer, updates); this.customerEditForm = null;
+                    } catch (error) { this.showDataError(error); }
+                    finally { this.customerSaveBusy = false; }
                 },
                 notificationChannel: null,
                 notifications: [],
