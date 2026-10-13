@@ -23,8 +23,8 @@
             }
             header .text-2xl { font-size: 1.25rem !important; line-height: 1.6rem !important; }
             header > div > div:last-child {
-                width: 100%;
-                justify-content: space-between;
+                width: auto;
+                justify-content: flex-end;
                 gap: .375rem !important;
             }
             header button, header select {
@@ -60,8 +60,8 @@
             .fixed.inset-0 { padding: .5rem !important; }
             .fixed.inset-0 [class~="max-h-[90vh]"] { max-height: calc(100dvh - 1rem) !important; }
             input, select, textarea { font-size: 16px !important; }
-            main { padding-bottom: 6.25rem !important; }
-            .mobile-quick-nav { padding-bottom: max(.5rem, env(safe-area-inset-bottom)); }
+            main { padding-bottom: 1.5rem !important; }
+            .mobile-quick-nav { display: none !important; }
         }
     </style>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -140,7 +140,7 @@
                 
                 <div class="flex flex-wrap items-center gap-2">
                     <!-- Dil Seçici (TR / EN) -->
-                    <select x-model="language" class="bg-blue-900 dark:bg-slate-800 text-white text-xs px-2.5 py-2 rounded-lg font-semibold focus:outline-none cursor-pointer">
+                    <select x-model="language" class="hidden sm:block bg-blue-900 dark:bg-slate-800 text-white text-xs px-2.5 py-2 rounded-lg font-semibold focus:outline-none cursor-pointer">
                         <option value="tr">🇹🇷 TR</option>
                         <option value="en">🇬🇧 EN</option>
                     </select>
@@ -171,15 +171,27 @@
                     </div>
 
                     <!-- Dark/Light Mode Switcher -->
-                    <button @click="toggleDarkMode()" class="bg-blue-900 dark:bg-slate-800 hover:bg-blue-800 px-3 py-2 rounded-lg text-sm flex items-center space-x-2 transition">
+                    <button @click="toggleDarkMode()" class="hidden sm:flex bg-blue-900 dark:bg-slate-800 hover:bg-blue-800 px-3 py-2 rounded-lg text-sm flex items-center space-x-2 transition">
                         <span x-text="darkMode ? '☀️' : '🌙'"></span>
                     </button>
 
                     <!-- Ayarlar Butonu (Çıkış Yap'ın Solunda) -->
-                    <button @click="tab = 'settings'" class="bg-blue-900 dark:bg-slate-800 hover:bg-blue-800 text-white px-3 py-2 rounded-lg text-xs font-semibold transition" x-text="t('settings')"></button>
+                    <button @click="tab = 'settings'" class="hidden sm:block bg-blue-900 dark:bg-slate-800 hover:bg-blue-800 text-white px-3 py-2 rounded-lg text-xs font-semibold transition" x-text="t('settings')"></button>
 
                     <!-- Logout Button -->
-                    <button @click="logout()" class="bg-rose-600 hover:bg-rose-500 text-white px-3 py-2 rounded-lg text-xs font-semibold transition" x-text="t('logout')"></button>
+                    <button @click="logout()" class="hidden sm:block bg-rose-600 hover:bg-rose-500 text-white px-3 py-2 rounded-lg text-xs font-semibold transition" x-text="t('logout')"></button>
+                    <div class="relative sm:hidden">
+                        <button type="button" @click="showMobileMenu = !showMobileMenu" aria-label="Menüyü aç" class="bg-blue-900 dark:bg-slate-800 hover:bg-blue-800 px-3 py-2 rounded-lg text-lg leading-none transition">⋯</button>
+                        <div x-show="showMobileMenu" @click.outside="showMobileMenu = false" class="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 p-3 z-50 space-y-2" x-cloak>
+                            <select x-model="language" aria-label="Dil" class="w-full bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white px-3 py-2 rounded-lg text-sm">
+                                <option value="tr">🇹🇷 Türkçe</option>
+                                <option value="en">🇬🇧 English</option>
+                            </select>
+                            <button type="button" @click="toggleDarkMode(); showMobileMenu = false" class="w-full text-left px-3 py-2 rounded-lg text-sm text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800"><span x-text="darkMode ? '☀️ Açık tema' : '🌙 Koyu tema'"></span></button>
+                            <button type="button" @click="tab = 'settings'; showMobileMenu = false" class="w-full text-left px-3 py-2 rounded-lg text-sm text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800" x-text="t('settings')"></button>
+                            <button type="button" @click="logout()" class="w-full text-left px-3 py-2 rounded-lg text-sm text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40" x-text="t('logout')"></button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
@@ -197,13 +209,7 @@
             </div>
         </nav>
 
-        <nav class="mobile-quick-nav sm:hidden fixed bottom-0 inset-x-0 z-40 flex border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur shadow-lg" aria-label="Quick navigation">
-            <button @click="tab = 'dashboard'" :class="tab === 'dashboard' ? 'text-blue-700 dark:text-blue-300' : 'text-slate-500'" class="min-h-14 flex-1 flex flex-col items-center justify-center text-[10px] font-semibold"><span aria-hidden="true" class="text-lg">⌂</span><span x-text="t('navDashboard')"></span></button>
-            <button @click="tab = 'offers'" :class="tab === 'offers' ? 'text-blue-700 dark:text-blue-300' : 'text-slate-500'" class="min-h-14 flex-1 flex flex-col items-center justify-center text-[10px] font-semibold"><span aria-hidden="true" class="text-lg">▤</span><span x-text="t('navOffers')"></span></button>
-            <button @click="tab = 'shipments'" :class="tab === 'shipments' ? 'text-blue-700 dark:text-blue-300' : 'text-slate-500'" class="min-h-14 flex-1 flex flex-col items-center justify-center text-[10px] font-semibold"><span aria-hidden="true" class="text-lg">⇢</span><span x-text="t('navShipments')"></span></button>
-            <button x-show="userRole !== 'client'" @click="tab = 'customers'" :class="tab === 'customers' ? 'text-blue-700 dark:text-blue-300' : 'text-slate-500'" class="min-h-14 flex-1 flex flex-col items-center justify-center text-[10px] font-semibold"><span aria-hidden="true" class="text-lg">♙</span><span x-text="t('navCustomers')"></span></button>
-            <button x-show="userRole !== 'operation' && userRole !== 'client'" @click="tab = 'reports'" :class="tab === 'reports' ? 'text-blue-700 dark:text-blue-300' : 'text-slate-500'" class="min-h-14 flex-1 flex flex-col items-center justify-center text-[10px] font-semibold"><span aria-hidden="true" class="text-lg">▥</span><span x-text="t('navReportsShort')"></span></button>
-        </nav>
+
         <!-- Main Content Area -->
         <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full space-y-6">
             
