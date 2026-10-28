@@ -1135,7 +1135,7 @@
                                 <div class="md:col-span-4 min-w-0"><p class="text-sm font-semibold text-slate-900 dark:text-white truncate" x-text="member.name || member.email"></p><p class="text-xs text-slate-500 truncate" x-text="member.email"></p></div>
                                 <div class="md:col-span-3"><label class="sr-only" x-text="t('teamRoleLabel')"></label><select x-model="member.editRole" :disabled="['owner','admin'].includes(member.role) || member.user_id === currentUser?.id" class="w-full p-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700 text-xs"><option value="owner" x-show="member.role === 'owner'" x-text="t('roleOwner')"></option><option value="admin" x-show="member.role === 'admin'" x-text="t('roleAdmin')"></option><option value="operations" x-text="t('roleOperations')"></option><option value="finance" x-text="t('roleFinance')"></option><option value="client" x-text="t('roleClient')"></option></select></div>
                                 <div class="md:col-span-3" x-show="member.editRole === 'client'"><label class="sr-only" x-text="t('teamCustomerLabel')"></label><select x-model="member.editCustomerId" class="w-full p-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700 text-xs"><option value="" x-text="t('chooseCustomer')"></option><template x-for="customer in customers" :key="customer.id"><option :value="customer.id" x-text="customer.name"></option></template></select></div>
-                                <div class="md:col-span-2 flex gap-2"><button type="button" @click="saveTeamMember(member)" :disabled="teamLoading || ['owner','admin'].includes(member.role) || member.user_id === currentUser?.id" class="text-xs bg-blue-600 text-white px-3 py-2 rounded-lg disabled:opacity-40" x-text="t('teamSave')"></button><button type="button" @click="removeTeamMember(member)" :disabled="teamLoading || ['owner','admin'].includes(member.role) || member.user_id === currentUser?.id" class="text-xs bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 px-3 py-2 rounded-lg disabled:opacity-40" x-text="t('teamRemove')"></button></div>
+                                <div class="md:col-span-2 flex flex-wrap gap-2"><button type="button" x-show="userRole === 'owner' && member.user_id !== currentUser?.id && member.role !== 'owner' && member.role !== 'client'" @click="transferOrganizationOwnership(member)" :disabled="teamLoading" class="text-[10px] bg-amber-100 text-amber-900 px-2 py-2 rounded-lg disabled:opacity-40" x-text="language === 'tr' ? 'Sahipliği devret' : 'Transfer ownership'"></button><button type="button" @click="saveTeamMember(member)" :disabled="teamLoading || ['owner','admin'].includes(member.role) || member.user_id === currentUser?.id" class="text-xs bg-blue-600 text-white px-3 py-2 rounded-lg disabled:opacity-40" x-text="t('teamSave')"></button><button type="button" @click="removeTeamMember(member)" :disabled="teamLoading || ['owner','admin'].includes(member.role) || member.user_id === currentUser?.id" class="text-xs bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 px-3 py-2 rounded-lg disabled:opacity-40" x-text="t('teamRemove')"></button></div>
                             </div></template></div>
                         </div>
                     </div></details>
@@ -2088,6 +2088,25 @@
                         if (error) throw error; if (data?.error) throw new Error(data.error);
                         this.teamMembers = (data?.members || []).map(member => ({ ...member, editRole: member.role, editCustomerId: member.customer_id || '' }));
                     } catch (error) { this.teamMessage = error?.message || this.t('teamLoadFailed'); }
+                    finally { this.teamLoading = false; }
+                },
+                async transferOrganizationOwnership(member) {
+                    if (this.userRole !== 'owner' || !member || !this.activeOrganization || this.teamLoading) return;
+                    const person = member.name || member.email || (this.language === 'tr' ? 'seçilen ekip üyesi' : 'the selected teammate');
+                    if (!confirm(this.language === 'tr'
+                        ? this.activeOrganization.name + ' firmasının sahipliği ' + person + ' kişisine devredilecek. Siz yönetici olarak kalacaksınız; devirden sonra bu işlemi geri almak için yeni sahibin tekrar devretmesi gerekir. Devam edilsin mi?'
+                        : 'Ownership of ' + this.activeOrganization.name + ' will transfer to ' + person + '. You will remain an administrator; the new owner must transfer it back if needed. Continue?')) return;
+                    this.teamLoading = true; this.teamMessage = '';
+                    try {
+                        const { data, error } = await this.supabase.functions.invoke('manage-team', { body: { action: 'transfer_owner', organization_id: this.activeOrganization.id, user_id: member.user_id } });
+                        if (error) throw error; if (data?.error) throw new Error(data.error);
+                        this.userRole = 'admin';
+                        this.activeOrganization.role = 'admin';
+                        const choice = this.organizationChoices.find(item => item.id === this.activeOrganization.id);
+                        if (choice) choice.role = 'admin';
+                        this.teamMessage = this.language === 'tr' ? 'Firma sahipliği devredildi. Hesap silme işlemini artık başlatabilirsiniz.' : 'Firm ownership transferred. You can now proceed with account deletion.';
+                        await this.loadTeamMembers();
+                    } catch (error) { this.teamMessage = error?.message || this.t('teamSaveFailed'); }
                     finally { this.teamLoading = false; }
                 },
                 async saveTeamMember(member) {

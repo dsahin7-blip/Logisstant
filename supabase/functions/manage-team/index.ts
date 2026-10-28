@@ -48,6 +48,17 @@ Deno.serve(async (req: Request) => {
   const { data: target, error: targetError } = await admin.from("organization_members")
     .select("role").eq("organization_id", organizationId).eq("user_id", targetId).maybeSingle();
   if (targetError || !target) return respond({ error: "Team member not found." }, 404);
+  if (body.action === "transfer_owner") {
+    if (actor.role !== "owner") return respond({ error: "Only the current owner can transfer ownership." }, 403);
+    if (target.role === "owner" || target.role === "client") return respond({ error: "Choose an internal team member." }, 400);
+    const { error: promoteError } = await admin.from("organization_members").update({ role: "owner", customer_id: null })
+      .eq("organization_id", organizationId).eq("user_id", targetId);
+    if (promoteError) return respond({ error: "Could not transfer ownership." }, 500);
+    const { error: demoteError } = await admin.from("organization_members").update({ role: "admin", customer_id: null })
+      .eq("organization_id", organizationId).eq("user_id", user.id);
+    if (demoteError) return respond({ error: "Ownership transferred, but your previous owner role could not be changed. Both accounts still have owner access." }, 500);
+    return respond({ ok: true });
+  }
   if (["owner", "admin"].includes(target.role)) return respond({ error: "Owner and admin access cannot be changed here." }, 403);
   if (body.action === "remove") {
     const { error } = await admin.from("organization_members").delete().eq("organization_id", organizationId).eq("user_id", targetId);
