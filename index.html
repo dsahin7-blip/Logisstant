@@ -591,8 +591,38 @@
         </div>
     </div>
 
+    <!-- DAVETİ TAMAMLAMA -->
+    <div x-show="pendingInviteSetup && !isLoggedIn && !authInitializing" class="auth-screen flex-grow flex items-center justify-center p-4 sm:p-6" x-cloak>
+        <section class="auth-card w-full max-w-xl">
+            <div class="auth-mobile-brand">
+                <img src="/icon-192.svg?v=route-20261013" alt="" aria-hidden="true" class="h-11 w-11 rounded-xl shadow-sm">
+                <div><h1 x-text="t('brand')"></h1><p x-text="language === 'tr' ? 'Güvenli davet kurulumu' : 'Secure invitation setup'"></p></div>
+            </div>
+            <div class="auth-card-heading">
+                <span class="auth-eyebrow" x-text="language === 'tr' ? 'FİRMA DAVETİ' : 'FIRM INVITATION'"></span>
+                <h2 x-text="language === 'tr' ? 'Hesabınızı tamamlayın' : 'Finish setting up your account'"></h2>
+                <p x-text="language === 'tr' ? 'Davetinizi kabul etmek ve giriş yapabilmek için kendinize bir parola belirleyin.' : 'Choose a password to accept your invitation and sign in.'"></p>
+            </div>
+            <p class="auth-message" x-show="loginEmail" x-text="loginEmail"></p>
+            <p class="auth-message" role="status" aria-live="polite" x-show="inviteSetupMessage" x-text="inviteSetupMessage"></p>
+            <form class="auth-form" @submit.prevent="completeInviteSetup()">
+                <div>
+                    <label x-text="t('passLabel')"></label>
+                    <div class="auth-password-row">
+                        <input :type="showAuthPassword ? 'text' : 'password'" x-model="loginPassword" autocomplete="new-password" minlength="12" required :disabled="!currentUser || inviteSetupBusy">
+                        <button type="button" class="auth-show-password" @click="showAuthPassword = !showAuthPassword" x-text="showAuthPassword ? t('hidePassword') : t('showPassword')"></button>
+                    </div>
+                </div>
+                <div><label x-text="t('confirmPassword')"></label><input type="password" x-model="confirmPassword" autocomplete="new-password" minlength="12" required :disabled="!currentUser || inviteSetupBusy"></div>
+                <p class="auth-security-note" x-text="passwordPolicyMessage()"></p>
+                <button type="submit" class="auth-submit" :disabled="!currentUser || inviteSetupBusy" x-text="inviteSetupBusy ? t('pleaseWait') : (language === 'tr' ? 'Parolayı kaydet ve giriş yap' : 'Save password and sign in')"></button>
+            </form>
+            <button type="button" class="auth-back-link" @click="leaveInviteSetup()" x-text="language === 'tr' ? 'Giriş ekranına dön' : 'Return to sign in'"></button>
+        </section>
+    </div>
+
     <!-- 1. GİRİŞ (LOGIN) EKRANI -->
-    <div x-show="!isLoggedIn && !authInitializing" class="auth-screen flex-grow flex items-center justify-center p-4 sm:p-6" x-cloak>
+    <div x-show="!isLoggedIn && !authInitializing && !pendingInviteSetup" class="auth-screen flex-grow flex items-center justify-center p-4 sm:p-6" x-cloak>
         <div class="auth-layout w-full">
             <aside class="auth-story hidden lg:flex">
                 <div class="auth-story-brand">
@@ -1323,6 +1353,7 @@
                 authBusy: false,
                 supabase: null,
                 currentUser: null,
+                pendingInviteSetup: false, inviteSetupBusy: false, inviteSetupMessage: '',
                 activeOrganization: null,
                 activeMembership: null,
                 organizationMemberships: [],
@@ -1704,12 +1735,17 @@
                 },
                 async init() {
                     this.authInitializing = true;
+                    const queryParams = new URLSearchParams(window.location.search);
+                    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+                    this.pendingInviteSetup = queryParams.get('invite') === '1'
+                        || queryParams.get('type') === 'invite'
+                        || hashParams.get('type') === 'invite';
                     try {
                         this.initInstallSupport();
                         this.loadUiPreferences();
                         this.loadAuthPreferences();
                         if (!window.supabase || !window.LOGISSTANT_SUPABASE_CONFIG) {
-                            this.authMessage = this.language === 'tr' ? 'Giriş hizmeti yüklenemedi. Sayfayı yenileyin.' : 'The sign-in service did not load. Refresh the page.';
+                            this.authMessage = this.language === 'tr' ? 'Giriş hizmeti yüklenemedi. Sayfayı yenileyin.' : 'The sign-in service could not load. Refresh the page.';
                             return;
                         }
                         this.supabase = window.supabase.createClient(window.LOGISSTANT_SUPABASE_CONFIG.url, window.LOGISSTANT_SUPABASE_CONFIG.publishableKey, {
@@ -1717,9 +1753,21 @@
                         });
                         const { data: { session }, error } = await this.supabase.auth.getSession();
                         if (error) this.showAuthError(error);
-                        if (session?.user) await this.finishLogin(session.user);
+                        if (session?.user && this.pendingInviteSetup) {
+                            this.currentUser = session.user;
+                            this.loginEmail = session.user.email || '';
+                            this.inviteSetupMessage = '';
+                        } else if (session?.user) await this.finishLogin(session.user);
+                        else if (this.pendingInviteSetup) {
+                            this.inviteSetupMessage = this.language === 'tr'
+                                ? 'Davet bağlantısı geçersiz, süresi dolmuş veya daha önce kullanılmış. Firma yöneticinizden yeni davet isteyin.'
+                                : 'This invitation link is invalid, expired, or already used. Ask your firm administrator to send a new invitation.';
+                        }
                         this.supabase.auth.onAuthStateChange((event, nextSession) => {
-                            if (nextSession?.user && !this.isLoggedIn && !this.authBusy) {
+                            if (nextSession?.user && this.pendingInviteSetup) {
+                                this.currentUser = nextSession.user;
+                                this.loginEmail = nextSession.user.email || '';
+                            } else if (nextSession?.user && !this.isLoggedIn && !this.authBusy && !this.inviteSetupBusy) {
                                 Promise.resolve().then(() => this.finishLogin(nextSession.user)).catch(error => this.showAuthError(error));
                             } else if (!nextSession && event === 'SIGNED_OUT') this.clearSession();
                         });
@@ -1728,6 +1776,42 @@
                     } finally {
                         this.authInitializing = false;
                     }
+                },
+                async completeInviteSetup() {
+                    if (!this.pendingInviteSetup || !this.currentUser || !this.supabase || this.inviteSetupBusy) return;
+                    if (this.loginPassword !== this.confirmPassword) {
+                        this.inviteSetupMessage = this.t('passwordMismatch');
+                        return;
+                    }
+                    if (!this.isStrongPassword(this.loginPassword)) {
+                        this.inviteSetupMessage = this.passwordPolicyMessage();
+                        return;
+                    }
+                    this.inviteSetupBusy = true;
+                    this.inviteSetupMessage = '';
+                    try {
+                        const { data, error } = await this.supabase.auth.updateUser({
+                            password: this.loginPassword,
+                            data: { invite_setup_complete: true, invited_organization_id: null }
+                        });
+                        if (error) throw error;
+                        const user = data?.user || this.currentUser;
+                        this.pendingInviteSetup = false;
+                        this.loginPassword = '';
+                        this.confirmPassword = '';
+                        await this.finishLogin(user);
+                    } catch (error) {
+                        this.inviteSetupMessage = error?.message || (this.language === 'tr' ? 'Parola kaydedilemedi. Davet bağlantısı geçersiz veya süresi dolmuş olabilir.' : 'Password could not be saved. The invitation link may be invalid or expired.');
+                    } finally { this.inviteSetupBusy = false; }
+                },
+                async leaveInviteSetup() {
+                    if (this.supabase && this.currentUser) await this.supabase.auth.signOut();
+                    this.pendingInviteSetup = false;
+                    this.currentUser = null;
+                    this.loginEmail = '';
+                    this.loginPassword = '';
+                    this.confirmPassword = '';
+                    this.inviteSetupMessage = '';
                 },
                 passwordPolicyMessage() {
                     return this.language === 'tr'
