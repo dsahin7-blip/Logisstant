@@ -888,7 +888,7 @@
                             <template x-for="choice in organizationChoices" :key="choice.id"><option :value="choice.id" x-text="choice.name + ' · ' + organizationRoleName(choice.role)"></option></template>
                         </select>
                     </label>
-                </div></div></details>
+                </div></details>
                 
                     <!-- Profilim -->
                     <details class="settings-accordion"><summary class="settings-accordion-trigger"><span x-text="t('profileTitle')"></span><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7"/></svg></summary><div class="settings-accordion-content">
@@ -904,7 +904,7 @@
                             </div>
                             <button @click="saveProfile()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('saveBtn')"></button>
                         </div>
-                    </div></div></details>
+                    </div></details>
                     <details class="settings-accordion"><summary class="settings-accordion-trigger"><span x-text="t('appearanceTitle')"></span><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7"/></svg></summary><div class="settings-accordion-content">
                         
                         <div class="space-y-3 text-sm">
@@ -919,7 +919,7 @@
                                 <button type="button" @click="toggleDarkMode()" class="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs" x-text="darkMode ? t('darkTheme') : t('lightTheme')"></button>
                             </div>
                         </div>
-                    </div></div></details>
+                    </div></details>
                             <details class="settings-accordion"><summary class="settings-accordion-trigger"><span x-text="t('installTitle')"></span><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7"/></svg></summary><div class="settings-accordion-content">
                         
                         <p class="text-sm text-slate-600 dark:text-slate-300" x-text="t('installHelp')"></p>
@@ -927,7 +927,7 @@
                             <button type="button" @click="installApp()" :disabled="appInstalled" class="bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="appInstalled ? t('installedLabel') : t('installButton')"></button>
                             <p role="status" aria-live="polite" x-show="installMessage" x-text="installMessage" class="text-xs text-slate-600 dark:text-slate-300"></p>
                         </div>
-                    </div></div></details>
+                    </div></details>
                     <!-- Firma Genel Ayarları -->
                     <details class="settings-accordion" x-show="userRole === 'admin'" x-cloak><summary class="settings-accordion-trigger"><span x-text="t('firmSettingsTitle')"></span><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7"/></svg></summary><div class="settings-accordion-content">
                         <div>
@@ -957,7 +957,7 @@
                                 <p role="status" aria-live="polite" x-show="organizationSettingsMessage" x-text="organizationSettingsMessage" class="text-xs text-slate-600 dark:text-slate-300"></p>
                             </div>
                         </form>
-                    </div></div></details>
+                    </div></details>
                     <details class="settings-accordion" x-show="canManageTeam()"><summary class="settings-accordion-trigger"><span x-text="t('teamTitle')"></span><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7"/></svg></summary><div class="settings-accordion-content">
                         <div><p class="text-xs text-slate-500 mt-1" x-text="t('teamDescription')"></p></div>
                         <form @submit.prevent="inviteTeamMember()" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -977,7 +977,7 @@
                                 <div class="md:col-span-2 flex gap-2"><button type="button" @click="saveTeamMember(member)" :disabled="teamLoading || ['owner','admin'].includes(member.role) || member.user_id === currentUser?.id" class="text-xs bg-blue-600 text-white px-3 py-2 rounded-lg disabled:opacity-40" x-text="t('teamSave')"></button><button type="button" @click="removeTeamMember(member)" :disabled="teamLoading || ['owner','admin'].includes(member.role) || member.user_id === currentUser?.id" class="text-xs bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 px-3 py-2 rounded-lg disabled:opacity-40" x-text="t('teamRemove')"></button></div>
                             </div></template></div>
                         </div>
-                    </div></div></details>
+                    </div></details>
                     <details class="settings-accordion"><summary class="settings-accordion-trigger"><span x-text="t('supportTitle')"></span><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7"/></svg></summary><div class="settings-accordion-content">
                         <div><p class="text-xs text-slate-500 mt-1" x-text="t('supportDescription')"></p></div>
                         <form @submit.prevent="submitSupportRequest()" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -991,7 +991,7 @@
                             <p x-show="!supportLoading && supportRequests.length === 0" class="text-xs text-slate-500" x-text="t('supportEmpty')"></p>
                             <div class="space-y-2"><template x-for="request in supportRequests" :key="request.id"><article class="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><div class="flex flex-wrap justify-between gap-2 text-xs"><strong x-text="t('supportCategory' + request.category.charAt(0).toUpperCase() + request.category.slice(1))"></strong><span class="text-slate-500" x-text="formatHistoryTime(request.created_at)"></span><span class="rounded-full bg-blue-50 dark:bg-blue-950 px-2 py-1 text-blue-700 dark:text-blue-300" x-text="t('supportStatusOpen')"></span></div><p class="mt-2 text-sm whitespace-pre-wrap break-words" x-text="request.message"></p><p x-show="request.error_code" class="mt-1 text-[11px] text-slate-500"><span x-text="t('supportErrorCode')"></span>: <span x-text="request.error_code"></span></p></article></template></div>
                         </div>
-                    </div></div></details>
+                    </div></details>
                     <!-- Güvenlik & Şifre -->
                     <details class="settings-accordion"><summary class="settings-accordion-trigger"><span x-text="t('securityTitle')"></span><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7"/></svg></summary><div class="settings-accordion-content">
                         
@@ -1006,7 +1006,7 @@
                             </div>
                             <button @click="updatePassword()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('updatePassBtn')"></button>
                         </div>
-                    </div></div></details>
+                    </div></details>
                 </div>
             </div>
 
