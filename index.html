@@ -215,6 +215,43 @@
                 radial-gradient(circle at 88% 82%, rgba(21, 54, 107, .42), transparent 34%),
                 linear-gradient(135deg, #07152f, #0c2148 58%, #102c5b);
         }
+        .auth-boot {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: radial-gradient(circle at 14% 18%, rgba(56, 112, 207, .32), transparent 32%), linear-gradient(135deg, #07152f, #0c2148 58%, #102c5b);
+            color: #fff;
+        }
+        .auth-boot-card {
+            display: flex;
+            align-items: center;
+            gap: .85rem;
+            min-width: min(100%, 18rem);
+            padding: 1rem 1.15rem;
+            border: 1px solid rgba(255,255,255,.16);
+            border-radius: 1.1rem;
+            background: rgba(255,255,255,.08);
+            box-shadow: 0 18px 48px rgba(2,12,32,.28);
+            backdrop-filter: blur(12px);
+        }
+        .auth-boot-card img { width: 2.65rem; height: 2.65rem; border-radius: .8rem; }
+        .auth-boot-copy { min-width: 0; flex: 1; }
+        .auth-boot-copy strong { display: block; font-size: .95rem; font-weight: 750; }
+        .auth-boot-copy p { margin-top: .2rem; color: #c7d7f2; font-size: .74rem; }
+        .auth-boot-spinner {
+            width: 1.2rem;
+            height: 1.2rem;
+            flex: 0 0 auto;
+            border: 2px solid rgba(199,215,242,.35);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: auth-boot-spin .8s linear infinite;
+        }
+        @keyframes auth-boot-spin { to { transform: rotate(360deg); } }
         .auth-layout {
             display: grid;
             grid-template-columns: minmax(0, .92fr) minmax(420px, 1.08fr);
@@ -353,8 +390,19 @@
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans antialiased min-h-screen flex flex-col transition-colors duration-200">
 
+    <div x-show="authInitializing" x-cloak class="auth-boot" role="status" aria-live="polite">
+        <div class="auth-boot-card">
+            <img src="/icon-192.svg?v=route-20261013" alt="" aria-hidden="true">
+            <div class="auth-boot-copy">
+                <strong x-text="t('brand')"></strong>
+                <p x-text="language === 'tr' ? 'Oturumunuz kontrol ediliyor…' : 'Checking your session…'"></p>
+            </div>
+            <span class="auth-boot-spinner" aria-hidden="true"></span>
+        </div>
+    </div>
+
     <!-- 1. GİRİŞ (LOGIN) EKRANI -->
-    <div x-show="!isLoggedIn" class="auth-screen flex-grow flex items-center justify-center p-4 sm:p-6" x-cloak>
+    <div x-show="!isLoggedIn && !authInitializing" class="auth-screen flex-grow flex items-center justify-center p-4 sm:p-6" x-cloak>
         <div class="auth-layout w-full">
             <aside class="auth-story hidden lg:flex">
                 <div class="auth-story-brand">
@@ -1032,6 +1080,7 @@
         function appData() {
             return {
                 isLoggedIn: false,
+                authInitializing: true,
                 loginType: 'firm',
                 loginEmail: '',
                 loginPassword: '',
@@ -1425,26 +1474,31 @@
                     this.saveUiPreferences();
                 },
                 async init() {
-                    this.initInstallSupport();
-                    this.loadUiPreferences();
-                    this.loadAuthPreferences();
-                    if (!window.supabase || !window.LOGISSTANT_SUPABASE_CONFIG) {
-                        this.authMessage = this.language === 'tr' ? 'Giriş hizmeti yüklenemedi. Sayfayı yenileyin.' : 'The sign-in service did not load. Refresh the page.';
-                        return;
-                    }
-                    this.supabase = window.supabase.createClient(window.LOGISSTANT_SUPABASE_CONFIG.url, window.LOGISSTANT_SUPABASE_CONFIG.publishableKey, {
-                        auth: { storage: this.createAuthStorage(), persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
-                    });
+                    this.authInitializing = true;
                     try {
+                        this.initInstallSupport();
+                        this.loadUiPreferences();
+                        this.loadAuthPreferences();
+                        if (!window.supabase || !window.LOGISSTANT_SUPABASE_CONFIG) {
+                            this.authMessage = this.language === 'tr' ? 'Giriş hizmeti yüklenemedi. Sayfayı yenileyin.' : 'The sign-in service did not load. Refresh the page.';
+                            return;
+                        }
+                        this.supabase = window.supabase.createClient(window.LOGISSTANT_SUPABASE_CONFIG.url, window.LOGISSTANT_SUPABASE_CONFIG.publishableKey, {
+                            auth: { storage: this.createAuthStorage(), persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+                        });
                         const { data: { session }, error } = await this.supabase.auth.getSession();
                         if (error) this.showAuthError(error);
                         if (session?.user) await this.finishLogin(session.user);
-                    } catch (error) { this.showAuthError(error); }
-                    this.supabase.auth.onAuthStateChange((event, nextSession) => {
-                        if (nextSession?.user && !this.isLoggedIn && !this.authBusy) {
-                            Promise.resolve().then(() => this.finishLogin(nextSession.user)).catch(error => this.showAuthError(error));
-                        } else if (!nextSession && event === 'SIGNED_OUT') this.clearSession();
-                    });
+                        this.supabase.auth.onAuthStateChange((event, nextSession) => {
+                            if (nextSession?.user && !this.isLoggedIn && !this.authBusy) {
+                                Promise.resolve().then(() => this.finishLogin(nextSession.user)).catch(error => this.showAuthError(error));
+                            } else if (!nextSession && event === 'SIGNED_OUT') this.clearSession();
+                        });
+                    } catch (error) {
+                        this.showAuthError(error);
+                    } finally {
+                        this.authInitializing = false;
+                    }
                 },
                 async submitAuth() {
                     if (!this.supabase || this.authBusy) return;
