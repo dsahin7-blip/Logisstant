@@ -769,6 +769,14 @@
                     <h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('settingsTitle')"></h2>
                     <button type="button" @click="logout()" class="sm:hidden shrink-0 bg-rose-600 hover:bg-rose-500 text-white px-3 py-2 rounded-xl text-xs font-semibold" x-text="t('logout')"></button>
                 </div>
+                <div x-show="organizationChoices.length > 1" class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-3">
+                    <div><h3 class="font-bold text-slate-900 dark:text-white" x-text="t('workspaceTitle')"></h3><p class="text-xs text-slate-500 mt-1" x-text="t('workspaceSubtitle')"></p></div>
+                    <label class="block text-xs text-slate-500"><span x-text="organizationSwitchBusy ? t('workspaceSwitching') : t('workspaceSelect')"></span>
+                        <select :value="activeOrganization?.id || ''" @change="switchOrganization($event.target.value)" :disabled="organizationSwitchBusy" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700">
+                            <template x-for="choice in organizationChoices" :key="choice.id"><option :value="choice.id" x-text="choice.name + ' · ' + organizationRoleName(choice.role)"></option></template>
+                        </select>
+                    </label>
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Profilim -->
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
@@ -1025,6 +1033,10 @@
                 supabase: null,
                 currentUser: null,
                 activeOrganization: null,
+                activeMembership: null,
+                organizationMemberships: [],
+                organizationChoices: [],
+                organizationSwitchBusy: false,
                 uploadingDocuments: {},
                 inviteBusy: false,
                 teamMessage: '',
@@ -1039,7 +1051,7 @@
                 darkMode: false,
                 language: 'tr',
                 focusedOfferId: null,
-                userRole: 'admin',
+                userRole: 'unknown',
                 activeClient: null,
                 showOfferModal: false,
                 showShipmentModal: false,
@@ -1099,7 +1111,7 @@
                         estimatedDelivery: "Tahmini teslim tarihi", deliveryLate: "Tahmini tarih geçti",
                         deliveryAlertsTitle: "Teslimat uyarıları", deliveryAlertsSubtitle: "3 gün içinde teslim edilmesi gereken veya tarihi geçen sevkiyatlar.",
                         noDeliveryAlerts: "Yaklaşan veya geciken teslimat yok.", deliveryDueToday: "Bugün teslim", deliveryDueInDays: "{days} gün içinde", deliveryDaysLate: "{days} gün gecikti",
-                        offerValidUntil: "Teklif geçerlilik tarihi", offerNotes: "Teklife özel not (isteğe bağlı)", offerExpiryRequired: "Lütfen teklifin geçerlilik tarihini seçin.", offerExpiryPast: "Teklif geçerlilik tarihi bugünden önce olamaz.", authAudienceMismatch: "Bu hesap seçilen giriş türüyle eşleşmiyor. Diğer giriş sekmesini deneyin.", notSet: "Belirtilmedi",
+                        offerValidUntil: "Teklif geçerlilik tarihi", offerNotes: "Teklife özel not (isteğe bağlı)", offerExpiryRequired: "Lütfen teklifin geçerlilik tarihini seçin.", offerExpiryPast: "Teklif geçerlilik tarihi bugünden önce olamaz.", authAudienceMismatch: "Bu hesap seçilen giriş türüyle eşleşmiyor. Diğer giriş sekmesini deneyin.", authRoleUnavailable: "Bu hesap için tanınmayan bir erişim rolü var. Firma yöneticinizle iletişime geçin.", unknownRole: "Bilinmeyen rol", workspaceTitle: "Çalışma alanı", workspaceSubtitle: "Üye olduğunuz firma veya müşteri hesabına geçin.", workspaceSelect: "Aktif çalışma alanı", workspaceSwitching: "Çalışma alanı değiştiriliyor…", notSet: "Belirtilmedi",
                         trackingTitle: "Sevkiyat takibi", documentsTitle: "Evrak kontrol listesi", documentExpiryTitle: "Belge son tarihleri", documentExpirySubtitle: "Süresi dolmuş veya 30 gün içinde dolacak belgeler.", noDocumentExpiryAlerts: "Yaklaşan belge son tarihi yok.", missingRequiredDocumentsTitle: "Eksik zorunlu belgeler", missingRequiredDocumentsSubtitle: "Aktif sevkiyatlarda tamamlanması gereken belgeler.", noMissingRequiredDocuments: "Eksik zorunlu belge yok.", missingDocumentCount: "{count} belge eksik", documentExpired: "Süresi doldu", documentExpiresSoon: "Yaklaşıyor", documentExpiryDate: "Belge son kullanma tarihi (isteğe bağlı)", docExpiresOn: "Son tarih", docPreview: "Önizle", docDownload: "İndir", documentDemoNotice: "Taşıma belgesi seçili moda göre gelir. Diğer belgeleri gönderinin güzergâhı ve yüküne göre gerekli veya gereksiz olarak işaretleyin. Bu liste mevzuat danışmanlığı yerine geçmez.", documentUploadNotice: "PDF, JPG veya PNG dosyalarını özel alana yükleyin. En fazla 10 MB.", uploadDocument: "Dosya yükle", uploadingDocument: "Yükleniyor…", documentFileLimit: "PDF, JPG veya PNG · en fazla 10 MB", docOpenFile: "Görüntüle / indir", documentUploadError: "Dosya yüklenemedi. Dosya türünü, boyutunu ve bağlantınızı kontrol edin.",
                         docCMR: "CMR / e-CMR taşıma belgesi", docInvoice: "Ticari fatura", docBL: "Konşimento (B/L) / deniz taşıma senedi", docAWB: "Hava taşıma senedi (AWB)", docPackingList: "Çeki listesi (Packing List)", docCustoms: "Gümrük beyannamesi", docOrigin: "Menşe şahadetnamesi / menşe belgesi", docInsurance: "Yük sigorta belgesi", docDangerous: "Tehlikeli madde beyanı", docHealth: "Sağlık / bitki sağlığı sertifikası", docLicense: "İthalat / ihracat izni veya lisansı", docTIRATA: "TIR veya ATA Karnesi (uygunsa)", docRequired: "Taşıma türü", docConditional: "Duruma bağlı", docChoose: "Bu gönderi için durumu seçin", docNeeded: "Gerekli", docNotNeeded: "Gerekli değil", docDone: "Belge tamamlandı", docConditionalHint: "Uygulanıp uygulanmadığını gönderi koşullarına göre belirleyin.", documentsComplete: "gerekli belge tamamlandı",
                         noNotifications: "Henüz bildirim yok.", notifShipmentCreated: "Yeni sevkiyat oluşturuldu", notifOfferCreated: "Yeni teklif oluşturuldu", notifOfferApproved: "Teklif onaylandı", notifOfferRejected: "Teklif reddedildi", notifShipmentUpdate: "Sevkiyat durumu güncellendi", notifDocumentsComplete: "Evrak kontrol listesi tamamlandı",
@@ -1228,7 +1240,7 @@
                         estimatedDelivery: "Estimated delivery", deliveryLate: "Past estimated date",
                         deliveryAlertsTitle: "Delivery alerts", deliveryAlertsSubtitle: "Shipments due within 3 days or past their estimated delivery date.",
                         noDeliveryAlerts: "No upcoming or overdue deliveries.", deliveryDueToday: "Due today", deliveryDueInDays: "Due in {days} days", deliveryDaysLate: "{days} days overdue",
-                        offerValidUntil: "Offer valid until", offerNotes: "Offer notes (optional)", offerExpiryRequired: "Please choose an offer expiry date.", offerExpiryPast: "The offer expiry date cannot be in the past.", authAudienceMismatch: "This account does not match the selected sign-in type. Try the other sign-in tab.", notSet: "Not set",
+                        offerValidUntil: "Offer valid until", offerNotes: "Offer notes (optional)", offerExpiryRequired: "Please choose an offer expiry date.", offerExpiryPast: "The offer expiry date cannot be in the past.", authAudienceMismatch: "This account does not match the selected sign-in type. Try the other sign-in tab.", authRoleUnavailable: "This account has an unrecognized access role. Contact your company administrator.", unknownRole: "Unknown role", workspaceTitle: "Workspace", workspaceSubtitle: "Switch to a firm or customer account you belong to.", workspaceSelect: "Active workspace", workspaceSwitching: "Switching workspace…", notSet: "Not set",
                         trackingTitle: "Shipment tracking", documentsTitle: "Document checklist", documentExpiryTitle: "Document expiry", documentExpirySubtitle: "Expired documents or documents expiring within 30 days.", noDocumentExpiryAlerts: "No upcoming document expiry dates.", missingRequiredDocumentsTitle: "Missing required documents", missingRequiredDocumentsSubtitle: "Documents still needed for active shipments.", noMissingRequiredDocuments: "No required documents are missing.", missingDocumentCount: "{count} missing", documentExpired: "Expired", documentExpiresSoon: "Due soon", documentExpiryDate: "Document expiry date (optional)", docExpiresOn: "Expires", docPreview: "Preview", docDownload: "Download", documentDemoNotice: "The transport document follows the selected mode. Mark other documents as required or not required for the route and cargo. This checklist does not replace regulatory advice.", documentUploadNotice: "Upload PDF, JPG, or PNG files to private storage. Maximum 10 MB.", uploadDocument: "Upload file", uploadingDocument: "Uploading…", documentFileLimit: "PDF, JPG, or PNG · up to 10 MB", docOpenFile: "View / download", documentUploadError: "Upload failed. Check the file type, size, and your connection.",
                         docCMR: "CMR / e-CMR road transport document", docInvoice: "Commercial invoice", docBL: "Bill of lading (B/L) / sea waybill", docAWB: "Air waybill (AWB)", docPackingList: "Packing list", docCustoms: "Customs declaration", docOrigin: "Certificate of origin", docInsurance: "Cargo insurance certificate", docDangerous: "Dangerous goods declaration", docHealth: "Health / phytosanitary certificate", docLicense: "Import / export permit or license", docTIRATA: "TIR or ATA Carnet (where applicable)", docRequired: "Transport mode", docConditional: "Conditional", docChoose: "Choose for this shipment", docNeeded: "Required", docNotNeeded: "Not required", docDone: "Document complete", docConditionalHint: "Decide based on this shipment's route and cargo.", documentsComplete: "required documents complete",
                         noNotifications: "No notifications yet.", notifShipmentCreated: "New shipment created", notifOfferCreated: "New offer created", notifOfferApproved: "Offer approved", notifOfferRejected: "Offer rejected", notifShipmentUpdate: "Shipment status updated", notifDocumentsComplete: "Document checklist completed",
@@ -1443,28 +1455,28 @@
                             if (error) throw error;
                             if (data.user) {
                                 const audienceMatches = await this.validateLoginAudience(data.user);
-                                if (audienceMatches) await this.finishLogin(data.user);
+                                if (audienceMatches) await this.finishLogin(data.user, this.loginAudience);
                             }
                         }
                     } catch (error) { this.showAuthError(error); }
                     finally { this.authBusy = false; }
                 },
                 async validateLoginAudience(user) {
-                    const { data, error } = await this.supabase.from('organization_members')
-                        .select('role').eq('user_id', user.id).limit(1);
+                    const { data, error } = await this.supabase.from('organization_members').select('role').eq('user_id', user.id);
                     if (error) throw error;
-                    const membership = data?.[0];
-                    const mayCreateFirm = !membership && this.loginAudience === 'firm' && user.user_metadata?.company_name?.trim();
-                    const accountIsCustomer = membership?.role === 'client';
-                    const audienceIsCustomer = this.loginAudience === 'customer';
-                    if (!mayCreateFirm && (!membership || accountIsCustomer !== audienceIsCustomer)) {
+                    const roles = (data || []).map(membership => membership.role);
+                    const matchingMembership = this.loginAudience === 'customer'
+                        ? roles.includes('client')
+                        : roles.some(role => ['owner', 'admin', 'operations', 'finance'].includes(role));
+                    const mayCreateFirm = roles.length === 0 && this.loginAudience === 'firm' && user.user_metadata?.company_name?.trim();
+                    if (!matchingMembership && !mayCreateFirm) {
                         await this.supabase.auth.signOut();
                         this.authMessage = this.t('authAudienceMismatch');
                         return false;
                     }
                     return true;
                 },
-                async finishLogin(user) {
+                async finishLogin(user, audience = null) {
                     if (!this.supabase || !user || this.loadingWorkspace) return;
                     this.loadingWorkspace = true;
                     try {
@@ -1473,7 +1485,7 @@
                         const { error: profileError } = await this.supabase.from('profiles').upsert({ id: user.id, full_name: fullName }, { onConflict: 'id' });
                         if (profileError) throw profileError;
                         let { data: memberships, error: membershipError } = await this.supabase.from('organization_members')
-                            .select('organization_id, role, customer_id').eq('user_id', user.id).limit(1);
+                            .select('organization_id, role, customer_id').eq('user_id', user.id);
                         if (membershipError) throw membershipError;
                         if (!memberships?.length) {
                             const companyName = (user.user_metadata?.company_name || '').trim();
@@ -1484,36 +1496,90 @@
                             const { data: membership, error: ownerError } = await this.supabase.from('organization_members')
                                 .insert({ organization_id: organization.id, user_id: user.id, role: 'owner' }).select('organization_id, role, customer_id').single();
                             if (ownerError) throw ownerError;
-                            memberships = [membership]; this.activeOrganization = organization;
+                            memberships = [membership];
                         }
-                        const membership = memberships[0];
-                        if (!this.activeOrganization || this.activeOrganization.id !== membership.organization_id) {
-                            const { data: organization, error: organizationError } = await this.supabase.from('organizations')
-                                .select('id, name, contact_email, phone, website, address').eq('id', membership.organization_id).single();
-                            if (organizationError) throw organizationError;
-                            this.activeOrganization = organization;
-                        }
-                        this.userRole = membership.role === 'client' ? 'client' : membership.role === 'finance' ? 'finance' : membership.role === 'operations' ? 'operation' : 'admin';
-                        const { data: customerRows, error: customerError } = await this.supabase.from('customers')
-                            .select(this.userRole === 'client' ? 'id, name' : 'id, name, contact_name, email, phone, notes').eq('organization_id', membership.organization_id);
-                        if (customerError) throw customerError;
-                        this.customers = customerRows || []; this.selectedCustomerId = this.customers[0]?.id || null;
-                        this.activeClient = membership.customer_id ? (this.customers.find(customer => customer.id === membership.customer_id)?.name || null) : null;
-                        await this.loadWorkspaceData();
+                        this.organizationMemberships = memberships || [];
+                        const organizationIds = [...new Set(this.organizationMemberships.map(membership => membership.organization_id))];
+                        const { data: organizations, error: organizationsError } = await this.supabase.from('organizations')
+                            .select('id, name, contact_email, phone, website, address').in('id', organizationIds);
+                        if (organizationsError) throw organizationsError;
+                        const organizationById = new Map((organizations || []).map(organization => [organization.id, organization]));
+                        this.organizationChoices = this.organizationMemberships
+                            .map(membership => ({ ...organizationById.get(membership.organization_id), role: membership.role, customer_id: membership.customer_id }))
+                            .filter(organization => organization.id);
+                        if (!this.organizationChoices.length) throw new Error(this.t('authAudienceMismatch'));
+                        const matchingChoices = audience === 'customer'
+                            ? this.organizationChoices.filter(choice => choice.role === 'client')
+                            : audience === 'firm'
+                                ? this.organizationChoices.filter(choice => ['owner', 'admin', 'operations', 'finance'].includes(choice.role))
+                                : this.organizationChoices;
+                        if (!matchingChoices.length) throw new Error(this.t('authAudienceMismatch'));
+                        let preferredOrganizationId = '';
+                        try { preferredOrganizationId = window.localStorage.getItem('logisstant-active-organization') || ''; } catch (_) {}
+                        const selectedOrganization = matchingChoices.find(choice => choice.id === preferredOrganizationId) || matchingChoices[0];
+                        const selectedMembership = this.organizationMemberships.find(membership => membership.organization_id === selectedOrganization.id);
+                        await this.activateOrganizationMembership(selectedMembership, selectedOrganization);
+                        try { window.localStorage.setItem('logisstant-active-organization', selectedOrganization.id); } catch (_) {}
                         this.loginEmail = user.email || this.loginEmail;
                         this.fullName = user.user_metadata?.full_name || this.fullName || '';
-                        this.organizationSettings = {
-                            name: this.activeOrganization.name || '',
-                            contact_email: this.activeOrganization.contact_email || '',
-                            phone: this.activeOrganization.phone || '',
-                            website: this.activeOrganization.website || '',
-                            address: this.activeOrganization.address || ''
-                        };
-                        this.organizationName = this.organizationSettings.name;
+                        this.loginPassword = '';
                         this.organizationSettingsMessage = '';
-                        this.loginPassword = ''; this.isLoggedIn = true; this.authMessage = '';
-                    } catch (error) { this.isLoggedIn = false; this.showAuthError(error); }
-                    finally { this.loadingWorkspace = false; }
+                        this.isLoggedIn = true;
+                        this.authMessage = '';
+                    } catch (error) {
+                        this.isLoggedIn = false;
+                        this.showAuthError(error);
+                    } finally { this.loadingWorkspace = false; }
+                },
+                roleViewForMembership(role) {
+                    return ({ owner: 'admin', admin: 'admin', operations: 'operation', finance: 'finance', client: 'client' })[role] || null;
+                },
+                organizationRoleName(role) {
+                    const names = this.language === 'tr'
+                        ? { owner: 'Firma sahibi', admin: 'Yönetici', operations: 'Operasyon', finance: 'Finans', client: 'Müşteri' }
+                        : { owner: 'Owner', admin: 'Admin', operations: 'Operations', finance: 'Finance', client: 'Customer' };
+                    return names[role] || this.t('unknownRole');
+                },
+                async activateOrganizationMembership(membership, organization) {
+                    const roleView = this.roleViewForMembership(membership?.role);
+                    if (!roleView) {
+                        await this.supabase.auth.signOut();
+                        throw new Error(this.t('authRoleUnavailable'));
+                    }
+                    this.activeOrganization = organization;
+                    this.activeMembership = membership;
+                    this.userRole = roleView;
+                    const { data: customerRows, error: customerError } = await this.supabase.from('customers')
+                        .select(roleView === 'client' ? 'id, name' : 'id, name, contact_name, email, phone, notes')
+                        .eq('organization_id', membership.organization_id);
+                    if (customerError) throw customerError;
+                    this.customers = customerRows || [];
+                    this.selectedCustomerId = this.customers[0]?.id || null;
+                    this.activeClient = membership.customer_id ? (this.customers.find(customer => customer.id === membership.customer_id)?.name || null) : null;
+                    this.organizationSettings = {
+                        name: organization.name || '',
+                        contact_email: organization.contact_email || '',
+                        phone: organization.phone || '',
+                        website: organization.website || '',
+                        address: organization.address || ''
+                    };
+                    this.organizationName = this.organizationSettings.name;
+                    await this.loadWorkspaceData();
+                },
+                async switchOrganization(organizationId) {
+                    if (!this.isLoggedIn || this.organizationSwitchBusy || !organizationId || organizationId === this.activeOrganization?.id) return;
+                    const membership = this.organizationMemberships.find(item => item.organization_id === organizationId);
+                    const organization = this.organizationChoices.find(item => item.id === organizationId);
+                    if (!membership || !organization) return;
+                    this.organizationSwitchBusy = true;
+                    this.tab = 'dashboard';
+                    this.offers = []; this.shipments = []; this.customers = []; this.notifications = [];
+                    this.selectedShipment = null; this.selectedCustomerId = null; this.activeClient = null;
+                    try {
+                        await this.activateOrganizationMembership(membership, organization);
+                        try { window.localStorage.setItem('logisstant-active-organization', organization.id); } catch (_) {}
+                    } catch (error) { this.showDataError(error); }
+                    finally { this.organizationSwitchBusy = false; }
                 },
                 async saveOrganizationSettings() {
                     if (this.userRole !== 'admin' || !this.activeOrganization || this.organizationSettingsBusy) return;
@@ -1667,7 +1733,7 @@
                     this.organizationName = '';
                     this.organizationSettings = { name: '', contact_email: '', phone: '', website: '', address: '' };
                     this.organizationSettingsMessage = '';
-                    this.isLoggedIn = false; this.currentUser = null; this.activeOrganization = null; this.activeClient = null;
+                    this.isLoggedIn = false; this.currentUser = null; this.activeOrganization = null; this.activeMembership = null; this.organizationMemberships = []; this.organizationChoices = []; this.userRole = 'unknown'; this.activeClient = null;
                     this.customers = []; this.offers = []; this.shipments = []; this.selectedCustomerId = null; this.customerEditForm = null;
                 },
                 async resetPassword() {
