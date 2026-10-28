@@ -2565,8 +2565,10 @@
                     this.accountClosureBusy = true;
                     this.supportCategory = 'account';
                     this.supportMessageDraft = message;
-                    try { await this.submitSupportRequest(); }
-                    finally { this.accountClosureBusy = false; }
+                    try {
+                        await this.submitSupportRequest();
+                        alert(this.supportStatusMessage || (this.language === 'tr' ? 'Talep gönderilemedi.' : 'The request could not be submitted.'));
+                    } finally { this.accountClosureBusy = false; }
                 },
                 exportCSV(type) {
                     const isOffers = type === 'offers', isReport = type === 'report';
