@@ -2138,9 +2138,8 @@
                     else if (code === 'email_not_confirmed' || message.includes('email not confirmed')) this.authMessage = this.t('authEmailNotConfirmed');
                     else if (['user_already_exists', 'email_exists'].includes(code)) this.authMessage = this.t('authEmailAlreadyUsed');
                     else if (code === 'weak_password') this.authMessage = this.t('authWeakPassword');
-                    else if (code === 'over_email_send_rate_limit' || code === 'over_request_rate_limit' || message.includes('rate limit')) this.authMessage = this.t(code === 'over_email_send_rate_limit' ? 'authEmailRateLimited' : 'authRequestRateLimited');
-                    else if (code === 'over_email_send_rate_limit' || message.includes('email rate limit exceeded')) this.authMessage = this.t('authEmailRateLimited');
-                    else if (code === 'over_request_rate_limit' || message.includes('request rate limit exceeded')) this.authMessage = this.t('authRequestRateLimited');
+                    else if (code === 'over_email_send_rate_limit' || message.includes('email rate limit')) this.authMessage = this.t('authEmailRateLimited');
+                    else if (code === 'over_request_rate_limit' || message.includes('request rate limit') || message.includes('too many requests') || message.includes('rate limit')) this.authMessage = this.t('authRequestRateLimited');
                     else this.authMessage = error?.message || this.t('authRequestFailed');
                 },
                 showDataError(error) { this.lastErrorCode = String(error?.code || 'APP_ERROR').slice(0, 80); this.dataErrorToast = true; console.error('Logisstant operation failed', { code: this.lastErrorCode }); },
