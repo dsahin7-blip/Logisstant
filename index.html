@@ -1353,7 +1353,7 @@
                 authBusy: false,
                 supabase: null,
                 currentUser: null,
-                pendingInviteSetup: false, inviteSetupBusy: false, inviteSetupMessage: '',
+                pendingInviteSetup: false, inviteSetupBusy: false, inviteSetupMessage: '', inviteWorkspaceId: '',
                 activeOrganization: null,
                 activeMembership: null,
                 organizationMemberships: [],
@@ -1737,6 +1737,7 @@
                     this.authInitializing = true;
                     const queryParams = new URLSearchParams(window.location.search);
                     const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+                    this.inviteWorkspaceId = queryParams.get('workspace') || '';
                     this.pendingInviteSetup = queryParams.get('invite') === '1'
                         || queryParams.get('type') === 'invite'
                         || hashParams.get('type') === 'invite';
@@ -1917,11 +1918,13 @@
                                 : this.organizationChoices;
                         if (!matchingChoices.length) throw new Error(this.t('authAudienceMismatch'));
                         let preferredOrganizationId = '';
-                        try { preferredOrganizationId = window.localStorage.getItem('logisstant-active-organization') || ''; } catch (_) {}
+                        try { preferredOrganizationId = this.inviteWorkspaceId || window.localStorage.getItem('logisstant-active-organization') || ''; } catch (_) {}
                         const selectedOrganization = matchingChoices.find(choice => choice.id === preferredOrganizationId) || matchingChoices[0];
                         const selectedMembership = this.organizationMemberships.find(membership => membership.organization_id === selectedOrganization.id);
                         await this.activateOrganizationMembership(selectedMembership, selectedOrganization);
                         try { window.localStorage.setItem('logisstant-active-organization', selectedOrganization.id); } catch (_) {}
+                        this.inviteWorkspaceId = '';
+                        try { const cleanUrl = new URL(window.location.href); cleanUrl.searchParams.delete('workspace'); window.history.replaceState({}, document.title, cleanUrl.pathname + cleanUrl.search + cleanUrl.hash); } catch (_) {}
                         this.loginEmail = user.email || this.loginEmail;
                         this.fullName = user.user_metadata?.full_name || this.fullName || '';
                         this.loginPassword = '';
@@ -2238,7 +2241,11 @@
                             throw new Error(message);
                         }
                         if (data?.error) throw new Error(data.error);
-                        this.teamMessage = this.t('inviteSuccess');
+                        this.teamMessage = data?.existingAccount
+                            ? (data?.alreadyLinked
+                                ? (this.language === 'tr' ? 'Bu kullanıcı müşteri portalınıza zaten bağlıydı; giriş bağlantısını yeniden gönderdim.' : 'This user already had access to this customer portal; I sent a fresh sign-in link.')
+                                : (this.language === 'tr' ? 'Müşteri portalı erişimi eklendi ve giriş bağlantısı gönderildi.' : 'Customer portal access was added and a sign-in link was sent.'))
+                            : this.t('inviteSuccess');
                         this.newInvite = { email: '', role: 'operations', customerId: '' };
                     } catch (error) {
                         this.teamMessage = error?.message || this.t('inviteFailed');
