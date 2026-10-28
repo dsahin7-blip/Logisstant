@@ -852,7 +852,7 @@
                     <h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navOffers')"></h2>
                     <div class="flex flex-wrap gap-2"><button @click="exportCSV('offers')" class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-3 py-2 rounded-xl text-xs font-semibold" x-text="t('exportCsv')"></button><button x-show="canManageOffers()" @click="openOfferModal()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition" x-text="t('btnNewOffer')"></button></div>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><input x-model.trim="offerSearch" type="search" :placeholder="t('searchOffers')" class="w-full p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 dark:text-white text-sm"><select x-model="offerStatusFilter" class="w-full p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 dark:text-white text-sm"><option value="all" x-text="t('allOfferStatuses')"></option><option value="Beklemede" x-text="t('offerPending')"></option><option value="Onaylandı" x-text="t('offerApproved')"></option><option value="Reddedildi" x-text="t('offerRejected')"></option></select></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><input x-model.trim="offerSearch" @input="offerPage = 1" type="search" :placeholder="t('searchOffers')" class="w-full p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 dark:text-white text-sm"><select x-model="offerStatusFilter" @change="offerPage = 1" class="w-full p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 dark:text-white text-sm"><option value="all" x-text="t('allOfferStatuses')"></option><option value="Beklemede" x-text="t('offerPending')"></option><option value="Onaylandı" x-text="t('offerApproved')"></option><option value="Reddedildi" x-text="t('offerRejected')"></option></select></div>
                 <div class="bg-white dark:bg-slate-900 shadow-sm rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
                     <div class="overflow-x-auto"><table class="min-w-[760px] w-full divide-y divide-slate-200 dark:divide-slate-800">
                         <thead class="bg-slate-50 dark:bg-slate-950">
@@ -867,7 +867,7 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
-                            <template x-for="offer in filteredOffers()" :key="offer.id">
+                            <template x-for="offer in pageItems(filteredOffers(), offerPage)" :key="offer.id">
                                 <tr :id="'offer-row-' + offer.id" :class="focusedOfferId === offer.id ? 'bg-amber-50 dark:bg-amber-950/30' : ''">
                                     <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">
                                         <span class="text-xs px-2 py-0.5 rounded mr-1 font-semibold" :class="{'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300': offer.mode === 'Denizyolu', 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300': offer.mode === 'Havayolu', 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300': offer.mode === 'Karayolu'}" x-text="offer.mode"></span>
@@ -896,6 +896,7 @@
                         </tbody>
                     </table></div>
                 </div>
+                <div x-show="pageCount(filteredOffers()) > 1" x-effect="offerPage = Math.min(offerPage, pageCount(filteredOffers()))" class="flex items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800 pt-4 "><p class="text-xs text-slate-500" x-text="pageLabel(offerPage, filteredOffers())"></p><div class="flex gap-2"><button type="button" @click="offerPage = Math.max(1, offerPage - 1)" :disabled="offerPage <= 1" class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-40 dark:border-slate-700" x-text="language === 'tr' ? 'Önceki' : 'Previous'"></button><button type="button" @click="offerPage = Math.min(pageCount(filteredOffers()), offerPage + 1)" :disabled="offerPage >= pageCount(filteredOffers())" class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-40 dark:border-slate-700" x-text="language === 'tr' ? 'Sonraki' : 'Next'"></button></div></div>
             </div>
 
             <!-- TAB 3: SHIPMENTS -->
@@ -903,9 +904,9 @@
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                     <h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navShipments')"></h2>
                     <div class="flex flex-wrap gap-2"><button @click="exportCSV('shipments')" class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-3 py-2 rounded-xl text-xs font-semibold" x-text="t('exportCsv')"></button><button x-show="canManageShipments()" @click="showShipmentModal = true" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition" x-text="t('btnNewShipment')"></button></div>
-                </div><div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><input x-model.trim="shipmentSearch" type="search" :placeholder="t('searchShipments')" class="w-full p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 dark:text-white text-sm"><select x-model="shipmentStatusFilter" class="w-full p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 dark:text-white text-sm"><option value="all" x-text="t('allShipmentStatuses')"></option><option value="pending" x-text="t('shipmentPending')"></option><option value="progress" x-text="t('shipmentInProgress')"></option><option value="delivered" x-text="t('shipmentDelivered')"></option></select><select x-model="shipmentSort" class="w-full p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 dark:text-white text-sm"><option value="eta" x-text="t('shipmentSortEta')"></option><option value="newest" x-text="t('shipmentSortNewest')"></option></select></div>
+                </div><div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><input x-model.trim="shipmentSearch" @input="shipmentPage = 1" type="search" :placeholder="t('searchShipments')" class="w-full p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 dark:text-white text-sm"><select x-model="shipmentStatusFilter" @change="shipmentPage = 1" class="w-full p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 dark:text-white text-sm"><option value="all" x-text="t('allShipmentStatuses')"></option><option value="pending" x-text="t('shipmentPending')"></option><option value="progress" x-text="t('shipmentInProgress')"></option><option value="delivered" x-text="t('shipmentDelivered')"></option></select><select x-model="shipmentSort" @change="shipmentPage = 1" class="w-full p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 dark:text-white text-sm"><option value="eta" x-text="t('shipmentSortEta')"></option><option value="newest" x-text="t('shipmentSortNewest')"></option></select></div>
                 <div class="grid grid-cols-1 gap-6">
-                    <template x-for="shipment in filteredShipments()" :key="shipment.id">
+                    <template x-for="shipment in pageItems(filteredShipments(), shipmentPage)" :key="shipment.id">
                         <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-6">
                             <div class="flex flex-col md:flex-row justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
                                 <div>
@@ -935,13 +936,14 @@
                         </div>
                     </template><p x-show="filteredShipments().length === 0" class="text-sm text-slate-500 text-center py-8" x-text="t('noShipmentsFound')"></p>
                 </div>
+                <div x-show="pageCount(filteredShipments()) > 1" x-effect="shipmentPage = Math.min(shipmentPage, pageCount(filteredShipments()))" class="flex items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800 pt-4 "><p class="text-xs text-slate-500" x-text="pageLabel(shipmentPage, filteredShipments())"></p><div class="flex gap-2"><button type="button" @click="shipmentPage = Math.max(1, shipmentPage - 1)" :disabled="shipmentPage <= 1" class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-40 dark:border-slate-700" x-text="language === 'tr' ? 'Önceki' : 'Previous'"></button><button type="button" @click="shipmentPage = Math.min(pageCount(filteredShipments()), shipmentPage + 1)" :disabled="shipmentPage >= pageCount(filteredShipments())" class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-40 dark:border-slate-700" x-text="language === 'tr' ? 'Sonraki' : 'Next'"></button></div></div>
             </div>
 
             <!-- TAB 4: CUSTOMERS -->
             <div x-show="tab === 'customers' && userRole !== 'client'" class="space-y-5">
-                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3"><div><h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navCustomers')"></h2><p class="text-sm text-slate-500 mt-1" x-text="t('customerDirectorySubtitle')"></p></div><input x-model.trim="customerSearch" type="search" :placeholder="t('customerSearch')" class="w-full sm:max-w-sm p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 text-sm"></div>
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3"><div><h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navCustomers')"></h2><p class="text-sm text-slate-500 mt-1" x-text="t('customerDirectorySubtitle')"></p></div><input x-model.trim="customerSearch" @input="customerPage = 1" type="search" :placeholder="t('customerSearch')" class="w-full sm:max-w-sm p-3 border rounded-xl dark:bg-slate-900 dark:border-slate-700 text-sm"></div>
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-                    <template x-for="customer in filteredCustomers()" :key="customer.id">
+                    <template x-for="customer in pageItems(filteredCustomers(), customerPage)" :key="customer.id">
                         <button type="button" @click="selectedCustomerId = customer.id" class="w-full text-left bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                             <strong class="block text-slate-900 dark:text-white" x-text="customer.name"></strong>
                             <span class="block text-xs text-slate-500 mt-2" x-text="customer.contact_name || t('customerNoContact')"></span>
@@ -951,6 +953,7 @@
                     </template>
                     <p x-show="filteredCustomers().length === 0" class="col-span-full text-center text-sm text-slate-500 py-8" x-text="t('customerEmpty')"></p>
                 </div>
+                <div x-show="pageCount(filteredCustomers()) > 1" x-effect="customerPage = Math.min(customerPage, pageCount(filteredCustomers()))" class="flex items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800 pt-4 "><p class="text-xs text-slate-500" x-text="pageLabel(customerPage, filteredCustomers())"></p><div class="flex gap-2"><button type="button" @click="customerPage = Math.max(1, customerPage - 1)" :disabled="customerPage <= 1" class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-40 dark:border-slate-700" x-text="language === 'tr' ? 'Önceki' : 'Previous'"></button><button type="button" @click="customerPage = Math.min(pageCount(filteredCustomers()), customerPage + 1)" :disabled="customerPage >= pageCount(filteredCustomers())" class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-40 dark:border-slate-700" x-text="language === 'tr' ? 'Sonraki' : 'Next'"></button></div></div>
                 <section x-show="selectedCustomer()" class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4" x-cloak>
                     <div class="flex justify-between items-start gap-3"><div><h3 class="text-lg font-bold" x-text="selectedCustomer()?.name"></h3><p class="text-xs text-slate-500 mt-1" x-text="selectedCustomer()?.email || t('customerAddContact')"></p></div><button x-show="canManageShipments() && !customerEditForm" type="button" @click="startCustomerEdit()" class="rounded-lg bg-blue-50 dark:bg-blue-950 px-3 py-2 text-xs font-semibold text-blue-700" x-text="t('customerEditContact')"></button></div>
                     <form x-show="customerEditForm" @submit.prevent="saveCustomerContact()" class="grid grid-cols-1 sm:grid-cols-2 gap-3" x-cloak>
@@ -978,8 +981,9 @@
                     </div>
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
                         <h3 class="font-bold text-slate-900 dark:text-white text-sm" x-text="t('reportCustomers')"></h3>
-                        <template x-for="item in customerPerformanceReport()" :key="item.name"><div class="flex justify-between items-center gap-3 border-t border-slate-100 dark:border-slate-800 pt-3 text-xs"><span class="min-w-0"><strong class="block truncate" x-text="item.name"></strong><span class="text-slate-500" x-text="item.count + ' ' + t('navShipments')"></span></span><span class="shrink-0 text-right"><strong class="block" x-text="item.profit.toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US') + ' EUR'"></strong><span class="text-slate-500" x-text="t('reportProfit')"></span></span></div></template>
+                        <template x-for="item in pageItems(customerPerformanceReport(), reportCustomerPage)" :key="item.name"><div class="flex justify-between items-center gap-3 border-t border-slate-100 dark:border-slate-800 pt-3 text-xs"><span class="min-w-0"><strong class="block truncate" x-text="item.name"></strong><span class="text-slate-500" x-text="item.count + ' ' + t('navShipments')"></span></span><span class="shrink-0 text-right"><strong class="block" x-text="item.profit.toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US') + ' EUR'"></strong><span class="text-slate-500" x-text="t('reportProfit')"></span></span></div></template>
                         <p x-show="customerPerformanceReport().length === 0" class="text-sm text-slate-500" x-text="t('noReportData')"></p>
+                        <div x-show="pageCount(customerPerformanceReport()) > 1" x-effect="reportCustomerPage = Math.min(reportCustomerPage, pageCount(customerPerformanceReport()))" class="flex items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800 pt-4 "><p class="text-xs text-slate-500" x-text="pageLabel(reportCustomerPage, customerPerformanceReport())"></p><div class="flex gap-2"><button type="button" @click="reportCustomerPage = Math.max(1, reportCustomerPage - 1)" :disabled="reportCustomerPage <= 1" class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-40 dark:border-slate-700" x-text="language === 'tr' ? 'Önceki' : 'Previous'"></button><button type="button" @click="reportCustomerPage = Math.min(pageCount(customerPerformanceReport()), reportCustomerPage + 1)" :disabled="reportCustomerPage >= pageCount(customerPerformanceReport())" class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-40 dark:border-slate-700" x-text="language === 'tr' ? 'Sonraki' : 'Next'"></button></div></div>
                     </div>
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
                         <h3 class="font-bold text-slate-900 dark:text-white text-sm" x-text="t('reportModes')"></h3>
@@ -993,7 +997,7 @@
             <div x-show="tab === 'finances' && userRole !== 'operation' && userRole !== 'client'" class="space-y-6">
                 <h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navFinances')"></h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <template x-for="shipment in shipments" :key="shipment.id">
+                    <template x-for="shipment in pageItems(shipments, financePage)" :key="shipment.id">
                         <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
                             <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
                                 <h3 class="font-bold text-slate-900 dark:text-white" x-text="shipment.code + ' - ' + shipment.client"></h3>
@@ -1016,6 +1020,7 @@
                         </div>
                     </template>
                 </div>
+                <div x-show="pageCount(shipments) > 1" x-effect="financePage = Math.min(financePage, pageCount(shipments))" class="flex items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800 pt-4 "><p class="text-xs text-slate-500" x-text="pageLabel(financePage, shipments)"></p><div class="flex gap-2"><button type="button" @click="financePage = Math.max(1, financePage - 1)" :disabled="financePage <= 1" class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-40 dark:border-slate-700" x-text="language === 'tr' ? 'Önceki' : 'Previous'"></button><button type="button" @click="financePage = Math.min(pageCount(shipments), financePage + 1)" :disabled="financePage >= pageCount(shipments)" class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-40 dark:border-slate-700" x-text="language === 'tr' ? 'Sonraki' : 'Next'"></button></div></div>
             </div>
 
             <!-- Fatura modülü, gerçek veri akışı eklenene kadar gizli. -->
@@ -1029,10 +1034,11 @@
                 <details class="settings-accordion">
                     <summary class="settings-accordion-trigger"><span x-text="language === 'tr' ? 'Veriler ve hesap' : 'Data and account'"></span><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7"/></svg></summary>
                     <div class="settings-accordion-content space-y-3">
-                        <p class="text-xs text-slate-500" x-text="language === 'tr' ? 'Bu firmada erişebildiğiniz kayıtların bir kopyasını indirebilir veya hesap kapatma talebi oluşturabilirsiniz. Belgelerin kendisi dışa aktarma dosyasına eklenmez.' : 'Download a copy of the records you can access in this workspace or submit an account closure request. Document files are not included in the export.'"></p>
+                        <p class="text-xs text-slate-500" x-text="language === 'tr' ? 'Download a copy of the records you can access in this workspace or submit an account closure request. Document files are not included in the export. Account deletion removes your sign-in and personal settings while preserving firm records and documents. Firm owners must transfer ownership first.' : 'Download a copy of the records you can access in this workspace or submit an account closure request. Document files are not included in the export.'"></p>
                         <div class="flex flex-wrap gap-2">
                             <button type="button" @click="exportWorkspaceData()" class="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white" x-text="language === 'tr' ? 'Verilerimi indir (JSON)' : 'Download my data (JSON)'"></button>
                             <button type="button" @click="requestAccountClosure()" :disabled="accountClosureBusy" class="rounded-lg border border-rose-200 px-4 py-2 text-xs font-semibold text-rose-700 dark:border-rose-900 dark:text-rose-300 disabled:opacity-50" x-text="accountClosureBusy ? (language === 'tr' ? 'Talep gönderiliyor…' : 'Submitting…') : (language === 'tr' ? 'Hesap kapatma talebi' : 'Request account closure')"></button>
+                            <button type="button" @click="deleteAccount()" :disabled="deleteAccountBusy" class="rounded-lg border border-rose-300 px-4 py-2 text-xs font-semibold text-rose-800 dark:border-rose-800 dark:text-rose-300 disabled:opacity-50" x-text="deleteAccountBusy ? (language === 'tr' ? 'Hesap siliniyor…' : 'Deleting account…') : (language === 'tr' ? 'Hesabımı ve girişimi sil' : 'Delete my account and sign-in')"></button>
                         </div>
                     </div>
                 </details>
@@ -1329,6 +1335,7 @@
                 teamLoading: false,
                 newInvite: { email: '', role: 'operations', customerId: '' },
                 customers: [], customerSearch: '', selectedCustomerId: null, customerEditForm: null, customerSaveBusy: false,
+                offerPage: 1, shipmentPage: 1, customerPage: 1, financePage: 1, reportCustomerPage: 1, pageSize: 25,
                 loadingWorkspace: false,
                 newPassword: '',
                 newPasswordConfirm: '',
@@ -1346,7 +1353,7 @@
                 shipmentSaveBusy: false,
                 financialEditForm: null,
                 financialSaveBusy: false,
-                accountClosureBusy: false,
+                accountClosureBusy: false, deleteAccountBusy: false,
                 activityLoading: false,
                 dataErrorToast: false, lastErrorCode: '', supportRequests: [], supportLoading: false, supportSending: false, supportCategory: 'bug', supportMessageDraft: '', supportStatusMessage: '',
                 documentExpiryDrafts: {},
@@ -2268,7 +2275,7 @@
                     else {
                         const offer = this.offers.find(item => notification.desc === item.client + ' · ' + item.route);
                         if (offer) {
-                            this.offerStatusFilter = 'all'; this.offerSearch = ''; this.focusedOfferId = offer.id;
+                            this.offerStatusFilter = 'all'; this.offerSearch = ''; this.offerPage = Math.floor(this.filteredOffers().findIndex(item => item.id === offer.id) / this.pageSize) + 1; this.focusedOfferId = offer.id;
                             this.$nextTick(() => document.getElementById('offer-row-' + offer.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
                         }
                     }
@@ -2276,6 +2283,9 @@
                 visibleOffers() {
                     return this.userRole === 'client' ? this.offers.filter(offer => offer.client === this.activeClient) : this.offers;
                 },
+                pageCount(items) { return Math.max(1, Math.ceil((items || []).length / this.pageSize)); },
+                pageItems(items, page) { const rows = items || []; const safePage = Math.min(Math.max(1, Number(page) || 1), this.pageCount(rows)); return rows.slice((safePage - 1) * this.pageSize, safePage * this.pageSize); },
+                pageLabel(page, items) { const count = (items || []).length; const pages = this.pageCount(items); const safePage = Math.min(Math.max(1, Number(page) || 1), pages); const first = count ? (safePage - 1) * this.pageSize + 1 : 0; const last = Math.min(safePage * this.pageSize, count); return this.language === 'tr' ? `${first}–${last} / ${count} kayıt · Sayfa ${safePage}/${pages}` : `${first}–${last} / ${count} records · Page ${safePage}/${pages}`; },
                 filteredOffers() {
                     const query = this.offerSearch.toLocaleLowerCase(this.language === 'tr' ? 'tr-TR' : 'en-US');
                     return this.visibleOffers().filter(offer => {
@@ -2571,6 +2581,38 @@
                     link.download = 'logisstant-veri-' + new Date().toISOString().slice(0, 10) + '.json';
                     link.click();
                     setTimeout(() => URL.revokeObjectURL(url), 1000);
+                },
+                async deleteAccount() {
+                    if (!this.currentUser || this.deleteAccountBusy) return;
+                    const email = (this.currentUser.email || '').trim();
+                    if (!email) { alert(this.language === 'tr' ? 'Hesap e-postası doğrulanamadı.' : 'Your account email could not be verified.'); return; }
+                    const typed = prompt(this.language === 'tr' ? 'Hesabı silmek için giriş e-posta adresinizi yazın: ' + email : 'Enter your sign-in email to delete your account: ' + email);
+                    if (typed === null || typed.trim().toLowerCase() !== email.toLowerCase()) {
+                        if (typed !== null) alert(this.language === 'tr' ? 'E-posta eşleşmedi. Hesap silinmedi.' : 'Email did not match. Account was not deleted.');
+                        return;
+                    }
+                    if (!confirm(this.language === 'tr'
+                        ? 'Giriş hesabınız ve kişisel ayarlarınız kalıcı olarak silinecek. Firma teklifleri, sevkiyatları ve belgeleri korunur. Firma sahibiyseniz silme işlemi sahiplik devredilene kadar engellenir. Devam edilsin mi?'
+                        : 'Your sign-in account and personal settings will be permanently deleted. Company offers, shipments, and documents will be preserved. Deletion is blocked until firm ownership is transferred. Continue?')) return;
+                    this.deleteAccountBusy = true;
+                    try {
+                        const { data, error } = await this.supabase.functions.invoke('close-account', { body: { confirmEmail: email } });
+                        if (error || data?.error) {
+                            let detail = data?.message || data?.error || error?.message || '';
+                            try { if (!detail && error?.context?.json) { const body = await error.context.json(); detail = body?.message || body?.error || ''; } } catch (_) {}
+                            if (data?.code === 'OWNER_TRANSFER_REQUIRED' || /OWNER_TRANSFER_REQUIRED/.test(detail)) {
+                                alert(this.language === 'tr' ? 'Hesabınız firma sahibi. Önce firmaya başka bir yönetici ekleyip sahipliği devretmeniz gerekir. Firma verileri korunarak hesap ancak sonra silinebilir.' : 'Your account owns a firm. Add another firm administrator and transfer ownership before deleting the account. Company data will remain intact.');
+                            } else {
+                                alert(detail || (this.language === 'tr' ? 'Hesap silinemedi. Lütfen daha sonra tekrar deneyin.' : 'Account deletion failed. Please try again later.'));
+                            }
+                            return;
+                        }
+                        await this.supabase.auth.signOut();
+                        this.clearSession();
+                        alert(this.language === 'tr' ? 'Hesabınız silindi. Firma kayıtları ve belgeler korunmuştur.' : 'Your account was deleted. Company records and documents were preserved.');
+                    } catch (error) {
+                        this.showDataError(error);
+                    } finally { this.deleteAccountBusy = false; }
                 },
                 async requestAccountClosure() {
                     if (!this.currentUser || !this.activeOrganization || this.accountClosureBusy) return;
