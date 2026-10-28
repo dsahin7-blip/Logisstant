@@ -650,14 +650,15 @@
                     <div>
                         <label x-text="t('passLabel')"></label>
                         <div class="auth-password-row">
-                            <input :type="showAuthPassword ? 'text' : 'password'" x-model="loginPassword" :autocomplete="authMode === 'signup' ? 'new-password' : 'current-password'" minlength="8" required>
+                            <input :type="showAuthPassword ? 'text' : 'password'" x-model="loginPassword" :autocomplete="authMode === 'signup' ? 'new-password' : 'current-password'" :minlength="authMode === 'signup' ? 12 : 8" required>
                             <button type="button" class="auth-show-password" @click="showAuthPassword = !showAuthPassword" x-text="showAuthPassword ? t('hidePassword') : t('showPassword')"></button>
                         </div>
                     </div>
                     <div x-show="loginAudience === 'firm' && authMode === 'signup'" x-cloak>
                         <label x-text="t('confirmPassword')"></label>
-                        <input :type="showAuthPassword ? 'text' : 'password'" x-model="confirmPassword" autocomplete="new-password" minlength="8" :required="authMode === 'signup'" :disabled="authMode !== 'signup'">
+                        <input :type="showAuthPassword ? 'text' : 'password'" x-model="confirmPassword" autocomplete="new-password" minlength="12" :required="authMode === 'signup'" :disabled="authMode !== 'signup'">
                     </div>
+                    <p x-show="loginAudience === 'firm' && authMode === 'signup'" x-cloak class="text-xs text-slate-500" x-text="passwordPolicyMessage()"></p>
                     <div x-show="authMode === 'login'" class="auth-form-options">
                         <label class="auth-remember"><input id="remember-me" type="checkbox" :checked="rememberMe" @change="setRememberMe($event.target.checked)"><span x-text="t('rememberMe')"></span></label>
                         <button type="button" @click="resetPassword()" :disabled="resetBusy" x-text="resetBusy ? t('resetSending') : t('forgotPass')"></button>
@@ -1152,11 +1153,11 @@
                         <div class="space-y-3 text-sm">
                             <div>
                                 <label class="text-xs text-slate-500" x-text="t('newPass')"></label>
-                                <input type="password" x-model="newPassword" minlength="8" autocomplete="new-password" placeholder="••••••••" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
+                                <input type="password" x-model="newPassword" minlength="12" autocomplete="new-password" placeholder="••••••••" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
                             </div>
                             <div>
                                 <label class="text-xs text-slate-500" x-text="t('confirmPassword')"></label>
-                                <input type="password" x-model="newPasswordConfirm" minlength="8" autocomplete="new-password" placeholder="••••••••" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
+                                <input type="password" x-model="newPasswordConfirm" minlength="12" autocomplete="new-password" placeholder="••••••••" class="w-full mt-1 p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm">
                             </div>
                             <button @click="updatePassword()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold" x-text="t('updatePassBtn')"></button>
                         </div>
@@ -1721,10 +1722,27 @@
                         this.authInitializing = false;
                     }
                 },
+                passwordPolicyMessage() {
+                    return this.language === 'tr'
+                        ? 'Parolanız en az 12 karakter olmalı; büyük harf, küçük harf, rakam ve özel karakter içermeli.'
+                        : 'Use at least 12 characters, including uppercase and lowercase letters, a number, and a symbol.';
+                },
+                isStrongPassword(password) {
+                    return typeof password === 'string'
+                        && password.length >= 12
+                        && /\p{Lu}/u.test(password)
+                        && /\p{Ll}/u.test(password)
+                        && /\p{N}/u.test(password)
+                        && /[^\p{L}\p{N}]/u.test(password);
+                },
                 async submitAuth() {
                     if (!this.supabase || this.authBusy) return;
                     if (this.authMode === 'signup' && this.loginPassword !== this.confirmPassword) {
                         this.authMessage = this.t('passwordMismatch');
+                        return;
+                    }
+                    if (this.authMode === 'signup' && !this.isStrongPassword(this.loginPassword)) {
+                        this.authMessage = this.passwordPolicyMessage();
                         return;
                     }
                     this.authBusy = true; this.authMessage = '';
@@ -2130,8 +2148,8 @@
                         return;
                     }
                     
-                    if (!this.newPassword || this.newPassword.length < 8) {
-                        alert(this.language === 'tr' ? 'Yeni parola en az 8 karakter olmalı.' : 'The new password must be at least 8 characters.');
+                    if (!this.isStrongPassword(this.newPassword)) {
+                        alert(this.passwordPolicyMessage());
                         return;
                     }
                     const { error } = await this.supabase.auth.updateUser({ password: this.newPassword });
