@@ -1034,7 +1034,7 @@
                 <details class="settings-accordion">
                     <summary class="settings-accordion-trigger"><span x-text="language === 'tr' ? 'Veriler ve hesap' : 'Data and account'"></span><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7"/></svg></summary>
                     <div class="settings-accordion-content space-y-3">
-                        <p class="text-xs text-slate-500" x-text="language === 'tr' ? 'Bu firmada erişebildiğiniz kayıtların bir kopyasını indirebilir veya hesap kapatma talebi oluşturabilirsiniz. Belgelerin kendisi dışa aktarma dosyasına eklenmez. Hesap silme giriş bilgilerinizi kaldırır; firma kayıtları ve belgeler korunur. Firma sahibiyseniz önce sahipliği devretmeniz gerekir.' : 'Download a copy of the records you can access in this workspace or submit an account closure request. Document files are not included in the export.'"></p>
+                        <p class="text-xs text-slate-500" x-text="language === 'tr' ? 'Download a copy of the records you can access in this workspace or submit an account closure request. Document files are not included in the export. Account deletion removes your sign-in and personal settings while preserving firm records and documents. Firm owners must transfer ownership first.' : 'Download a copy of the records you can access in this workspace or submit an account closure request. Document files are not included in the export.'"></p>
                         <div class="flex flex-wrap gap-2">
                             <button type="button" @click="exportWorkspaceData()" class="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white" x-text="language === 'tr' ? 'Verilerimi indir (JSON)' : 'Download my data (JSON)'"></button>
                             <button type="button" @click="requestAccountClosure()" :disabled="accountClosureBusy" class="rounded-lg border border-rose-200 px-4 py-2 text-xs font-semibold text-rose-700 dark:border-rose-900 dark:text-rose-300 disabled:opacity-50" x-text="accountClosureBusy ? (language === 'tr' ? 'Talep gönderiliyor…' : 'Submitting…') : (language === 'tr' ? 'Hesap kapatma talebi' : 'Request account closure')"></button>
@@ -2275,7 +2275,7 @@
                     else {
                         const offer = this.offers.find(item => notification.desc === item.client + ' · ' + item.route);
                         if (offer) {
-                            this.offerStatusFilter = 'all'; this.offerSearch = ''; this.focusedOfferId = offer.id;
+                            this.offerStatusFilter = 'all'; this.offerSearch = ''; this.offerPage = Math.floor(this.filteredOffers().findIndex(item => item.id === offer.id) / this.pageSize) + 1; this.focusedOfferId = offer.id;
                             this.$nextTick(() => document.getElementById('offer-row-' + offer.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
                         }
                     }
