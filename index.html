@@ -870,7 +870,7 @@
         <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full space-y-6">
             
             <!-- TAB 1: DASHBOARD -->
-            <div x-show="tab === 'dashboard'" class="space-y-6">
+            <div x-show="tab === 'dashboard'" x-cloak class="space-y-6">
                 <div class="dashboard-hero bg-gradient-to-r from-blue-900 to-blue-950 rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
                     <div>
                         <h2 class="text-2xl font-bold" x-text="userRole === 'client' ? t('dashWelcomeClient') : t('dashWelcomeFirm')"></h2>
@@ -975,7 +975,7 @@
             </div>
 
             <!-- TAB 2: OFFERS -->
-            <div x-show="tab === 'offers'" class="space-y-6">
+            <div x-show="tab === 'offers'" x-cloak class="space-y-6">
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                     <h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navOffers')"></h2>
                     <div class="flex flex-wrap gap-2"><button @click="exportCSV('offers')" class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-3 py-2 rounded-xl text-xs font-semibold" x-text="t('exportCsv')"></button><button x-show="canManageOffers()" @click="openOfferModal()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition" x-text="t('btnNewOffer')"></button></div>
@@ -1028,7 +1028,7 @@
             </div>
 
             <!-- TAB 3: SHIPMENTS -->
-            <div x-show="tab === 'shipments'" class="space-y-6">
+            <div x-show="tab === 'shipments'" x-cloak class="space-y-6">
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                     <h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('navShipments')"></h2>
                     <div class="flex flex-wrap gap-2"><button @click="exportCSV('shipments')" class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-3 py-2 rounded-xl text-xs font-semibold" x-text="t('exportCsv')"></button><button x-show="canManageShipments()" @click="showShipmentModal = true" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition" x-text="t('btnNewShipment')"></button></div>
@@ -1158,7 +1158,7 @@
             <!-- Fatura modülü, gerçek veri akışı eklenene kadar gizli. -->
 
             <!-- TAB 7: SETTINGS & PROFILE (Zenginleştirilmiş Ayarlar) -->
-            <div x-show="tab === 'settings'" class="space-y-5">
+            <div x-show="tab === 'settings'" x-cloak class="space-y-5">
                 <div class="settings-page-heading">
                     <div class="flex items-center gap-3 min-w-0">
                         <div class="settings-heading-icon" aria-hidden="true">
