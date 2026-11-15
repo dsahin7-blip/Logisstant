@@ -3267,6 +3267,12 @@
                     if (error) throw error;
                     shipment.events = data || [];
                     if (this.selectedShipment?.id === shipment.id) this.selectedShipment.events = shipment.events;
+                    if (['admin', 'finance'].includes(this.userRole)) {
+                        const known = new Set(this.reportStatusEvents.map(event => event.id));
+                        const recent = shipment.events.filter(event => event.event_type === 'status_changed' && !known.has(event.id))
+                            .map(event => ({ id: event.id, shipment_id: shipment.id, new_status: event.new_status, created_at: event.created_at }));
+                        if (recent.length) this.reportStatusEvents = [...this.reportStatusEvents, ...recent];
+                    }
                 },
                 formatHistoryTime(value) {
                     const date = new Date(value);
@@ -3309,10 +3315,8 @@
                     if (error) { this.showDataError(error); return; }
                     if (!data) { this.showDataError(new Error(this.t('shipmentSaveDenied'))); return; }
                     shipment.status = status;
-                    if (this.selectedShipment?.id === shipment.id) {
-                        try { await this.loadShipmentEvents(shipment); }
-                        catch (activityError) { this.showDataError(activityError); }
-                    }
+                    try { await this.loadShipmentEvents(shipment); }
+                    catch (activityError) { this.showDataError(activityError); }
                     try { await this.loadNotifications(); }
                     catch (notificationError) { this.showDataError(notificationError); }
                 },
