@@ -287,15 +287,35 @@
             .shipment-document-trigger { min-height: 52px; padding: .75rem; font-size: .76rem; }
             .shipment-history-content { padding: .75rem; }
         }
-        .settings-list { display: flex; flex-direction: column; gap: .75rem; }
+        .settings-page-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1.25rem 1.4rem;
+            border: 1px solid rgba(148, 163, 184, .2);
+            border-radius: 1.25rem;
+            background: linear-gradient(120deg, #fff 0%, #f5f8ff 100%);
+            box-shadow: 0 8px 28px rgba(15, 23, 42, .055);
+        }
+        .dark .settings-page-heading { background: linear-gradient(120deg, #0f172a 0%, #111d35 100%); border-color: rgba(71, 85, 105, .45); }
+        .settings-heading-icon {
+            display:grid; place-items:center; width:2.8rem; height:2.8rem; flex:0 0 auto;
+            border:1px solid #dbeafe; border-radius:.95rem; color:#1d4ed8; background:#eff6ff;
+        }
+        .dark .settings-heading-icon { border-color:#1e3a5f; color:#93c5fd; background:#172554; }
+        .settings-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: .9rem; }
         .settings-accordion {
             overflow: hidden;
             border: 1px solid var(--ui-border);
             border-radius: 1rem;
             background: #fff;
             box-shadow: 0 4px 16px rgba(15, 23, 42, .045);
+            transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
         }
+        .settings-accordion:hover { border-color: #bfdbfe; box-shadow: 0 8px 22px rgba(15, 23, 42, .075); }
         .dark .settings-accordion { background: #0f172a; }
+        .dark .settings-accordion:hover { border-color: #1e40af; }
         .settings-accordion-trigger {
             display: flex;
             align-items: center;
@@ -326,8 +346,29 @@
             border-top: 1px solid var(--ui-border);
         }
         .settings-accordion-content > :first-child { margin-top: 1rem; }
+        .settings-theme-control {
+            display:flex; align-items:center; justify-content:space-between; gap:1rem;
+            padding:.9rem 1rem; border:1px solid var(--ui-border); border-radius:1rem;
+            background:#f8fafc;
+        }
+        .dark .settings-theme-control { background:#111c30; }
+        .settings-theme-switch {
+            position:relative; display:inline-flex; align-items:center; width:3.1rem; height:1.8rem;
+            flex:0 0 auto; padding:.2rem; border:1px solid #cbd5e1; border-radius:999px;
+            background:#e2e8f0; transition:background .18s ease, border-color .18s ease;
+        }
+        .settings-theme-switch[aria-checked="true"] { background:#1d4ed8; border-color:#1d4ed8; }
+        .settings-theme-thumb {
+            display:grid; place-items:center; width:1.3rem; height:1.3rem; border-radius:50%;
+            background:#fff; color:#475569; box-shadow:0 1px 3px rgba(15,23,42,.2);
+            transform:translateX(0); transition:transform .18s ease, color .18s ease;
+        }
+        .settings-theme-switch[aria-checked="true"] .settings-theme-thumb { transform:translateX(1.25rem); color:#1d4ed8; }
+        .settings-theme-switch:focus-visible { outline:3px solid rgba(59,130,246,.35); outline-offset:3px; }
+        @media (max-width: 760px) { .settings-list { grid-template-columns: minmax(0, 1fr); } }
         @media (max-width: 640px) {
-            .settings-list { gap: .6rem; }
+            .settings-page-heading { padding:1rem; border-radius:1rem; }
+            .settings-list { gap: .65rem; }
             .settings-accordion { border-radius: .9rem; }
             .settings-accordion-trigger { min-height: 58px; padding: .9rem 1rem; font-size: .9rem; }
             .settings-accordion-content { padding: 0 .9rem .9rem; }
@@ -793,11 +834,6 @@
                         </div>
                     </div>
 
-                    <!-- Dark/Light Mode Switcher -->
-                    <button @click="toggleDarkMode()" class="hidden sm:flex bg-blue-900 dark:bg-slate-800 hover:bg-blue-800 px-3 py-2 rounded-lg text-sm flex items-center space-x-2 transition">
-                        <span x-text="darkMode ? '☀️' : '🌙'"></span>
-                    </button>
-
                     <!-- Ayarlar Butonu -->
                     <button type="button" @click="tab = 'settings'" :aria-label="t('settings')" :title="t('settings')" :aria-current="tab === 'settings' ? 'page' : null" :class="tab === 'settings' ? 'settings-button-active' : ''" class="settings-button bg-blue-900 dark:bg-slate-800 hover:bg-blue-800 text-white rounded-lg text-xs font-semibold transition inline-flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-300">
                         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5">
@@ -1122,15 +1158,24 @@
             <!-- Fatura modülü, gerçek veri akışı eklenene kadar gizli. -->
 
             <!-- TAB 7: SETTINGS & PROFILE (Zenginleştirilmiş Ayarlar) -->
-            <div x-show="tab === 'settings'" class="space-y-6">
-                <div class="flex items-center justify-between gap-3">
-                    <h2 class="text-xl font-bold text-slate-900 dark:text-white" x-text="t('settingsTitle')"></h2>
-                    <button type="button" @click="logout()" class="sm:hidden shrink-0 bg-rose-600 hover:bg-rose-500 text-white px-3 py-2 rounded-xl text-xs font-semibold" x-text="t('logout')"></button>
+            <div x-show="tab === 'settings'" class="space-y-5">
+                <div class="settings-page-heading">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="settings-heading-icon" aria-hidden="true">
+                            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m19.4 15 .1.1a1.7 1.7 0 0 1-2.4 2.4l-.1-.1a1.7 1.7 0 0 0-2.9 1.2v.2a1.7 1.7 0 0 1-3.4 0v-.2a1.7 1.7 0 0 0-2.9-1.2l-.1.1a1.7 1.7 0 0 1-2.4-2.4l.1-.1a1.7 1.7 0 0 0-1.2-2.9H4a1.7 1.7 0 0 1 0-3.4h.2a1.7 1.7 0 0 0 1.2-2.9l-.1-.1a1.7 1.7 0 0 1 2.4-2.4l.1.1a1.7 1.7 0 0 0 2.9-1.2V4a1.7 1.7 0 0 1 3.4 0v.2a1.7 1.7 0 0 0 2.9 1.2l.1-.1a1.7 1.7 0 0 1 2.4 2.4l-.1.1a1.7 1.7 0 0 0 1.2 2.9h.2a1.7 1.7 0 0 1 0 3.4h-.2a1.7 1.7 0 0 0-1.2.9Z"/></svg>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[10px] font-bold uppercase tracking-[.16em] text-blue-600 dark:text-blue-400" x-text="language === 'tr' ? 'HESAP MERKEZİ' : 'ACCOUNT CENTER'"></p>
+                            <h2 class="mt-1 text-xl font-bold text-slate-900 dark:text-white" x-text="t('settingsTitle')"></h2>
+                            <p class="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400" x-text="language === 'tr' ? 'Hesap ve çalışma alanı tercihlerinizi tek yerden yönetin.' : 'Manage your account and workspace preferences in one place.'"></p>
+                        </div>
+                    </div>
+                    <button type="button" @click="logout()" class="sm:hidden shrink-0 rounded-xl border border-rose-200 bg-white px-3 py-2 text-xs font-semibold text-rose-700 dark:border-rose-900 dark:bg-slate-900 dark:text-rose-300" x-text="t('logout')"></button>
                 </div>
                 <details class="settings-accordion">
                     <summary class="settings-accordion-trigger"><span x-text="language === 'tr' ? 'Veriler ve hesap' : 'Data and account'"></span><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7"/></svg></summary>
                     <div class="settings-accordion-content space-y-3">
-                        <p class="text-xs text-slate-500" x-text="language === 'tr' ? 'Download a copy of the records you can access in this workspace or submit an account closure request. Document files are not included in the export. Account deletion removes your sign-in and personal settings while preserving firm records and documents. Firm owners must transfer ownership first.' : 'Download a copy of the records you can access in this workspace or submit an account closure request. Document files are not included in the export.'"></p>
+                        <p class="text-xs text-slate-500" x-text="language === 'tr' ? 'Bu çalışma alanında erişebildiğiniz kayıtların bir kopyasını indirebilir veya hesap kapatma talebi gönderebilirsiniz. Belge dosyaları dışa aktarıma dahil edilmez. Hesap silme işlemi oturum açma bilgilerinizi ve kişisel ayarlarınızı kaldırır; firma kayıtları ve belgeleri korunur. Firma sahipleri önce sahipliği devretmelidir.' : 'Download a copy of the records you can access in this workspace or submit an account closure request. Document files are not included in the export. Account deletion removes your sign-in and personal settings while preserving firm records and documents. Firm owners must transfer ownership first.'></p>
                         <div class="flex flex-wrap gap-2">
                             <button type="button" @click="exportWorkspaceData()" class="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white" x-text="language === 'tr' ? 'Verilerimi indir (JSON)' : 'Download my data (JSON)'"></button>
                             <button type="button" @click="requestAccountClosure()" :disabled="accountClosureBusy" class="rounded-lg border border-rose-200 px-4 py-2 text-xs font-semibold text-rose-700 dark:border-rose-900 dark:text-rose-300 disabled:opacity-50" x-text="accountClosureBusy ? (language === 'tr' ? 'Talep gönderiliyor…' : 'Submitting…') : (language === 'tr' ? 'Hesap kapatma talebi' : 'Request account closure')"></button>
@@ -1171,9 +1216,14 @@
                                     <option value="tr">Türkçe</option><option value="en">English</option>
                                 </select>
                             </div>
-                            <div class="flex items-center justify-between gap-3">
-                                <span class="text-xs text-slate-500" x-text="t('themeLabel')"></span>
-                                <button type="button" @click="toggleDarkMode()" class="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs" x-text="darkMode ? t('darkTheme') : t('lightTheme')"></button>
+                            <div class="settings-theme-control">
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-900 dark:text-white" x-text="t('themeLabel')"></p>
+                                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400" x-text="darkMode ? t('darkTheme') : t('lightTheme')"></p>
+                                </div>
+                                <button type="button" role="switch" :aria-checked="darkMode" :aria-label="t('themeLabel')" @click="toggleDarkMode()" class="settings-theme-switch" :title="darkMode ? t('darkTheme') : t('lightTheme')">
+                                    <span class="settings-theme-thumb" aria-hidden="true"><span x-text="darkMode ? '☾' : '☼'"></span></span>
+                                </button>
                             </div>
                         </div>
                     </div></details>
