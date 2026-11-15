@@ -928,6 +928,7 @@
                                     <svg class="dashboard-action-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m7 4 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                 </button>
                             </template>
+                            <button type="button" x-show="actionCenterSnapshot.total > 6" @click="actionCenterExpanded = !actionCenterExpanded" class="w-full py-2 text-xs font-semibold text-blue-700 dark:text-blue-300 hover:underline" x-text="actionCenterExpanded ? t('actionShowLess') : t('actionShowMore').replace('{count}', actionCenterSnapshot.total - 6)"></button>
                             <div x-show="actionCenterSnapshot.total === 0" class="dashboard-action-empty">
                                 <span class="dashboard-action-empty-icon" aria-hidden="true">✓</span>
                                 <span><strong x-text="t('actionCenterAllClear')"></strong><small x-text="t('actionCenterAllClearHint')"></small></span>
@@ -1436,6 +1437,7 @@
                 language: 'tr',
                 focusedOfferId: null,
                 actionCenterSnapshot: { items: [], total: 0, counts: { delivery: 0, documents: 0, offers: 0 } },
+                actionCenterExpanded: false,
                 userRole: 'unknown',
                 activeClient: null,
                 showOfferModal: false,
@@ -1503,7 +1505,7 @@
                         actionCenterEyebrow: "Operasyon özeti", actionCenterTitle: "Bugün takip edilecekler", actionCenterSubtitle: "Önceliğe göre sıralanan işler.",
                         actionCenterAllClear: "Şu anda acil takip işi yok.", actionCenterAllClearHint: "Yeni bir konu oluştuğunda burada görünecek.",
                         actionDelivery: "Teslimat", actionDocuments: "Belgeler", actionOffers: "Teklifler",
-                        actionMissingDocumentCount: "{count} zorunlu belge eksik", actionNeedsAttention: "Takip gerekli",
+                        actionMissingDocumentCount: "{count} zorunlu belge eksik", actionNeedsAttention: "Takip gerekli", actionShowMore: "{count} işi daha göster", actionShowLess: "Daha az göster",
                         actionOfferApproval: "Firma onayı bekliyor", actionCustomerReply: "Müşteri yanıtı bekleniyor", actionYourOfferReply: "Teklifinize yanıt vermeniz bekleniyor", actionWaiting: "Bekliyor",
                         noDeliveryAlerts: "Yaklaşan veya geciken teslimat yok.", deliveryDueToday: "Bugün teslim", deliveryDueInDays: "{days} gün içinde", deliveryDaysLate: "{days} gün gecikti",
                         offerValidUntil: "Teklif geçerlilik tarihi", offerNotes: "Teklife özel not (isteğe bağlı)", offerExpiryRequired: "Lütfen teklifin geçerlilik tarihini seçin.", offerExpiryPast: "Teklif geçerlilik tarihi bugünden önce olamaz.", authAudienceMismatch: "Bu hesap seçilen giriş türüyle eşleşmiyor. Diğer giriş sekmesini deneyin.", authRoleUnavailable: "Bu hesap için tanınmayan bir erişim rolü var. Firma yöneticinizle iletişime geçin.", unknownRole: "Bilinmeyen rol", workspaceTitle: "Çalışma alanı", workspaceSubtitle: "Üye olduğunuz firma veya müşteri hesabına geçin.", workspaceSelect: "Aktif çalışma alanı", workspaceSwitching: "Çalışma alanı değiştiriliyor…", notSet: "Belirtilmedi",
@@ -1638,7 +1640,7 @@
                         actionCenterEyebrow: "Operations overview", actionCenterTitle: "Follow up today", actionCenterSubtitle: "Items sorted by priority.",
                         actionCenterAllClear: "There are no urgent follow-ups right now.", actionCenterAllClearHint: "New items will appear here when they need attention.",
                         actionDelivery: "Delivery", actionDocuments: "Documents", actionOffers: "Offers",
-                        actionMissingDocumentCount: "{count} required document(s) missing", actionNeedsAttention: "Needs attention",
+                        actionMissingDocumentCount: "{count} required document(s) missing", actionNeedsAttention: "Needs attention", actionShowMore: "Show {count} more", actionShowLess: "Show less",
                         actionOfferApproval: "Awaiting company approval", actionCustomerReply: "Awaiting customer reply", actionYourOfferReply: "Your response is needed", actionWaiting: "Waiting",
                         noDeliveryAlerts: "No upcoming or overdue deliveries.", deliveryDueToday: "Due today", deliveryDueInDays: "Due in {days} days", deliveryDaysLate: "{days} days overdue",
                         offerValidUntil: "Offer valid until", offerNotes: "Offer notes (optional)", offerExpiryRequired: "Please choose an offer expiry date.", offerExpiryPast: "The offer expiry date cannot be in the past.", authAudienceMismatch: "This account does not match the selected sign-in type. Try the other sign-in tab.", authRoleUnavailable: "This account has an unrecognized access role. Contact your company administrator.", unknownRole: "Unknown role", workspaceTitle: "Workspace", workspaceSubtitle: "Switch to a firm or customer account you belong to.", workspaceSelect: "Active workspace", workspaceSwitching: "Switching workspace…", notSet: "Not set",
@@ -2598,7 +2600,7 @@
 
                     items.sort((a, b) => a.priority - b.priority || (a.sortDate || '').localeCompare(b.sortDate || ''));
                     return {
-                        items: items.slice(0, 6),
+                        items: this.actionCenterExpanded ? items : items.slice(0, 6),
                         total: items.length,
                         counts: {
                             delivery: items.filter(item => item.type === 'delivery').length,
